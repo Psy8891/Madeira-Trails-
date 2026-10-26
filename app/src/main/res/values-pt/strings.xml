@@ -99,7 +99,9 @@
     <string name="access_with_parking">%1$s · tem estacionamento</string>
     <string name="trails_here">Percursos aqui</string>
     <string name="directions">Direções</string>
-    <string name="directions_to_start">Direções para o início</string>
+    <string name="directions_open_in">Direções abrem no</string>
+    <string name="directions_in_app">Vereda</string>
+    <string name="directions_google_maps">Google Maps</string>
 
     <string name="locate_show">Mostrar a minha localização</string>
     <string name="locate_compass">Rodar o mapa com o telemóvel</string>

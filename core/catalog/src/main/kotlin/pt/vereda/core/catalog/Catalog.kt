@@ -88,7 +88,7 @@ data class TrailEntry(
 
     val bounds: Bounds? = Bounds.of(lines.asSequence().flatten().asIterable())
 
-    private val mainLine: List<GeoPoint>? = lines.filter { it.size >= 2 }.maxByOrNull { Geo.lengthM(it) }
+    internal val mainLine: List<GeoPoint>? = lines.filter { it.size >= 2 }.maxByOrNull { Geo.lengthM(it) }
 
     /** Where the walk starts: the catalog's start, or the first point of the main line. */
     val startPoint: GeoPoint? get() = ends.firstOrNull()?.point ?: mainLine?.first()

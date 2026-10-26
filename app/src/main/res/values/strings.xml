@@ -101,7 +101,9 @@
     <string name="access_with_parking">%1$s · parking there</string>
     <string name="trails_here">Trails here</string>
     <string name="directions">Directions</string>
-    <string name="directions_to_start">Directions to the start</string>
+    <string name="directions_open_in">Directions open in</string>
+    <string name="directions_in_app">Vereda</string>
+    <string name="directions_google_maps">Google Maps</string>
 
     <string name="locate_show">Show my location</string>
     <string name="locate_compass">Turn the map with the phone</string>

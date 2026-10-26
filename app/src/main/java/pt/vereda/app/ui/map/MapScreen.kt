@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
 
 package pt.vereda.app.ui.map
 
@@ -15,6 +15,11 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.draw.clip
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Button
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import pt.vereda.core.catalog.DirectionsTarget
+import pt.vereda.core.catalog.HikePlans
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -137,6 +142,8 @@ fun MapScreen(
     val planner = app.planner
     val planPoints by planner.points.collectAsStateWithLifecycle()
     val planResult by planner.result.collectAsStateWithLifecycle()
+    val directionsTarget by app.settings.directions.collectAsStateWithLifecycle()
+    val screenUriHandler = LocalUriHandler.current
 
     var loaded by remember { mutableStateOf<LoadedMap?>(null) }
     var pressed by remember { mutableStateOf<GeoPoint?>(null) }
@@ -401,6 +408,21 @@ fun MapScreen(
                     here = here,
                     startChoice = startChoice,
                     onStartChoice = { startChoice = it },
+                    directionsTarget = directionsTarget,
+                    onDirectionsTarget = app.settings::setDirections,
+                    onDirections = run {
+                        val chosen = selectedEntry.starts.getOrNull(startChoice) ?: selectedEntry.starts.firstOrNull()
+                        val plan = HikePlans.forTrail(selectedEntry, chosen, here)
+                        val road = chosen?.roadPoint ?: selectedEntry.startPoint
+                        directionsAction(plan != null, road) {
+                            if (plan != null && directionsTarget == DirectionsTarget.IN_APP) {
+                                planner.showHike(plan, listOfNotNull(selectedEntry.trail.code, selectedEntry.trail.name).joinToString(" "))
+                                onSelect(null)
+                            } else if (road != null) {
+                                screenUriHandler.openUri(HikePlans.googleMapsUrl(road))
+                            }
+                        }
+                    },
                     onExport = {
                         export(
                             listOfNotNull(selectedEntry.trail.code, selectedEntry.trail.name).joinToString(" "),
@@ -422,6 +444,22 @@ fun MapScreen(
                     startChoice = startChoice,
                     onStartChoice = { startChoice = it },
                     onTrail = { onSelect(MapSelection(MapTarget.TrailTarget(it.id), moveCamera = true)) },
+                    directionsTarget = directionsTarget,
+                    onDirectionsTarget = app.settings::setDirections,
+                    onDirections = run {
+                        val chosen = selectedPlace.starts.getOrNull(startChoice) ?: selectedPlace.starts.firstOrNull()
+                        val plan = HikePlans.forPlace(selectedPlace, chosen, here)
+                        val kindName = kindLabel(selectedPlace.kind)
+                        val road = if (chosen != null && chosen.needsWalk) chosen.roadPoint else selectedPlace.point
+                        directionsAction(plan != null, road) {
+                            if (plan != null && directionsTarget == DirectionsTarget.IN_APP) {
+                                planner.showHike(plan, selectedPlace.displayName ?: kindName)
+                                onSelect(null)
+                            } else if (road != null) {
+                                screenUriHandler.openUri(HikePlans.googleMapsUrl(road))
+                            }
+                        }
+                    },
                     onPlanHere = {
                         planner.setEnd(selectedPlace.point)
                         val chosen = selectedPlace.starts.getOrNull(startChoice)
@@ -525,6 +563,9 @@ private fun TrailPeekCard(
     here: GeoPoint?,
     startChoice: Int,
     onStartChoice: (Int) -> Unit,
+    directionsTarget: DirectionsTarget,
+    onDirectionsTarget: (DirectionsTarget) -> Unit,
+    onDirections: (() -> Unit)?,
     onExport: () -> Unit,
     onClose: () -> Unit,
     onDeleteImport: () -> Unit,
@@ -581,10 +622,9 @@ private fun TrailPeekCard(
         notes.forEach { note ->
             Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+        if (onDirections != null) DirectionsToggle(directionsTarget, onDirectionsTarget)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            directionsUrl(chosen?.roadPoint ?: entry.startPoint)?.let { url ->
-                OutlinedButton(onClick = { uriHandler.openUri(url) }) { Text(stringResource(R.string.directions_to_start)) }
-            }
+            onDirections?.let { Button(onClick = it) { Text(stringResource(R.string.directions)) } }
             when (trail.source) {
                 TrailSource.OFFICIAL -> OutlinedButton(
                     onClick = { uriHandler.openUri(status?.sourceUrl ?: TrailRepository.OFFICIAL_LIST_URL) },
@@ -642,11 +682,13 @@ private fun PlacePeekCard(
     startChoice: Int,
     onStartChoice: (Int) -> Unit,
     onTrail: (TrailEntry) -> Unit,
+    directionsTarget: DirectionsTarget,
+    onDirectionsTarget: (DirectionsTarget) -> Unit,
+    onDirections: (() -> Unit)?,
     onPlanHere: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val uriHandler = LocalUriHandler.current
     val starts = place.starts
     val chosen = starts.getOrNull(startChoice) ?: starts.firstOrNull()
     PeekSurface(modifier) {
@@ -686,10 +728,9 @@ private fun PlacePeekCard(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        if (onDirections != null) DirectionsToggle(directionsTarget, onDirectionsTarget)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            directionsUrl(if (chosen != null && chosen.needsWalk) chosen.roadPoint else place.point)?.let { url ->
-                OutlinedButton(onClick = { uriHandler.openUri(url) }) { Text(stringResource(R.string.directions)) }
-            }
+            onDirections?.let { Button(onClick = it) { Text(stringResource(R.string.directions)) } }
             OutlinedButton(onClick = onPlanHere) { Text(stringResource(R.string.plan_route_here)) }
             TextButton(onClick = onClose) { Text(stringResource(R.string.close)) }
         }
@@ -820,7 +861,7 @@ private fun PlannerCard(
         }
 
         val name = route?.let {
-            it.summary.mainNames.firstOrNull()?.let { main -> stringResource(R.string.plan_route_name, main) }
+            points.title ?: it.summary.mainNames.firstOrNull()?.let { main -> stringResource(R.string.plan_route_name, main) }
                 ?: stringResource(R.string.plan_route_name_plain, formatLength(it.summary.distanceM.toInt()).orEmpty())
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -864,9 +905,24 @@ private fun PeekSurface(modifier: Modifier, content: @Composable () -> Unit) {
     }
 }
 
-/** Google Maps directions to a point (works in the browser when the app isn't installed). */
-private fun directionsUrl(point: GeoPoint?): String? = point?.let {
-    String.format(java.util.Locale.ROOT, "https://www.google.com/maps/dir/?api=1&destination=%.6f,%.6f", it.lat, it.lon)
+/** What *Directions* does, or null (no button) when neither the app nor Google Maps has a way. */
+private fun directionsAction(hasPlan: Boolean, road: GeoPoint?, action: () -> Unit): (() -> Unit)? =
+    if (hasPlan || road != null) action else null
+
+/** Where *Directions* opens: one side Vereda, the other Google Maps (spec: Phase 0.8). */
+@Composable
+private fun DirectionsToggle(target: DirectionsTarget, onChange: (DirectionsTarget) -> Unit) {
+    Text(stringResource(R.string.directions_open_in), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+        val options = listOf(DirectionsTarget.IN_APP to R.string.directions_in_app, DirectionsTarget.GOOGLE_MAPS to R.string.directions_google_maps)
+        options.forEachIndexed { i, (option, label) ->
+            SegmentedButton(
+                selected = target == option,
+                onClick = { onChange(option) },
+                shape = SegmentedButtonDefaults.itemShape(index = i, count = options.size),
+            ) { Text(stringResource(label)) }
+        }
+    }
 }
 
 /** "r4444478" → relation page, "w123" → way page on openstreetmap.org. */

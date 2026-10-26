@@ -11,20 +11,29 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import pt.vereda.core.catalog.HikePlan
 import pt.vereda.core.geo.GeoPoint
 import pt.vereda.core.route.NetworkReader
 import pt.vereda.core.route.RouteOptions
 import pt.vereda.core.route.RouteOutcome
 import pt.vereda.core.route.Router
 
-/** The points of a route being planned (spec: Phase 0.7). */
+/**
+ * The points of a route being planned (spec: Phase 0.7). [via] are hidden points that keep a
+ * route opened from *Directions* on the trail's own line (Phase 0.8); [title] names it on save.
+ */
 data class PlanPoints(
     val start: GeoPoint? = null,
     val stops: List<GeoPoint> = emptyList(),
     val end: GeoPoint? = null,
+    val via: List<GeoPoint> = emptyList(),
+    val title: String? = null,
+    /** After *Reverse*, the user's stops come before the trail's via points. */
+    val stopsFirst: Boolean = false,
 ) {
     val isEmpty: Boolean get() = start == null && stops.isEmpty() && end == null
-    val all: List<GeoPoint> get() = listOfNotNull(start) + stops + listOfNotNull(end)
+    val all: List<GeoPoint>
+        get() = listOfNotNull(start) + (if (stopsFirst) stops + via else via + stops) + listOfNotNull(end)
 }
 
 sealed interface PlanResult {
@@ -54,7 +63,12 @@ class RoutePlanner(private val context: Context, private val scope: CoroutineSco
     fun setEnd(p: GeoPoint) = update { it.copy(end = p) }
     fun addStop(p: GeoPoint) = update { it.copy(stops = it.stops + p) }
     fun removeStop(index: Int) = update { it.copy(stops = it.stops.filterIndexed { i, _ -> i != index }) }
-    fun reverse() = update { PlanPoints(start = it.end, stops = it.stops.reversed(), end = it.start) }
+    fun reverse() = update {
+        it.copy(start = it.end, end = it.start, stops = it.stops.reversed(), via = it.via.reversed(), stopsFirst = !it.stopsFirst)
+    }
+
+    /** Show a hike opened from *Directions* (Phase 0.8), replacing any plan. */
+    fun showHike(plan: HikePlan, title: String) = update { PlanPoints(start = plan.start, end = plan.end, via = plan.via, title = title) }
     fun clear() = update { PlanPoints() }
 
     private fun update(change: (PlanPoints) -> PlanPoints) {
