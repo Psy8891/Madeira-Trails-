@@ -10,6 +10,12 @@ import android.location.Location
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.draw.clip
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -68,7 +75,10 @@ import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
 import pt.vereda.app.R
 import pt.vereda.app.VeredaApplication
+import pt.vereda.app.data.PlanPoints
+import pt.vereda.app.data.PlanResult
 import pt.vereda.app.data.TrailRepository
+import pt.vereda.app.ui.components.shareGpx
 import pt.vereda.app.ui.components.TrailBadges
 import pt.vereda.app.ui.components.checkedAgo
 import pt.vereda.app.ui.components.formatElevation
@@ -83,6 +93,8 @@ import pt.vereda.core.catalog.TrailPositions
 import pt.vereda.core.geo.GeoPoint
 import pt.vereda.core.model.StatusState
 import pt.vereda.core.model.TrailSource
+import pt.vereda.core.catalog.RoadAccess
+import pt.vereda.core.route.RouteOutcome
 
 /**
  * Temporary online base map (OpenFreeMap, OpenStreetMap data) until the offline Vereda Topo
@@ -122,17 +134,33 @@ fun MapScreen(
     val selectedEntry = (selection?.target as? MapTarget.TrailTarget)?.let { t -> entries.firstOrNull { it.id == t.id } }
     val selectedPlace = (selection?.target as? MapTarget.PlaceTarget)?.place
     val here = location?.let { GeoPoint(it.latitude, it.longitude) }
+    val planner = app.planner
+    val planPoints by planner.points.collectAsStateWithLifecycle()
+    val planResult by planner.result.collectAsStateWithLifecycle()
 
     var loaded by remember { mutableStateOf<LoadedMap?>(null) }
+    var pressed by remember { mutableStateOf<GeoPoint?>(null) }
+    // Which way in is shown for the picked trail or peak (0 = recommended).
+    var startChoice by remember(selection?.target) { mutableIntStateOf(0) }
     var locateMode by remember { mutableStateOf(LocateMode.FREE) }
     var hasPermission by remember { mutableStateOf(tracker.hasPermission()) }
     val currentOnSelect by rememberUpdatedState(onSelect)
     val currentPlaces by rememberUpdatedState(places)
+    val currentPressed by rememberUpdatedState(pressed)
+    val currentOnLongPress by rememberUpdatedState<(GeoPoint?) -> Unit>({ pressed = it })
 
     val mapView = rememberMapViewWithLifecycle(
         onReady = { map, style ->
             MapLayers.install(context, style)
+            map.addOnMapLongClickListener { point ->
+                currentOnLongPress(GeoPoint(point.latitude, point.longitude))
+                true
+            }
             map.addOnMapClickListener { point ->
+                if (currentPressed != null) {
+                    currentOnLongPress(null)
+                    return@addOnMapClickListener true
+                }
                 val screen = map.projection.toScreenLocation(point)
                 val touch = RectF(screen.x - 24f, screen.y - 24f, screen.x + 24f, screen.y + 24f)
                 val place = map.queryRenderedFeatures(touch, *MapLayers.TAPPABLE_PLACES)
@@ -229,20 +257,23 @@ fun MapScreen(
     // The picked trail or place: highlight it, mark its start, end and the walk from the road,
     // and, when picked from a list, fly to it.
     val density = LocalDensity.current
-    LaunchedEffect(loaded, selection, selectedEntry) {
+    LaunchedEffect(loaded, selection, selectedEntry, startChoice) {
         val target = loaded ?: return@LaunchedEffect
         MapLayers.setGeoJson(
             target.style,
             MapLayers.SELECTED_SOURCE,
             selectedEntry?.let { TrailGeoJson.lines(listOf(it)) { LineStyle.UNKNOWN } } ?: MapLayers.EMPTY,
         )
+        val starts = selectedEntry?.starts ?: selectedPlace?.starts.orEmpty()
+        val chosen = starts.getOrNull(startChoice) ?: starts.firstOrNull()
+        val others = starts.filter { it != chosen }.mapNotNull { it.roadPoint }
         val markers = when {
-            selectedEntry != null -> TrailGeoJson.markers(selectedEntry.startPoint, selectedEntry.endPoint, selectedEntry.startAccess)
-            selectedPlace != null -> TrailGeoJson.markers(null, null, selectedPlace.access, selectedPlace.point)
+            selectedEntry != null -> TrailGeoJson.markers(selectedEntry.startPoint, selectedEntry.endPoint, chosen, otherRoads = others)
+            selectedPlace != null -> TrailGeoJson.markers(null, null, chosen ?: selectedPlace.access, selectedPlace.point, others)
             else -> MapLayers.EMPTY
         }
         MapLayers.setGeoJson(target.style, MapLayers.MARKERS_SOURCE, markers)
-        if (selection?.moveCamera != true) return@LaunchedEffect
+        if (selection?.moveCamera != true || startChoice != 0) return@LaunchedEffect
         locateMode = LocateMode.FREE
         val side = with(density) { 48.dp.roundToPx() }
         val top = with(density) { 96.dp.roundToPx() }
@@ -250,9 +281,8 @@ fun MapScreen(
         // Include the walk from the road, so the start of a trail like Pico Alto is on screen.
         val points = buildList {
             selectedEntry?.lines?.forEach { addAll(it) }
-            selectedEntry?.startAccess?.line?.let(::addAll)
+            starts.forEach { addAll(it.line) }
             selectedPlace?.let { add(it.point) }
-            selectedPlace?.access?.line?.let(::addAll)
         }
         val bounds = pt.vereda.core.catalog.Bounds.of(points)
         when {
@@ -269,6 +299,28 @@ fun MapScreen(
                 900,
             )
         }
+    }
+
+    // The route being planned: its line and its start, stops and end. Zoom out to it when it
+    // doesn't fit on screen.
+    val savedMessage = stringResource(R.string.plan_saved)
+    LaunchedEffect(loaded, planPoints, planResult) {
+        val target = loaded ?: return@LaunchedEffect
+        val route = ((planResult as? PlanResult.Done)?.outcome as? RouteOutcome.Found)?.route
+        MapLayers.setGeoJson(target.style, MapLayers.ROUTE_SOURCE, route?.let { TrailGeoJson.line(it.points) } ?: MapLayers.EMPTY)
+        MapLayers.setGeoJson(target.style, MapLayers.PLAN_SOURCE, TrailGeoJson.planPoints(planPoints.start, planPoints.stops, planPoints.end))
+        val bounds = route?.let { pt.vereda.core.catalog.Bounds.of(it.points) } ?: return@LaunchedEffect
+        val visible = target.map.projection.visibleRegion.latLngBounds
+        if (visible.contains(LatLng(bounds.north, bounds.east)) && visible.contains(LatLng(bounds.south, bounds.west))) return@LaunchedEffect
+        locateMode = LocateMode.FREE
+        val side = with(density) { 48.dp.roundToPx() }
+        target.map.easeCamera(
+            CameraUpdateFactory.newLatLngBounds(
+                LatLngBounds.from(bounds.north, bounds.east, bounds.south, bounds.west),
+                side, with(density) { 96.dp.roundToPx() }, side, with(density) { 380.dp.roundToPx() },
+            ),
+            900,
+        )
     }
 
     Box(modifier.fillMaxSize()) {
@@ -311,11 +363,51 @@ fun MapScreen(
                 },
             )
             val cardModifier = Modifier.fillMaxWidth()
+            val exportFailed = stringResource(R.string.export_failed)
+            fun export(name: String, lines: List<List<GeoPoint>>, osm: Boolean) {
+                scope.launch {
+                    runCatching { repository.exportGpx(name, lines, osm) }
+                        .onSuccess { shareGpx(context, it, name) }
+                        .onFailure { Toast.makeText(context, exportFailed, Toast.LENGTH_LONG).show() }
+                }
+            }
+            val pressedPoint = pressed
             when {
+                pressedPoint != null -> PointCard(
+                    point = pressedPoint,
+                    hasStart = planPoints.start != null,
+                    onStart = {
+                        planner.setStart(pressedPoint)
+                        pressed = null
+                        onSelect(null)
+                    },
+                    onStop = {
+                        planner.addStop(pressedPoint)
+                        pressed = null
+                        onSelect(null)
+                    },
+                    onEnd = {
+                        planner.setEnd(pressedPoint)
+                        if (planPoints.start == null && here != null) planner.setStart(here)
+                        pressed = null
+                        onSelect(null)
+                    },
+                    onClose = { pressed = null },
+                    modifier = cardModifier,
+                )
                 selectedEntry != null -> TrailPeekCard(
                     entry = selectedEntry,
                     snapshot = snapshot,
                     here = here,
+                    startChoice = startChoice,
+                    onStartChoice = { startChoice = it },
+                    onExport = {
+                        export(
+                            listOfNotNull(selectedEntry.trail.code, selectedEntry.trail.name).joinToString(" "),
+                            selectedEntry.lines,
+                            selectedEntry.trail.source != TrailSource.IMPORT,
+                        )
+                    },
                     onClose = { onSelect(null) },
                     onDeleteImport = {
                         scope.launch { repository.deleteImport(selectedEntry.id) }
@@ -327,8 +419,40 @@ fun MapScreen(
                     place = selectedPlace,
                     trailsHere = remember(selectedPlace, entries) { TrailPositions.near(entries, selectedPlace.point).take(4) },
                     here = here,
+                    startChoice = startChoice,
+                    onStartChoice = { startChoice = it },
                     onTrail = { onSelect(MapSelection(MapTarget.TrailTarget(it.id), moveCamera = true)) },
+                    onPlanHere = {
+                        planner.setEnd(selectedPlace.point)
+                        val chosen = selectedPlace.starts.getOrNull(startChoice)
+                        when {
+                            here != null -> planner.setStart(here)
+                            chosen?.roadPoint != null -> planner.setStart(chosen.roadPoint!!)
+                        }
+                        onSelect(null)
+                    },
                     onClose = { onSelect(null) },
+                    modifier = cardModifier,
+                )
+                !planPoints.isEmpty -> PlannerCard(
+                    points = planPoints,
+                    result = planResult,
+                    snapshot = snapshot,
+                    here = here,
+                    onFromHere = { here?.let(planner::setStart) },
+                    onRemoveStop = planner::removeStop,
+                    onReverse = planner::reverse,
+                    onClear = planner::clear,
+                    onSave = { name, points ->
+                        scope.launch {
+                            repository.saveRoute(name, points)?.let {
+                                Toast.makeText(context, savedMessage, Toast.LENGTH_LONG).show()
+                                planner.clear()
+                                onSelect(MapSelection(MapTarget.TrailTarget(it.id), moveCamera = false))
+                            }
+                        }
+                    },
+                    onExport = { name, points -> export(name, listOf(points), osm = true) },
                     modifier = cardModifier,
                 )
             }
@@ -399,6 +523,9 @@ private fun TrailPeekCard(
     entry: TrailEntry,
     snapshot: StatusSnapshot,
     here: GeoPoint?,
+    startChoice: Int,
+    onStartChoice: (Int) -> Unit,
+    onExport: () -> Unit,
     onClose: () -> Unit,
     onDeleteImport: () -> Unit,
     modifier: Modifier = Modifier,
@@ -409,6 +536,8 @@ private fun TrailPeekCard(
     val state = snapshot.stateOf(entry.id, now)
     val uriHandler = LocalUriHandler.current
     val position = remember(entry, here) { here?.let { TrailPositions.of(entry, it) } }
+    val starts = entry.starts
+    val chosen = starts.getOrNull(startChoice) ?: starts.firstOrNull()
 
     PeekSurface(modifier) {
         TrailBadges(trail, state)
@@ -421,7 +550,11 @@ private fun TrailPeekCard(
         positionText(position)?.let {
             Text(it, style = MaterialTheme.typography.bodyMedium, color = VeredaColors.LocationBlue, fontWeight = FontWeight.SemiBold)
         }
-        startText(entry)?.let { MarkerLine(R.string.marker_start, it, VeredaColors.OpenLine) }
+        if (starts.size > 1) {
+            StartOptions(starts, startChoice, onStartChoice)
+        } else {
+            startText(chosen)?.let { MarkerLine(R.string.marker_start, it, VeredaColors.OpenLine) }
+        }
         endText(entry)?.let { MarkerLine(R.string.marker_end, it, VeredaColors.Ink) }
         val notes = buildList {
             when (trail.source) {
@@ -449,7 +582,7 @@ private fun TrailPeekCard(
             Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            directionsUrl(entry.startAccess?.roadPoint ?: entry.startPoint)?.let { url ->
+            directionsUrl(chosen?.roadPoint ?: entry.startPoint)?.let { url ->
                 OutlinedButton(onClick = { uriHandler.openUri(url) }) { Text(stringResource(R.string.directions_to_start)) }
             }
             when (trail.source) {
@@ -461,7 +594,29 @@ private fun TrailPeekCard(
                 }
                 TrailSource.IMPORT -> OutlinedButton(onClick = onDeleteImport) { Text(stringResource(R.string.import_delete)) }
             }
+            if (entry.hasLine) OutlinedButton(onClick = onExport) { Text(stringResource(R.string.export_gpx)) }
             TextButton(onClick = onClose) { Text(stringResource(R.string.close)) }
+        }
+    }
+}
+
+/** The ways in to a trail or peak; the chosen one is drawn on the map and used for Directions. */
+@Composable
+private fun StartOptions(starts: List<RoadAccess>, chosen: Int, onChoose: (Int) -> Unit) {
+    Text(stringResource(R.string.start_options), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+    starts.forEachIndexed { i, access ->
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .background(if (i == chosen) VeredaColors.LaurelTint else androidx.compose.ui.graphics.Color.Transparent)
+                .selectable(selected = i == chosen, onClick = { onChoose(i) })
+                .padding(horizontal = 8.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            RadioButton(selected = i == chosen, onClick = null)
+            Text(optionText(access), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
         }
     }
 }
@@ -484,11 +639,16 @@ private fun PlacePeekCard(
     place: Place,
     trailsHere: List<TrailEntry>,
     here: GeoPoint?,
+    startChoice: Int,
+    onStartChoice: (Int) -> Unit,
     onTrail: (TrailEntry) -> Unit,
+    onPlanHere: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uriHandler = LocalUriHandler.current
+    val starts = place.starts
+    val chosen = starts.getOrNull(startChoice) ?: starts.firstOrNull()
     PeekSurface(modifier) {
         Text(
             text = place.displayName ?: kindLabel(place.kind),
@@ -508,7 +668,11 @@ private fun PlacePeekCard(
                 fontWeight = FontWeight.SemiBold,
             )
         }
-        placeAccessText(place.access)?.let { MarkerLine(R.string.marker_access, it, VeredaColors.Ink) }
+        if (starts.size > 1) {
+            StartOptions(starts, startChoice, onStartChoice)
+        } else {
+            placeAccessText(chosen)?.let { MarkerLine(R.string.marker_access, it, VeredaColors.Ink) }
+        }
         if (trailsHere.isNotEmpty()) {
             Text(stringResource(R.string.trails_here), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
             trailsHere.forEach { entry ->
@@ -523,14 +687,167 @@ private fun PlacePeekCard(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            val access = place.access
-            directionsUrl(if (access != null && access.needsWalk) access.roadPoint else place.point)?.let { url ->
+            directionsUrl(if (chosen != null && chosen.needsWalk) chosen.roadPoint else place.point)?.let { url ->
                 OutlinedButton(onClick = { uriHandler.openUri(url) }) { Text(stringResource(R.string.directions)) }
             }
+            OutlinedButton(onClick = onPlanHere) { Text(stringResource(R.string.plan_route_here)) }
             TextButton(onClick = onClose) { Text(stringResource(R.string.close)) }
         }
     }
 }
+
+/** After a long-press: use the point for the route being planned. */
+@Composable
+private fun PointCard(
+    point: GeoPoint,
+    hasStart: Boolean,
+    onStart: () -> Unit,
+    onStop: () -> Unit,
+    onEnd: () -> Unit,
+    onClose: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    PeekSurface(modifier) {
+        Text(stringResource(R.string.point_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text(
+            text = String.format(java.util.Locale.ROOT, "%.5f, %.5f", point.lat, point.lon),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = onStart) { Text(stringResource(R.string.plan_start_here)) }
+            if (hasStart) OutlinedButton(onClick = onStop) { Text(stringResource(R.string.plan_stop_here)) }
+            Button(onClick = onEnd) { Text(stringResource(R.string.plan_end_here)) }
+            TextButton(onClick = onClose) { Text(stringResource(R.string.close)) }
+        }
+    }
+}
+
+/** The route being planned: what it is like, and what to do with it (spec: Phase 0.7). */
+@Composable
+private fun PlannerCard(
+    points: PlanPoints,
+    result: PlanResult,
+    snapshot: StatusSnapshot,
+    here: GeoPoint?,
+    onFromHere: () -> Unit,
+    onRemoveStop: (Int) -> Unit,
+    onReverse: () -> Unit,
+    onClear: () -> Unit,
+    onSave: (String, List<GeoPoint>) -> Unit,
+    onExport: (String, List<GeoPoint>) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val route = ((result as? PlanResult.Done)?.outcome as? RouteOutcome.Found)?.route
+    val position = remember(route, here) {
+        if (route == null || here == null) null else TrailPositions.of(routeEntry(route.points), here)
+    }
+    PeekSurface(modifier) {
+        Text(stringResource(R.string.plan_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        val message = when {
+            points.start == null -> stringResource(R.string.plan_need_start)
+            points.end == null -> stringResource(R.string.plan_need_end)
+            result is PlanResult.Working -> stringResource(R.string.plan_working)
+            result is PlanResult.Failed -> stringResource(R.string.plan_failed, result.message)
+            result is PlanResult.Done -> when (val o = result.outcome) {
+                is RouteOutcome.TooFar -> when (o.index) {
+                    0 -> stringResource(R.string.plan_too_far_start)
+                    points.all.size - 1 -> stringResource(R.string.plan_too_far_end)
+                    else -> stringResource(R.string.plan_too_far_stop, o.index)
+                }
+                is RouteOutcome.NoRoute -> stringResource(R.string.plan_no_route)
+                is RouteOutcome.Found -> null
+            }
+            else -> null
+        }
+        message?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+
+        if (route != null) {
+            val summary = route.summary
+            Text(
+                text = stringResource(
+                    R.string.plan_summary,
+                    formatLength(summary.distanceM.toInt()) ?: "0 m",
+                    durationText(summary.flatMinutes),
+                ),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            positionText(position)?.let {
+                Text(it, style = MaterialTheme.typography.bodyMedium, color = VeredaColors.LocationBlue, fontWeight = FontWeight.SemiBold)
+            }
+            if (summary.mainNames.isNotEmpty()) {
+                Text(stringResource(R.string.plan_mostly, summary.mainNames.joinToString(", ")), style = MaterialTheme.typography.bodySmall)
+            }
+            val now = TrailRepository.now()
+            if (summary.officialTrails.isNotEmpty()) {
+                Text(stringResource(R.string.plan_official, summary.officialTrails.joinToString(", ")), style = MaterialTheme.typography.bodySmall)
+                summary.officialTrails.forEach { code ->
+                    val id = pt.vereda.core.model.Trail.idForCode(code)
+                    val state = snapshot.stateOf(id, now)
+                    if (state == StatusState.CLOSED || state == StatusState.PARTIAL) {
+                        val label = stringResource(if (state == StatusState.CLOSED) R.string.status_closed else R.string.status_partial)
+                        Text(
+                            stringResource(R.string.plan_official_warning, code, label.lowercase()),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (state == StatusState.CLOSED) VeredaColors.ClosedText else VeredaColors.PartialText,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
+                Text(stringResource(R.string.plan_official_booking), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (summary.roadM >= 50) {
+                Text(stringResource(R.string.plan_roads, formatLength(summary.roadM.toInt()).orEmpty()), style = MaterialTheme.typography.bodySmall)
+            }
+            if (summary.difficultM >= 20) {
+                Text(
+                    stringResource(R.string.plan_difficult, formatLength(summary.difficultM.toInt()).orEmpty()),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = VeredaColors.PartialText,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            if (summary.tunnels > 0) Text(tunnelsText(summary.tunnels), style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(R.string.plan_climb_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.community_route_warning), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+
+        points.stops.forEachIndexed { i, _ ->
+            TextButton(onClick = { onRemoveStop(i) }, contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 0.dp)) {
+                Text(stringResource(R.string.plan_remove_stop, i + 1), style = MaterialTheme.typography.bodySmall)
+            }
+        }
+
+        val name = route?.let {
+            it.summary.mainNames.firstOrNull()?.let { main -> stringResource(R.string.plan_route_name, main) }
+                ?: stringResource(R.string.plan_route_name_plain, formatLength(it.summary.distanceM.toInt()).orEmpty())
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (route != null && name != null) {
+                Button(onClick = { onSave(name, route.points) }) { Text(stringResource(R.string.plan_save)) }
+                OutlinedButton(onClick = { onExport(name, route.points) }) { Text(stringResource(R.string.export_gpx)) }
+            }
+            if (here != null && points.start != here) {
+                OutlinedButton(onClick = onFromHere) { Text(stringResource(R.string.plan_from_location)) }
+            }
+            if (points.start != null && points.end != null) {
+                OutlinedButton(onClick = onReverse) { Text(stringResource(R.string.plan_reverse)) }
+            }
+            TextButton(onClick = onClear) { Text(stringResource(R.string.plan_clear)) }
+        }
+    }
+}
+
+/** A planned route as a trail, so "where am I" works the same way on it. */
+private fun routeEntry(points: List<GeoPoint>) = TrailEntry(
+    trail = pt.vereda.core.model.Trail(
+        "plan", TrailSource.IMPORT, null, "", null, null, null, pt.vereda.core.model.Island.MADEIRA,
+    ),
+    lengthM = null,
+    sacScale = null,
+    lines = listOf(points),
+)
 
 @Composable
 private fun PeekSurface(modifier: Modifier, content: @Composable () -> Unit) {

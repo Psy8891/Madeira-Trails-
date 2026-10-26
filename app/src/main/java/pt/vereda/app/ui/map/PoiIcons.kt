@@ -23,6 +23,7 @@ internal object PoiIcons {
     const val ROAD = "marker-road"
     const val PARKING_MARKER = "marker-parking"
     const val PLACE = "marker-place"
+    const val STOP = "marker-stop"
 
     fun imageName(kind: PlaceKind) = "poi-${kind.key}"
 
@@ -34,6 +35,8 @@ internal object PoiIcons {
         icons[ROAD] = road(density)
         icons[PARKING_MARKER] = disc(density, 26f, "#1673B5") { size -> text(size, "P", 0.62f) }
         icons[PLACE] = disc(density, 26f, "#D81B60") { size -> ring(size) }
+        // A dark ring with a white centre; the stop number is drawn on it as map text.
+        icons[STOP] = disc(density, 24f, "#17201B") { s -> drawCircle(s * 0.5f, s * 0.5f, s * 0.34f, glyph) }
         return icons
     }
 

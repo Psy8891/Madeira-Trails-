@@ -18,6 +18,8 @@ object MapLayers {
     const val SELECTED_SOURCE = "vereda-selected"
     const val PLACES_SOURCE = "vereda-places"
     const val MARKERS_SOURCE = "vereda-markers"
+    const val ROUTE_SOURCE = "vereda-route"
+    const val PLAN_SOURCE = "vereda-plan"
 
     private const val TRAILS_SOLID = "vereda-trails-solid"
     private const val TRAILS_DASHED = "vereda-trails-dashed"
@@ -26,6 +28,9 @@ object MapLayers {
     private const val APPROACH_LINE = "vereda-approach"
     private const val MARKERS = "vereda-markers"
     private const val PLACE_HALO = "vereda-place-halo"
+    private const val ROUTE_CASING = "vereda-route-casing"
+    private const val ROUTE_LINE = "vereda-route-line"
+    private const val PLAN_POINTS = "vereda-plan-points"
 
     /** One layer per zoom band, so each kind of place appears at its own zoom (PlaceKind.minZoom). */
     private val placeBands: List<Pair<String, Double>> =
@@ -48,6 +53,8 @@ object MapLayers {
         style.addSource(GeoJsonSource(SELECTED_SOURCE, EMPTY))
         style.addSource(GeoJsonSource(PLACES_SOURCE, EMPTY))
         style.addSource(GeoJsonSource(MARKERS_SOURCE, EMPTY))
+        style.addSource(GeoJsonSource(ROUTE_SOURCE, EMPTY))
+        style.addSource(GeoJsonSource(PLAN_SOURCE, EMPTY))
 
         val width = Expression.interpolate(
             Expression.linear(),
@@ -159,11 +166,18 @@ object MapLayers {
                             Expression.stop("start", PoiIcons.START),
                             Expression.stop("end", PoiIcons.END),
                             Expression.stop("road", PoiIcons.ROAD),
+                            Expression.stop("road-other", PoiIcons.ROAD),
                             Expression.stop("parking", PoiIcons.PARKING_MARKER),
                         ),
                     ),
                     PropertyFactory.iconAllowOverlap(true),
                     PropertyFactory.iconIgnorePlacement(true),
+                    PropertyFactory.iconOpacity(
+                        Expression.match(Expression.get("role"), Expression.literal(1f), Expression.stop("road-other", 0.55f)),
+                    ),
+                    PropertyFactory.iconSize(
+                        Expression.match(Expression.get("role"), Expression.literal(1f), Expression.stop("road-other", 0.8f)),
+                    ),
                     PropertyFactory.symbolSortKey(
                         Expression.match(
                             Expression.get("role"),
@@ -175,6 +189,47 @@ object MapLayers {
                         ),
                     ),
                 ),
+        )
+        installRoute(style)
+    }
+
+    /** The planned route (Phase 0.7) and its start, stops and end, above everything else. */
+    private fun installRoute(style: Style) {
+        style.addLayer(
+            LineLayer(ROUTE_CASING, ROUTE_SOURCE).withProperties(
+                PropertyFactory.lineColor("#FFFFFF"),
+                PropertyFactory.lineWidth(10f),
+                PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
+                PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
+            ),
+        )
+        style.addLayer(
+            LineLayer(ROUTE_LINE, ROUTE_SOURCE).withProperties(
+                PropertyFactory.lineColor(LineStyle.SELECTED_COLOR),
+                PropertyFactory.lineWidth(6f),
+                PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
+                PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
+            ),
+        )
+        style.addLayer(
+            SymbolLayer(PLAN_POINTS, PLAN_SOURCE).withProperties(
+                PropertyFactory.iconImage(
+                    Expression.match(
+                        Expression.get("role"),
+                        Expression.literal(PoiIcons.STOP),
+                        Expression.stop("start", PoiIcons.START),
+                        Expression.stop("end", PoiIcons.END),
+                    ),
+                ),
+                PropertyFactory.iconAllowOverlap(true),
+                PropertyFactory.iconIgnorePlacement(true),
+                PropertyFactory.textField(Expression.get("label")),
+                PropertyFactory.textFont(arrayOf("Noto Sans Bold")),
+                PropertyFactory.textSize(12f),
+                PropertyFactory.textColor("#17201B"),
+                PropertyFactory.textAllowOverlap(true),
+                PropertyFactory.textIgnorePlacement(true),
+            ),
         )
     }
 
@@ -190,6 +245,8 @@ object MapLayers {
             }
         }
     }
+
+    fun setGeoJsonAll(style: Style, vararg pairs: Pair<String, String>) = pairs.forEach { (id, json) -> setGeoJson(style, id, json) }
 
     fun setGeoJson(style: Style, sourceId: String, json: String) {
         if (!style.isFullyLoaded) return

@@ -26,13 +26,17 @@ class CatalogParserTest {
            "area":"Serra de Água",
            "ends":[{"lat":32.7186,"lon":-16.9939,"approachM":2400,"road":"ER 228","access":[32.7085,-16.9727],
                     "parking":[32.7087,-16.9725],"via":["Caminho Real da Encumeada"],"line":"iysfEvttfB}Vng@"},
-                   {"lat":32.737,"lon":-16.988,"approachM":null}]},
+                   {"lat":32.737,"lon":-16.988,"approachM":null}],
+           "starts":[{"approachM":3462,"access":[32.711,-16.9868],"road":"Estrada da Corrida","name":"Boca da Corrida","known":true},
+                     {"approachM":3015,"access":[32.7329,-16.9725],"via":["Vereda da Fajã Escura"]}]},
           {"id":"osm-w5","source":"community","name":"Broken","island":"madeira","lengthM":900,"osm":["w5"],"lines":["_p~iF"]},
           {"id":"osm-r9","source":"community","name":"Porto Santo walk","island":"porto_santo","lengthM":800,
            "osm":["r9"],"lines":["iysfEvttfB}Vng@"],"someFutureField":{"x":1}}
          ],
          "places":[{"name":"Pico Grande","kind":"peak","lat":32.7146,"lon":-16.993,"ele":1654,"aliases":["Grande"],
-                    "access":{"approachM":4099,"access":[32.73289,-16.972508],"via":["Vereda da Fajã Escura"]}},
+                    "access":{"approachM":4099,"access":[32.73289,-16.972508],"via":["Vereda da Fajã Escura"]},
+                    "starts":[{"approachM":4676,"access":[32.711,-16.9868],"name":"Boca da Corrida","known":true},
+                              {"approachM":4099,"access":[32.73289,-16.972508]}]},
                    {"name":"Pico sem altitude","kind":"peak","lat":32.7,"lon":-16.9,"ele":null},
                    {"kind":"peak","lat":32.6,"lon":-16.9},
                    {"kind":"parking","lat":32.7087,"lon":-16.9725},
@@ -90,7 +94,7 @@ class CatalogParserTest {
         assertEquals("Serra de Água", pico.area)
         assertEquals("Serra de Água", pico.trail.area)
         assertEquals(2, pico.ends.size)
-        val start = pico.startAccess!!
+        val start = pico.ends[0].access
         assertEquals(2400, start.approachM)
         assertEquals("ER 228", start.road)
         assertEquals(listOf("Caminho Real da Encumeada"), start.via)
@@ -101,6 +105,19 @@ class CatalogParserTest {
         assertEquals(32.7186, pico.startPoint!!.lat, 1e-9)
         assertEquals(32.737, pico.endPoint!!.lat, 1e-9)
         assertTrue(catalog.trail("pr-6")!!.ends.isEmpty())
+    }
+
+    @Test
+    fun `start options are read, known trailheads first`() {
+        val pico = catalog.trail("osm-r4444478")!!
+        assertEquals(listOf("Boca da Corrida", null), pico.starts.map { it.name })
+        assertTrue(pico.starts[0].known)
+        assertEquals("Boca da Corrida", pico.startAccess!!.name)
+        val peak = catalog.places[0]
+        assertEquals(listOf(4676, 4099), peak.starts.map { it.approachM })
+        // An older catalog without starts still offers its single access.
+        assertEquals(listOf(4099), peak.copy(startOptions = emptyList()).starts.map { it.approachM })
+        assertTrue(catalog.trail("pr-6")!!.starts.isEmpty())
     }
 
     @Test

@@ -100,6 +100,30 @@ class TrailGeoJsonTest {
     }
 
     @Test
+    fun `other start options are drawn as lighter road points`() {
+        val start = GeoPoint(32.73, -16.98)
+        val walk = RoadAccess(2400, GeoPoint(32.71, -16.986), line = listOf(GeoPoint(32.71, -16.986), start))
+        val roles = Json.parseToJsonElement(TrailGeoJson.markers(start, null, walk, otherRoads = listOf(GeoPoint(32.74, -16.97))))
+            .jsonObject["features"]!!.jsonArray.map { it.jsonObject["properties"]!!.jsonObject["role"]!!.jsonPrimitive.content }
+        assertEquals(listOf("approach", "road-other", "road", "start"), roles)
+    }
+
+    @Test
+    fun `a planned route and its points`() {
+        val a = GeoPoint(32.70, -17.0)
+        val b = GeoPoint(32.71, -17.0)
+        val c = GeoPoint(32.72, -17.0)
+        val line = Json.parseToJsonElement(TrailGeoJson.line(listOf(a, b, c))).jsonObject["features"]!!.jsonArray.single().jsonObject
+        assertEquals(3, line["geometry"]!!.jsonObject["coordinates"]!!.jsonArray.size)
+        assertEquals(0, Json.parseToJsonElement(TrailGeoJson.line(listOf(a))).jsonObject["features"]!!.jsonArray.size)
+        val points = Json.parseToJsonElement(TrailGeoJson.planPoints(a, listOf(b), c)).jsonObject["features"]!!.jsonArray
+            .map { it.jsonObject["properties"]!!.jsonObject }
+        assertEquals(listOf("stop", "end", "start"), points.map { it["role"]!!.jsonPrimitive.content })
+        assertEquals("1", points[0]["label"]!!.jsonPrimitive.content)
+        assertEquals(1, Json.parseToJsonElement(TrailGeoJson.planPoints(a, emptyList(), null)).jsonObject["features"]!!.jsonArray.size)
+    }
+
+    @Test
     fun `fixed five decimals match String format`() {
         listOf(-16.98652, 32.7146, 0.0, -0.000001, 0.000005, -17.0, 33.123456789, -0.5).forEach { value ->
             val fast = StringBuilder().apply { appendFixed5(value) }.toString()

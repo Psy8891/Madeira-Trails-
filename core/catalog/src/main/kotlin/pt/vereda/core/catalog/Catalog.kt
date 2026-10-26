@@ -51,6 +51,9 @@ data class RoadAccess(
     /** The walk, from the road to the trail end. */
     val line: List<GeoPoint> = emptyList(),
     val parking: GeoPoint? = null,
+    /** A hand-checked trailhead's name ("Boca da Corrida"), from data/known-starts.json. */
+    val name: String? = null,
+    val known: Boolean = false,
 ) {
     val onRoad: Boolean get() = approachM == 0
     val needsWalk: Boolean get() = approachM != null && approachM > 0
@@ -73,6 +76,8 @@ data class TrailEntry(
     val area: String? = null,
     /** Start first; one entry for a loop; empty when the catalog has no access data. */
     val ends: List<TrailEnd> = emptyList(),
+    /** Ways in to the start, recommended first (Phase 0.7); empty for older catalogs. */
+    val startOptions: List<RoadAccess> = emptyList(),
 ) {
     val id: String get() = trail.id
 
@@ -97,7 +102,10 @@ data class TrailEntry(
             return line.last().takeIf { Geo.distanceM(it, line.first()) > LOOP_M }
         }
 
-    val startAccess: RoadAccess? get() = ends.firstOrNull()?.access
+    val startAccess: RoadAccess? get() = startOptions.firstOrNull() ?: ends.firstOrNull()?.access
+
+    /** Every way in to show: the catalog's options, or the single access of an older catalog. */
+    val starts: List<RoadAccess> get() = startOptions.ifEmpty { listOfNotNull(ends.firstOrNull()?.access) }
     val endAccess: RoadAccess? get() = ends.getOrNull(1)?.access
 
     companion object {
@@ -145,7 +153,12 @@ data class Place(
     val aliases: List<String> = emptyList(),
     /** How to reach it from the road (peaks, waterfalls, viewpoints, caves, springs). */
     val access: RoadAccess? = null,
+    /** Several ways in, recommended first, for peaks and other places off the road. */
+    val startOptions: List<RoadAccess> = emptyList(),
 ) {
+    /** Every way in to show, recommended first. */
+    val starts: List<RoadAccess> get() = startOptions.ifEmpty { listOfNotNull(access) }
+
     /** Stable id for navigation and map features. */
     val id: String get() = "place-${kind.key}-${point.lat}-${point.lon}"
 

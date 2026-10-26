@@ -19,7 +19,7 @@
     <string name="filter_all">All</string>
     <string name="filter_official">Official</string>
     <string name="filter_community">Community</string>
-    <string name="filter_imports">My imports</string>
+    <string name="filter_imports">Mine</string>
 
     <string name="source_community">Community</string>
     <string name="source_import">My import</string>
@@ -112,4 +112,51 @@
     <string name="position_off_trail">You\'re %1$s from the trail</string>
     <string name="position_off_trail_start">You\'re %1$s from the trail · the start is %2$s away in a straight line</string>
     <string name="position_from_place">You\'re %1$s away in a straight line</string>
+
+    <string name="start_options">Ways in</string>
+    <string name="start_option_known">%1$s (usual start): %2$s</string>
+    <string name="start_option_named">%1$s: %2$s</string>
+    <string name="export_gpx">GPX</string>
+    <string name="export_failed">Couldn\'t write the GPX file.</string>
+
+    <string name="point_title">This point</string>
+    <string name="plan_start_here">Start here</string>
+    <string name="plan_stop_here">Add stop</string>
+    <string name="plan_end_here">End here</string>
+    <string name="plan_title">Planned route</string>
+    <string name="plan_need_start">Long-press the map where you want to start, or use your location.</string>
+    <string name="plan_need_end">Long-press the map where you want to finish.</string>
+    <string name="plan_working">Finding the best way…</string>
+    <string name="plan_too_far_start">The start is more than 500 m from any path or road. Move it closer to one.</string>
+    <string name="plan_too_far_end">The end is more than 500 m from any path or road. Move it closer to one.</string>
+    <string name="plan_too_far_stop">Stop %1$d is more than 500 m from any path or road. Move it closer to one.</string>
+    <string name="plan_no_route">There\'s no way through on the mapped paths between these points. Try other points.</string>
+    <string name="plan_failed">The route planner couldn\'t start (%1$s).</string>
+    <string name="plan_summary">%1$s · about %2$s on the flat</string>
+    <string name="plan_climb_note">Climbing adds time. Heights come with the offline map.</string>
+    <string name="plan_mostly">Mostly on %1$s</string>
+    <string name="plan_roads">%1$s on roads</string>
+    <string name="plan_difficult">%1$s on difficult paths, used only where there was no reasonable way round.</string>
+    <string name="plan_official">Official trails: %1$s</string>
+    <string name="plan_official_warning">%1$s is %2$s on the official page. Check before you go.</string>
+    <string name="plan_official_booking">Official trails need a booking on SIMplifica.</string>
+    <string name="plan_from_location">From my location</string>
+    <string name="plan_reverse">Reverse</string>
+    <string name="plan_clear">Clear</string>
+    <string name="plan_save">Save</string>
+    <string name="plan_saved">Saved to Mine. You\'ll find it in Explore.</string>
+    <string name="plan_route_name">My route via %1$s</string>
+    <string name="plan_route_name_plain">My route of %1$s</string>
+    <string name="plan_remove_stop">Remove stop %1$d</string>
+    <string name="plan_no_location">No position yet. Wait for the blue dot, or long-press the map.</string>
+    <string name="plan_route_here">Plan a route here</string>
+    <string name="community_route_warning">Planned on OpenStreetMap paths. Nobody has checked this route, so judge the conditions yourself.</string>
+
+    <string name="duration_minutes">%1$d min</string>
+    <string name="duration_hours">%1$d h</string>
+    <string name="duration_hours_minutes">%1$d h %2$d min</string>
+    <plurals name="plan_tunnels">
+        <item quantity="one">%1$d tunnel: bring a torch.</item>
+        <item quantity="other">%1$d tunnels: bring a torch.</item>
+    </plurals>
 </resources>

@@ -1,6 +1,8 @@
 package pt.vereda.app.ui.map
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import pt.vereda.app.R
 import pt.vereda.app.ui.components.formatLength
@@ -11,8 +13,8 @@ import pt.vereda.core.catalog.TrailPosition
 
 /** "Start: 2.4 km walk from the ER 228, via Caminho Real da Encumeada · parking" and friends. */
 @Composable
-fun startText(entry: TrailEntry): String? {
-    val access = entry.startAccess ?: return null
+fun startText(access: RoadAccess?): String? {
+    access ?: return null
     val text = when {
         access.approachM == null -> stringResource(R.string.start_no_road)
         access.onRoad -> access.road?.let { stringResource(R.string.start_on_named_road, it) }
@@ -34,6 +36,20 @@ fun endText(entry: TrailEntry): String? {
     }
 }
 
+/** One way in, for the list of start options: "Boca da Corrida (usual start): 3.5 km walk …". */
+@Composable
+fun optionText(access: RoadAccess): String {
+    val body = when {
+        access.approachM == null -> stringResource(R.string.start_no_road)
+        access.onRoad -> access.road?.let { stringResource(R.string.start_on_named_road, it) }
+            ?: stringResource(R.string.place_by_road)
+        else -> walkText(access, R.string.place_walk_from_named_road, R.string.place_walk_from_road)
+    }
+    val text = withParking(body, access)
+    val name = access.name ?: return text
+    return stringResource(if (access.known) R.string.start_option_known else R.string.start_option_named, name, text)
+}
+
 /** For a peak or another place: "1.2 km walk from the road, via Vereda da Ilha". */
 @Composable
 fun placeAccessText(access: RoadAccess?): String? {
@@ -47,7 +63,7 @@ fun placeAccessText(access: RoadAccess?): String? {
 }
 
 @Composable
-private fun walkText(access: RoadAccess, namedRoad: Int, anyRoad: Int): String {
+private fun walkText(access: RoadAccess, @StringRes namedRoad: Int, @StringRes anyRoad: Int): String {
     val distance = formatLength(access.approachM).orEmpty()
     val base = access.road?.let { stringResource(namedRoad, distance, it) } ?: stringResource(anyRoad, distance)
     return if (access.via.isEmpty()) base else stringResource(R.string.access_via, base, access.via.joinToString(", "))
@@ -72,6 +88,17 @@ fun positionText(position: TrailPosition?): String? = when (position) {
         else stringResource(R.string.position_off_trail, toTrail)
     }
 }
+
+/** "45 min", "2 h 10 min". */
+@Composable
+fun durationText(minutes: Int): String = when {
+    minutes < 60 -> stringResource(R.string.duration_minutes, minutes.coerceAtLeast(1))
+    minutes % 60 == 0 -> stringResource(R.string.duration_hours, minutes / 60)
+    else -> stringResource(R.string.duration_hours_minutes, minutes / 60, minutes % 60)
+}
+
+@Composable
+fun tunnelsText(count: Int): String = pluralStringResource(R.plurals.plan_tunnels, count, count)
 
 /** The kind of place, as a word ("Viewpoint", "Miradouro"). */
 @Composable

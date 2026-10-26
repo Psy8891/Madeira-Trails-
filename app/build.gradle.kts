@@ -57,6 +57,7 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:geo"))
     implementation(project(":core:catalog"))
+    implementation(project(":core:route"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

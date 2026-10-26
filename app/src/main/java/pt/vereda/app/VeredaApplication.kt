@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.maplibre.android.MapLibre
+import pt.vereda.app.data.RoutePlanner
 import pt.vereda.app.data.TrailRepository
 import pt.vereda.app.location.LocationTracker
 
@@ -14,6 +15,10 @@ class VeredaApplication : Application() {
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     lateinit var repository: TrailRepository
+        private set
+
+    /** The route being planned on the map (Phase 0.7). */
+    lateinit var planner: RoutePlanner
         private set
 
     /** The phone's position; started and stopped by the map screen. */
@@ -26,5 +31,6 @@ class VeredaApplication : Application() {
         MapLibre.getInstance(this)
         repository = TrailRepository(this, appScope).also { it.start() }
         location = LocationTracker(this)
+        planner = RoutePlanner(this, appScope)
     }
 }

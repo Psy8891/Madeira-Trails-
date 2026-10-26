@@ -35,6 +35,7 @@ object CatalogParser {
                 osmIds = entry?.osm.orEmpty(),
                 area = entry?.area,
                 ends = entry?.ends?.let(::ends).orEmpty(),
+                startOptions = entry?.starts?.map(::access).orEmpty(),
             )
         }
         val officialIds = official.mapTo(HashSet()) { it.id }
@@ -63,6 +64,7 @@ object CatalogParser {
                     notePt = t.notePt,
                     area = t.area,
                     ends = ends(t.ends),
+                    startOptions = t.starts.map(::access),
                 )
             }
             .filter { it.hasLine }
@@ -71,7 +73,7 @@ object CatalogParser {
             val kind = PlaceKind.of(p.kind) ?: return@mapNotNull null // a kind from a newer catalog
             val name = p.name?.trim()?.takeIf { it.isNotEmpty() }
             if (kind == PlaceKind.PEAK && name == null) return@mapNotNull null
-            Place(name, kind, GeoPoint(p.lat, p.lon), p.ele, p.aliases, p.access?.let(::access))
+            Place(name, kind, GeoPoint(p.lat, p.lon), p.ele, p.aliases, p.access?.let(::access), p.starts.map(::access))
         }
 
         return Catalog(
@@ -92,6 +94,8 @@ object CatalogParser {
         via = a.via,
         line = a.line?.let { runCatching { Polyline.decode(it) }.getOrNull() }.orEmpty(),
         parking = a.parking?.toPoint(),
+        name = a.name,
+        known = a.known,
     )
 
     private fun List<Double>.toPoint(): GeoPoint? = if (size >= 2) GeoPoint(this[0], this[1]) else null
@@ -130,6 +134,7 @@ internal data class CatalogTrailJson(
     val notePt: String? = null,
     val area: String? = null,
     val ends: List<CatalogEndJson> = emptyList(),
+    val starts: List<CatalogPlaceAccessJson> = emptyList(),
 )
 
 /** Road access as the catalog writes it, for a trail end or a place. */
@@ -140,6 +145,8 @@ internal interface AccessJson {
     val via: List<String>
     val line: String?
     val parking: List<Double>?
+    val name: String? get() = null
+    val known: Boolean get() = false
 }
 
 @Serializable
@@ -162,6 +169,8 @@ internal data class CatalogPlaceAccessJson(
     override val via: List<String> = emptyList(),
     override val line: String? = null,
     override val parking: List<Double>? = null,
+    override val name: String? = null,
+    override val known: Boolean = false,
 ) : AccessJson
 
 @Serializable
@@ -173,4 +182,5 @@ internal data class CatalogPlaceJson(
     val ele: Int? = null,
     val aliases: List<String> = emptyList(),
     val access: CatalogPlaceAccessJson? = null,
+    val starts: List<CatalogPlaceAccessJson> = emptyList(),
 )

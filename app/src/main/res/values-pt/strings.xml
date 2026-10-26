@@ -17,7 +17,7 @@
     <string name="filter_all">Todos</string>
     <string name="filter_official">Oficiais</string>
     <string name="filter_community">Comunidade</string>
-    <string name="filter_imports">Importados</string>
+    <string name="filter_imports">Os meus</string>
 
     <string name="source_community">Comunidade</string>
     <string name="source_import">Importado</string>
@@ -95,7 +95,7 @@
     <string name="place_by_road">junto à estrada</string>
     <string name="place_walk_from_road">%1$s a pé desde a estrada mais próxima</string>
     <string name="place_walk_from_named_road">%1$s a pé desde a %2$s</string>
-    <string name="access_via">%1$s, pela %2$s</string>
+    <string name="access_via">%1$s, por %2$s</string>
     <string name="access_with_parking">%1$s · tem estacionamento</string>
     <string name="trails_here">Percursos aqui</string>
     <string name="directions">Direções</string>
@@ -110,4 +110,51 @@
     <string name="position_off_trail">Estás a %1$s do percurso</string>
     <string name="position_off_trail_start">Estás a %1$s do percurso · o início fica a %2$s em linha reta</string>
     <string name="position_from_place">Estás a %1$s em linha reta</string>
+
+    <string name="start_options">Acessos</string>
+    <string name="start_option_known">%1$s (início habitual): %2$s</string>
+    <string name="start_option_named">%1$s: %2$s</string>
+    <string name="export_gpx">GPX</string>
+    <string name="export_failed">Não foi possível criar o ficheiro GPX.</string>
+
+    <string name="point_title">Este ponto</string>
+    <string name="plan_start_here">Começar aqui</string>
+    <string name="plan_stop_here">Adicionar paragem</string>
+    <string name="plan_end_here">Terminar aqui</string>
+    <string name="plan_title">Rota planeada</string>
+    <string name="plan_need_start">Carrega sem soltar no mapa onde queres começar, ou usa a tua localização.</string>
+    <string name="plan_need_end">Carrega sem soltar no mapa onde queres terminar.</string>
+    <string name="plan_working">A procurar o melhor caminho…</string>
+    <string name="plan_too_far_start">O início está a mais de 500 m de qualquer caminho ou estrada. Aproxima-o de um.</string>
+    <string name="plan_too_far_end">O fim está a mais de 500 m de qualquer caminho ou estrada. Aproxima-o de um.</string>
+    <string name="plan_too_far_stop">A paragem %1$d está a mais de 500 m de qualquer caminho ou estrada. Aproxima-a de um.</string>
+    <string name="plan_no_route">Não há ligação pelos caminhos mapeados entre estes pontos. Experimenta outros pontos.</string>
+    <string name="plan_failed">Não foi possível iniciar o planeador de rotas (%1$s).</string>
+    <string name="plan_summary">%1$s · cerca de %2$s em plano</string>
+    <string name="plan_climb_note">As subidas acrescentam tempo. As altitudes chegam com o mapa offline.</string>
+    <string name="plan_mostly">Sobretudo em: %1$s</string>
+    <string name="plan_roads">%1$s por estrada</string>
+    <string name="plan_difficult">%1$s por caminhos difíceis, só onde não havia alternativa razoável.</string>
+    <string name="plan_official">Percursos oficiais: %1$s</string>
+    <string name="plan_official_warning">O %1$s está %2$s na página oficial. Confirma antes de ir.</string>
+    <string name="plan_official_booking">Os percursos oficiais precisam de reserva no SIMplifica.</string>
+    <string name="plan_from_location">Da minha localização</string>
+    <string name="plan_reverse">Inverter</string>
+    <string name="plan_clear">Limpar</string>
+    <string name="plan_save">Guardar</string>
+    <string name="plan_saved">Guardada em Os meus. Encontras em Explorar.</string>
+    <string name="plan_route_name">A minha rota: %1$s</string>
+    <string name="plan_route_name_plain">A minha rota de %1$s</string>
+    <string name="plan_remove_stop">Remover paragem %1$d</string>
+    <string name="plan_no_location">Ainda sem posição. Espera pelo ponto azul, ou carrega sem soltar no mapa.</string>
+    <string name="plan_route_here">Planear rota até aqui</string>
+    <string name="community_route_warning">Planeada nos caminhos do OpenStreetMap. Ninguém verificou esta rota, por isso avalia tu as condições.</string>
+
+    <string name="duration_minutes">%1$d min</string>
+    <string name="duration_hours">%1$d h</string>
+    <string name="duration_hours_minutes">%1$d h %2$d min</string>
+    <plurals name="plan_tunnels">
+        <item quantity="one">%1$d túnel: leva lanterna.</item>
+        <item quantity="other">%1$d túneis: leva lanterna.</item>
+    </plurals>
 </resources>

@@ -19,6 +19,8 @@ import pt.vereda.core.catalog.GpxImport
 import pt.vereda.core.catalog.StatusParser
 import pt.vereda.core.catalog.StatusSnapshot
 import pt.vereda.core.catalog.TrailEntry
+import pt.vereda.core.catalog.TrailGpx
+import pt.vereda.core.geo.GeoPoint
 import pt.vereda.core.geo.GpxParseException
 import pt.vereda.core.geo.GpxParser
 import java.io.File
@@ -108,6 +110,28 @@ class TrailRepository(private val context: Context, private val scope: Coroutine
         val last = lastSuccess
         if (last == null || java.time.Duration.between(last, Instant.now()) > maxAge) refreshStatus()
     }
+
+    /** Saves a planned route like an import (GPX in app storage), so it can be shown and followed. */
+    suspend fun saveRoute(name: String, points: List<GeoPoint>): TrailEntry? = withContext(Dispatchers.IO) {
+        val text = TrailGpx.write(name, listOf(points), description = null)
+        val id = GpxImport.ID_PREFIX + UUID.randomUUID().toString()
+        val entry = GpxImport.toEntry(id, GpxParser.parse(text), name) ?: return@withContext null
+        importsDir.mkdirs()
+        File(importsDir, "$id.gpx").writeText(text)
+        File(importsDir, "$id.name").writeText(name)
+        _imports.update { listOf(entry) + it }
+        entry
+    }
+
+    /** Writes a GPX file to share (app cache, offered through the FileProvider). */
+    suspend fun exportGpx(name: String, lines: List<List<GeoPoint>>, withOsmAttribution: Boolean): File =
+        withContext(Dispatchers.IO) {
+            val dir = File(context.cacheDir, "exports").apply { mkdirs() }
+            dir.listFiles()?.forEach { it.delete() } // only the latest export is kept
+            File(dir, TrailGpx.fileName(name)).apply {
+                writeText(TrailGpx.write(name, lines, if (withOsmAttribution) TrailGpx.OSM_ATTRIBUTION else null))
+            }
+        }
 
     /** Copies the picked file into app storage and adds it to "My imports". */
     suspend fun importGpx(uri: Uri): ImportResult = withContext(Dispatchers.IO) {

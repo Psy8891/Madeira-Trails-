@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only GPX exports in the app cache are shared (spec: GPX export, Phase 0.7). -->
+<paths>
+    <cache-path name="exports" path="exports/" />
+</paths>

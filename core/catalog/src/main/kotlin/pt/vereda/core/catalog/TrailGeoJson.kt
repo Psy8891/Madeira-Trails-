@@ -103,9 +103,16 @@ object TrailGeoJson {
 
     /**
      * Start and end markers and the walk from the road for a picked trail or place.
-     * Properties: role = start | end | approach | road | parking | place.
+     * Properties: role = start | end | approach | road | road-other | parking | place.
+     * [otherRoads] are the road points of the other start options, drawn lighter.
      */
-    fun markers(start: GeoPoint?, end: GeoPoint?, access: RoadAccess?, place: GeoPoint? = null): String = buildString {
+    fun markers(
+        start: GeoPoint?,
+        end: GeoPoint?,
+        access: RoadAccess?,
+        place: GeoPoint? = null,
+        otherRoads: List<GeoPoint> = emptyList(),
+    ): String = buildString {
         append("{\"type\":\"FeatureCollection\",\"features\":[")
         var first = true
         fun feature(role: String, geometry: StringBuilder.() -> Unit) {
@@ -130,11 +137,44 @@ object TrailGeoJson {
                 append("]}")
             }
         }
+        otherRoads.forEach { pointFeature("road-other", it) }
         if (access != null && access.needsWalk) access.roadPoint?.let { pointFeature("road", it) }
         access?.parking?.let { pointFeature("parking", it) }
         end?.let { pointFeature("end", it) }
         start?.let { pointFeature("start", it) }
         place?.let { pointFeature("place", it) }
+        append("]}")
+    }
+
+    /** One line, e.g. a planned route. */
+    fun line(points: List<GeoPoint>): String = buildString {
+        append("{\"type\":\"FeatureCollection\",\"features\":[")
+        if (points.size >= 2) {
+            append("{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[")
+            points.forEachIndexed { i, p ->
+                if (i > 0) append(',')
+                appendPosition(p)
+            }
+            append("]}}")
+        }
+        append("]}")
+    }
+
+    /** The points of a route being planned. Properties: role = start | stop | end, label ("1", "2" for stops). */
+    fun planPoints(start: GeoPoint?, stops: List<GeoPoint>, end: GeoPoint?): String = buildString {
+        append("{\"type\":\"FeatureCollection\",\"features\":[")
+        val features = buildList {
+            stops.forEachIndexed { i, p -> add(Triple("stop", (i + 1).toString(), p)) }
+            end?.let { add(Triple("end", "", it)) }
+            start?.let { add(Triple("start", "", it)) }
+        }
+        features.forEachIndexed { i, (role, label, p) ->
+            if (i > 0) append(',')
+            append("{\"type\":\"Feature\",\"properties\":{\"role\":\"").append(role)
+            append("\",\"label\":\"").append(label).append("\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":")
+            appendPosition(p)
+            append("}}")
+        }
         append("]}")
     }
 
