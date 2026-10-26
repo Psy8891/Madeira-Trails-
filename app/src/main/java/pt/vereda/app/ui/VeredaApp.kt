@@ -92,7 +92,7 @@ fun VeredaApp() {
                 PlaceholderScreen(title = R.string.record_title, body = R.string.record_placeholder)
             }
             composable(Tab.ME.route) {
-                PlaceholderScreen(title = R.string.me_title, body = R.string.me_placeholder)
+                MeScreen()
             }
         }
     }

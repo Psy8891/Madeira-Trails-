@@ -60,6 +60,9 @@
     <string name="record_placeholder">A gravação GPS e a navegação chegam na Fase 3.</string>
     <string name="me_title">Eu</string>
     <string name="me_placeholder">O teu perfil e as listas Feitos, A fazer e Desejos chegam na Fase 2. Tudo fica guardado neste telemóvel.</string>
+    <string name="language_title">Idioma</string>
+    <string name="language_note">Muda só o Vereda, não o telemóvel.</string>
+    <string name="language_system">Do telemóvel</string>
 
     <string name="explore_places">Picos e locais</string>
     <string name="near_area">perto de %1$s</string>
