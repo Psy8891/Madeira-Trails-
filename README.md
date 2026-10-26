@@ -17,13 +17,25 @@ offline maps, and a local profile with Done / To-do / Wishlist lists. No account
 | `app/` | The Android app (Kotlin, Jetpack Compose, MapLibre) |
 | `core/model/` | Plain Kotlin models: trails, status, the official trail list, search |
 | `core/geo/` | Plain Kotlin geo logic: distances, track stats, off-route detection, UTM, GPX |
-| `.github/workflows/android-ci.yml` | CI: runs the unit tests and builds a debug APK on every push |
+| `core/catalog/` | Plain Kotlin: reads the trail catalog and live status, search over trails and peaks, GPX import, map GeoJSON |
+| `data/` | Python data jobs (with pytest tests): trail catalog from OpenStreetMap, official status from Visit Madeira |
+| `.github/workflows/android-ci.yml` | CI: runs the unit and data tests, builds a debug APK and publishes it on every push |
+| `.github/workflows/update-catalog.yml` | Weekly: rebuilds `app/src/main/assets/catalog.json` and `data/catalog-report.md` |
+| `.github/workflows/update-status.yml` | Every 30 min: publishes `status.json` on the `status` branch |
 
 ## Status
 
-Phase 1 skeleton. The app opens on a map of Madeira (a temporary online base map until the
-Phase 0 offline packages exist), lists the 42 official trails with accent-insensitive search,
-and has placeholder Record and Me tabs. The core logic for later phases already has unit tests.
+Phase 0.5 (see the spec). The app opens on a map of Madeira (a temporary online base map until
+the offline packages exist) with every trail drawn: official trails coloured by their live
+official status, community trails from OpenStreetMap dashed. Explore searches trails and peaks
+(accent-insensitive, partial names work), filters by source, and opens a trail on the map with a
+card showing its status age and the official page. **Import GPX** adds your own files (from a
+guide, Wikiloc or a friend); they stay on the phone. Record and Me are still placeholders.
+
+Live status: <https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json>
+(what the app reads), parsed rows in
+[`rows.txt`](https://github.com/Psy8891/Madeira-Trails-/blob/status/rows.txt).
+Trail coverage: [`data/catalog-report.md`](data/catalog-report.md).
 
 ## Install on your phone
 
