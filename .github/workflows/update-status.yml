@@ -8,7 +8,9 @@ name: Update trail status
 on:
   workflow_dispatch:
   schedule:
-    - cron: "7,37 * * * *"
+    # Best effort: GitHub may delay or drop scheduled runs under load. The app treats status
+    # older than 24 h as unknown, so a missed run never shows a wrong "open".
+    - cron: "11,41 * * * *"
 
 permissions:
   contents: write

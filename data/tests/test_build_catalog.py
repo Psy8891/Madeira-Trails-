@@ -182,3 +182,12 @@ def test_peaks_keep_other_osm_names_as_aliases():
     places = {p["name"]: p for p in catalog["places"]}
     assert places["Grande"]["aliases"] == ["Pico Grande"]
     assert "aliases" not in places["Ruivo"]
+
+
+def test_report_finds_peaks_named_without_pico():
+    data = overpass_sample()
+    for el in data["elements"]:
+        if el["type"] == "node" and el["tags"].get("name") == "Pico Grande":
+            el["tags"]["name"] = "Grande"
+    _, report = build(data)
+    assert "| Boca da Corrida – Pico Grande | yes | yes |" in report

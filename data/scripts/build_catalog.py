@@ -317,7 +317,12 @@ def report(catalog: dict, missing: list[str]) -> str:
     community = [t for t in trails if t["source"] == "community"]
     # Only community trails count: an official trail can share a name with a different walk.
     names = " | ".join(normalize(t["name"]) for t in community)
-    place_names = " | ".join(normalize(p["name"]) for p in catalog["places"])
+    # OSM names many peaks without "Pico" ("Grande"), so check "pico <name>" and other names too.
+    place_names = " | ".join(
+        normalize(name)
+        for p in catalog["places"]
+        for name in [p["name"], "Pico " + p["name"], *p.get("aliases", [])]
+    )
 
     lines = [
         "# Catalog report",
