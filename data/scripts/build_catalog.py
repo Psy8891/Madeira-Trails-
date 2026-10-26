@@ -314,6 +314,13 @@ def build(data: dict) -> tuple[dict, str]:
                 t["notePt"] = w.get("notePt", w["noteEn"])
                 break
 
+    # The same walk mapped twice: keep the official trail only.
+    duplicates = enrich.official_duplicates(
+        [(t["code"], t["_chains"]) for t in trails if t.get("_chains")],
+        [(t["id"], t["_chains"]) for t in community],
+    )
+    community = [t for t in community if t["id"] not in duplicates]
+
     community.sort(key=lambda t: normalize(t["name"]))
     trails.extend(community)
 
@@ -342,6 +349,7 @@ def build(data: dict) -> tuple[dict, str]:
         "trails": trails,
         "places": places,
     }
+    extra["duplicates"] = duplicates
     return catalog, report(catalog, missing, renamed, extra)
 
 
@@ -494,6 +502,10 @@ def report(catalog: dict, missing: list[str], renamed: list | None = None, extra
             "",
             ", ".join(official_far) if official_far else "None.",
         ]
+
+    if extra.get("duplicates"):
+        lines += ["", "## Community relations left out as copies of an official trail", ""]
+        lines += [f"- {trail_id} → {code}" for trail_id, code in sorted(extra["duplicates"].items())]
 
     odd = sorted({t["name"] for t in community if enrich.looks_odd(t["name"])})
     lines += ["", "## Community names to check", ""]

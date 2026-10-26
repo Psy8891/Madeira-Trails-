@@ -187,3 +187,11 @@ def test_densify_fills_long_segments():
     points = enrich.densify([[(32.70, -17.00), (32.71, -17.00)]], step_m=100)
     assert len(points) >= 11
     assert all(haversine_m(a, b) <= 101 for a, b in zip(points, points[1:]))
+
+
+def test_community_copies_of_an_official_trail_are_found():
+    official = [("PR 28", [[(32.70, -17.00), (32.70, -16.98)]])]
+    copy = [(32.7001, -16.999), (32.7001, -16.982)]
+    branch = [(32.70, -16.99), (32.72, -16.99)]  # shares one point, then leaves
+    found = enrich.official_duplicates(official, [("osm-r1", [copy]), ("osm-r2", [branch])])
+    assert found == {"osm-r1": "PR 28"}

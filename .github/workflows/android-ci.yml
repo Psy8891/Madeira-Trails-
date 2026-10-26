@@ -49,6 +49,11 @@ jobs:
               skips = int(suite.get("skipped", 0))
               total, failed, skipped = total + tests, failed + fails, skipped + skips
               rows.append(f"| {suite.get('name')} | {tests} | {fails} | {skips} |")
+              # One annotation per failing test, so the reason shows without opening the logs.
+              for case in suite.iter("testcase"):
+                  for problem in list(case.findall("failure")) + list(case.findall("error")):
+                      message = (problem.get("message") or problem.text or "").replace("\n", " ")[:400]
+                      print(f"::error title=Test failed::{case.get('classname')} > {case.get('name')}: {message}")
 
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as out:
               out.write("## Unit tests\n\n| Suite | Tests | Failed | Skipped |\n| --- | --- | --- | --- |\n")

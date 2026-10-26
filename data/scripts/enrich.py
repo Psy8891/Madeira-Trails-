@@ -342,6 +342,37 @@ def select_pois(pois: list[dict], trail_points: list[Point], end_points: list[Po
     return kept
 
 
+DUPLICATE_SHARE = 0.8
+DUPLICATE_M = 30
+
+
+def official_duplicates(official: list[tuple[str, list[list[Point]]]], community: list[tuple[str, list[list[Point]]]]):
+    """Community trails that mostly run on an official trail's line: {community id: official code}.
+
+    OSM sometimes has a second, unofficial relation for the same walk ("Levada da Rocha Vermelha A"
+    on PR 28); listing both would show the trail twice, once without its status.
+    """
+    grid = Grid()
+    for code, lines in official:
+        for p in densify(lines, 25):
+            grid.add(p, code)
+    found: dict[str, str] = {}
+    for trail_id, lines in community:
+        points = densify(lines, 25)
+        if not points:
+            continue
+        hits = Counter()
+        for p in points:
+            near = grid.nearest(p, DUPLICATE_M)
+            if near:
+                hits[near[2]] += 1
+        if hits:
+            code, count = hits.most_common(1)[0]
+            if count >= DUPLICATE_SHARE * len(points):
+                found[trail_id] = code
+    return found
+
+
 def densify(lines: list[list[Point]], step_m: float = 100) -> list[Point]:
     """Points along lines at most step_m apart, for 'near a trail' checks."""
     points: list[Point] = []

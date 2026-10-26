@@ -1,13 +1,13 @@
 # Catalog report
 
-Generated 2026-10-26T20:28:31Z from OpenStreetMap.
+Generated 2026-10-26T20:38:16Z from OpenStreetMap.
 
 - Official trails with a line: **42 of 42**
 - Missing official lines: none
-- Community trails: **385**
+- Community trails: **383**
 - Named peaks: **163**
 - Other points of interest: **4340** (bus_stop 1043, camp 33, cave 38, parking 1127, picnic 154, shelter 116, spring 48, toilets 171, trailhead 57, tunnel 330, viewpoint 560, water 431, waterfall 232)
-- Trail starts: on a road 322, walk to a road 103, no road within 5 km 2
+- Trail starts: on a road 320, walk to a road 103, no road within 5 km 2
 
 ## Popular unofficial trails (data/wanted.json)
 
@@ -28,6 +28,11 @@ Generated 2026-10-26T20:28:31Z from OpenStreetMap.
 ## Official trails whose nearest end is off the road
 
 PR 1 (76 m), PR 3 (28 m), PR 6.3 (357 m), PR 7 (11 m), PR 9 (13 m), PS PR 2 (721 m)
+
+## Community relations left out as copies of an official trail
+
+- osm-r5626092 → PR 28
+- osm-r5742678 → PR 28
 
 ## Community names to check
 
