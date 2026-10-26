@@ -34,8 +34,9 @@ Requirements: JDK 21 (or 17+) and the Android SDK with platform 36. Android Stud
 ./gradlew :app:assembleDebug # debug APK in app/build/outputs/apk/debug/
 ```
 
-Every push to `main` and every pull request runs the same commands on GitHub Actions. The debug
-APK and the test reports are attached to each run as downloadable artifacts.
+Every push to `main` and every pull request runs the same commands on GitHub Actions. Each run
+shows a test summary table on its page (and fails if no tests ran), and attaches the debug APK and
+the test reports as downloadable artifacts.
 
 ## Data and licences
 
