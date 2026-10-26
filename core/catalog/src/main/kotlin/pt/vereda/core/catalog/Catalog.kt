@@ -90,6 +90,17 @@ data class TrailEntry(
 
     internal val mainLine: List<GeoPoint>? = lines.filter { it.size >= 2 }.maxByOrNull { Geo.lengthM(it) }
 
+    /**
+     * The main line in walking order: reversed when the catalog's start is at its far end (within
+     * 100 m), for the height graph and Directions.
+     */
+    val walkLine: List<GeoPoint>? by lazy {
+        val line = mainLine ?: return@lazy null
+        val start = ends.firstOrNull()?.point ?: return@lazy line
+        val toLast = Geo.distanceM(start, line.last())
+        if (toLast < Geo.distanceM(start, line.first()) && toLast < FLIP_M) line.reversed() else line
+    }
+
     /** Where the walk starts: the catalog's start, or the first point of the main line. */
     val startPoint: GeoPoint? get() = ends.firstOrNull()?.point ?: mainLine?.first()
 
@@ -110,6 +121,7 @@ data class TrailEntry(
 
     companion object {
         const val LOOP_M = 60.0
+        private const val FLIP_M = 100.0
     }
 }
 

@@ -25,6 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import pt.vereda.app.R
 import pt.vereda.app.data.Language
+import pt.vereda.app.ui.maps.OfflineMapCard
+import pt.vereda.app.ui.maps.rememberOfflineMapState
 import pt.vereda.core.model.AppLanguage
 
 /** Me tab: lists arrive in Phase 2; the language switch is here now (spec: Phase 0.9). */
@@ -45,6 +47,9 @@ fun MeScreen(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        Spacer(Modifier.height(8.dp))
+        val app = context.applicationContext as pt.vereda.app.VeredaApplication
+        OfflineMapCard(rememberOfflineMapState(), onWifiOnly = app.settings::setWifiOnly)
         Spacer(Modifier.height(8.dp))
         Text(stringResource(R.string.language_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         val options = listOf(

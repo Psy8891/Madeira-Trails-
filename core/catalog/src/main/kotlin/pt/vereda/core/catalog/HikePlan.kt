@@ -24,16 +24,14 @@ object HikePlans {
     /** Closer than this to the start, the walk starts from the phone. */
     const val FROM_HERE_M = 1000.0
     private const val SAME_POINT_M = 30.0
-    private const val FLIP_M = 100.0
     private val FRACTIONS = listOf(0.25, 0.5, 0.75)
 
     /** The approach from the chosen start plus the whole trail; null when the trail has no line. */
     fun forTrail(entry: TrailEntry, chosen: RoadAccess?, here: GeoPoint?): HikePlan? {
-        val line = entry.mainLine ?: return null
+        val oriented = entry.walkLine ?: return null
         val trailStart = entry.startPoint ?: return null
         val walkStart = chosen?.takeIf { it.needsWalk }?.roadPoint ?: trailStart
         val start = fromHereOr(walkStart, here)
-        val oriented = if (closerToLast(line, trailStart)) line.reversed() else line
         val via = buildList {
             if (Geo.distanceM(start, trailStart) > SAME_POINT_M) add(trailStart)
             FRACTIONS.forEach { add(pointAlong(oriented, it)) }
@@ -55,11 +53,6 @@ object HikePlans {
 
     private fun fromHereOr(start: GeoPoint, here: GeoPoint?): GeoPoint =
         if (here != null && Geo.distanceM(here, start) <= FROM_HERE_M) here else start
-
-    private fun closerToLast(line: List<GeoPoint>, start: GeoPoint): Boolean {
-        val toLast = Geo.distanceM(start, line.last())
-        return toLast < Geo.distanceM(start, line.first()) && toLast < FLIP_M
-    }
 
     /** The point [fraction] of the way along [line]. */
     fun pointAlong(line: List<GeoPoint>, fraction: Double): GeoPoint {

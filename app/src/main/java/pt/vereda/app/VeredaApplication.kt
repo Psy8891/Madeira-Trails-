@@ -5,8 +5,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.maplibre.android.MapLibre
+import pt.vereda.app.data.MapPackages
 import pt.vereda.app.data.RoutePlanner
 import pt.vereda.app.data.Settings
+import pt.vereda.app.data.Terrain
 import pt.vereda.app.data.TrailRepository
 import pt.vereda.app.location.LocationTracker
 
@@ -26,6 +28,14 @@ class VeredaApplication : Application() {
     lateinit var location: LocationTracker
         private set
 
+    /** The offline map package (Phase 1). */
+    lateinit var maps: MapPackages
+        private set
+
+    /** Heights for climb and the height graph (bundled elevation grid). */
+    lateinit var terrain: Terrain
+        private set
+
     /** Small choices kept on the phone (where Directions opens). */
     lateinit var settings: Settings
         private set
@@ -38,5 +48,7 @@ class VeredaApplication : Application() {
         location = LocationTracker(this)
         planner = RoutePlanner(this, appScope)
         settings = Settings(this)
+        terrain = Terrain(this, appScope)
+        maps = MapPackages(this, appScope, settings).also { it.start() }
     }
 }

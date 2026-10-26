@@ -20,6 +20,14 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import pt.vereda.core.catalog.DirectionsTarget
 import pt.vereda.core.catalog.HikePlans
+import pt.vereda.core.maps.TopoStyle
+import pt.vereda.core.geo.ScaleBar
+import pt.vereda.core.geo.ElevationGrid
+import pt.vereda.core.geo.ElevationProfiles
+import pt.vereda.core.geo.Utm
+import pt.vereda.app.ui.components.HeightSummary
+import pt.vereda.app.ui.maps.rememberOfflineMapState
+import kotlin.math.roundToInt
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -146,6 +154,7 @@ fun MapScreen(
     val planPoints by planner.points.collectAsStateWithLifecycle()
     val planResult by planner.result.collectAsStateWithLifecycle()
     val directionsTarget by app.settings.directions.collectAsStateWithLifecycle()
+    val elevation by app.terrain.grid.collectAsStateWithLifecycle()
     val screenUriHandler = LocalUriHandler.current
 
     var loaded by remember { mutableStateOf<LoadedMap?>(null) }
@@ -175,9 +184,16 @@ fun MapScreen(
         pickRole = null
     })
 
+    var mapRef by remember { mutableStateOf<MapLibreMap?>(null) }
+    var camera by remember { mutableStateOf(MADEIRA_CENTRE.latitude to START_ZOOM) }
     val mapView = rememberMapViewWithLifecycle(
-        onReady = { map, style ->
-            MapLayers.install(context, style)
+        onReady = { map ->
+            fun track() {
+                val position = map.cameraPosition
+                position.target?.let { camera = it.latitude to position.zoom }
+            }
+            map.addOnCameraMoveListener { track() }
+            map.addOnCameraIdleListener { track() }
             map.addOnMapLongClickListener { point ->
                 currentOnLongPress(GeoPoint(point.latitude, point.longitude))
                 true
@@ -207,9 +223,36 @@ fun MapScreen(
                 true
             }
             map.uiSettings.isCompassEnabled = true
-            loaded = LoadedMap(map, style)
+            mapRef = map
         },
     )
+
+    // The base map: the offline Vereda Topo style once the package is on the phone, otherwise the
+    // online map (spec: Phase 1). Switching style re-adds Vereda's layers and data.
+    val installedMaps by app.maps.installed.collectAsStateWithLifecycle()
+    val mapPaths = remember(installedMaps) { app.maps.installedPaths(installedMaps) }
+    val offline = mapPaths != null
+    LaunchedEffect(mapRef, mapPaths) {
+        val map = mapRef ?: return@LaunchedEffect
+        loaded = null
+        val (builder, fonts) = if (mapPaths != null) {
+            val json = withContext(Dispatchers.IO) {
+                TopoStyle.json(mapPaths.getValue("base"), mapPaths.getValue("contours"), mapPaths.getValue("dem"))
+            }
+            Style.Builder().fromJson(json) to MapLayers.Fonts(TopoStyle.FONT_REGULAR, TopoStyle.FONT_BOLD)
+        } else {
+            Style.Builder().fromUri(DEV_STYLE_URL) to MapLayers.Fonts.ONLINE
+        }
+        map.setStyle(builder) { style ->
+            MapLayers.install(context, style, fonts)
+            loaded = LoadedMap(map, style)
+        }
+    }
+    val layerSettings by app.settings.layers.collectAsStateWithLifecycle()
+    LaunchedEffect(loaded, layerSettings) {
+        val target = loaded ?: return@LaunchedEffect
+        MapLayers.applyTerrain(target.style, layerSettings.hillshade, layerSettings.hillshadeStrength, layerSettings.contours)
+    }
 
     // GPS only while the map is on screen; never in the background (spec: Permissions).
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -268,19 +311,20 @@ fun MapScreen(
     }
 
     // All trail lines, coloured by source and (for official trails) fresh status only.
-    LaunchedEffect(loaded, entries, snapshot) {
+    LaunchedEffect(loaded, entries, snapshot, layerSettings.communityTrails) {
         val target = loaded ?: return@LaunchedEffect
         val now = TrailRepository.now()
+        val shown = if (layerSettings.communityTrails) entries else entries.filter { it.trail.source != TrailSource.COMMUNITY }
         val json = withContext(Dispatchers.Default) {
-            TrailGeoJson.lines(entries) { LineStyle.of(it, snapshot.stateOf(it.id, now)) }
+            TrailGeoJson.lines(shown) { LineStyle.of(it, snapshot.stateOf(it.id, now)) }
         }
         MapLayers.setGeoJson(target.style, MapLayers.TRAILS_SOURCE, json)
     }
 
     // Peaks and other points of interest.
-    LaunchedEffect(loaded, places) {
+    LaunchedEffect(loaded, places, layerSettings.places) {
         val target = loaded ?: return@LaunchedEffect
-        val json = withContext(Dispatchers.Default) { TrailGeoJson.places(places) }
+        val json = if (!layerSettings.places) MapLayers.EMPTY else withContext(Dispatchers.Default) { TrailGeoJson.places(places) }
         MapLayers.setGeoJson(target.style, MapLayers.PLACES_SOURCE, json)
     }
 
@@ -367,8 +411,21 @@ fun MapScreen(
         )
     }
 
+    val offlineState = rememberOfflineMapState()
+    var showLayers by remember { mutableStateOf(false) }
     Box(modifier.fillMaxSize()) {
         AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
+        Column(
+            modifier = Modifier.align(Alignment.TopEnd).padding(top = 72.dp, end = 12.dp),
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            LayersButton(onClick = { showLayers = !showLayers })
+        }
+        ScaleBarView(
+            bar = remember(camera) { ScaleBar.pick(camera.second, camera.first, 96f) },
+            modifier = Modifier.align(Alignment.TopStart).padding(top = 76.dp, start = 14.dp),
+        )
         Surface(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -379,12 +436,7 @@ fun MapScreen(
         ) {
             val role = pickRole
             if (role == null) {
-                Text(
-                    text = stringResource(R.string.map_dev_banner),
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                MapBanner(offline = offline, state = offlineState)
             } else {
                 Row(
                     modifier = Modifier.padding(start = 12.dp, end = 4.dp),
@@ -412,7 +464,7 @@ fun MapScreen(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            val nothingOpen = pressed == null && selection == null && !planning && planPoints.isEmpty
+            val nothingOpen = pressed == null && selection == null && !planning && planPoints.isEmpty && !showLayers
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             if (nothingOpen) PlanButton(onClick = { planning = true })
             LocateButton(
@@ -443,8 +495,16 @@ fun MapScreen(
             }
             val pressedPoint = pressed
             when {
+                showLayers -> LayersCard(
+                    settings = layerSettings,
+                    offline = offline,
+                    onChange = app.settings::setLayers,
+                    onClose = { showLayers = false },
+                    modifier = cardModifier,
+                )
                 pressedPoint != null -> PointCard(
                     point = pressedPoint,
+                    heightM = elevation?.heightAt(pressedPoint),
                     hasStart = planPoints.start != null,
                     onStart = {
                         planner.setStart(pressedPoint)
@@ -467,6 +527,7 @@ fun MapScreen(
                 )
                 selectedEntry != null -> TrailPeekCard(
                     entry = selectedEntry,
+                    elevation = elevation,
                     snapshot = snapshot,
                     here = here,
                     startChoice = startChoice,
@@ -537,6 +598,7 @@ fun MapScreen(
                 )
                 planning || !planPoints.isEmpty -> PlannerCard(
                     points = planPoints,
+                    elevation = elevation,
                     result = planResult,
                     snapshot = snapshot,
                     here = here,
@@ -649,6 +711,7 @@ private fun PlanButton(onClick: () -> Unit) {
 @Composable
 private fun TrailPeekCard(
     entry: TrailEntry,
+    elevation: ElevationGrid?,
     snapshot: StatusSnapshot,
     here: GeoPoint?,
     startChoice: Int,
@@ -674,10 +737,16 @@ private fun TrailPeekCard(
         TrailBadges(trail, state)
         Text(trail.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         val place = trail.fromTo ?: trail.area?.let { stringResource(R.string.near_area, it) }
-        val details = listOfNotNull(place, formatLength(entry.lengthM))
+        val profile = remember(entry, elevation) { elevation?.let { g -> entry.walkLine?.let { ElevationProfiles.of(it, g) } } }
+        val details = listOfNotNull(
+            place,
+            formatLength(entry.lengthM),
+            profile?.let { stringResource(R.string.hike_time, durationText(it.minutes)) },
+        )
         if (details.isNotEmpty()) {
             Text(details.joinToString(" · "), style = MaterialTheme.typography.bodyMedium)
         }
+        profile?.let { HeightSummary(it) }
         positionText(position)?.let {
             Text(it, style = MaterialTheme.typography.bodyMedium, color = VeredaColors.LocationBlue, fontWeight = FontWeight.SemiBold)
         }
@@ -813,11 +882,7 @@ private fun PlacePeekCard(
                 }
             }
         }
-        Text(
-            text = String.format(java.util.Locale.ROOT, "%.5f, %.5f", place.point.lat, place.point.lon),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        CoordinatesText(place.point, null)
         if (onDirections != null) DirectionsToggle(directionsTarget, onDirectionsTarget)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             onDirections?.let { Button(onClick = it) { Text(stringResource(R.string.directions)) } }
@@ -831,6 +896,7 @@ private fun PlacePeekCard(
 @Composable
 private fun PointCard(
     point: GeoPoint,
+    heightM: Double?,
     hasStart: Boolean,
     onStart: () -> Unit,
     onStop: () -> Unit,
@@ -840,11 +906,7 @@ private fun PointCard(
 ) {
     PeekSurface(modifier) {
         Text(stringResource(R.string.point_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        Text(
-            text = String.format(java.util.Locale.ROOT, "%.5f, %.5f", point.lat, point.lon),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        CoordinatesText(point, heightM)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = onStart) { Text(stringResource(R.string.plan_start_here)) }
             if (hasStart) OutlinedButton(onClick = onStop) { Text(stringResource(R.string.plan_stop_here)) }
@@ -854,10 +916,30 @@ private fun PointCard(
     }
 }
 
+/** Decimal degrees, UTM 28N and the height at a point (spec: Phase 1, long-press coordinates). */
+@Composable
+private fun CoordinatesText(point: GeoPoint, heightM: Double?) {
+    val utm = remember(point) { Utm.fromLatLon(point.lat, point.lon).format() }
+    Text(
+        text = String.format(java.util.Locale.ROOT, "%.5f, %.5f", point.lat, point.lon),
+        style = MaterialTheme.typography.bodyMedium,
+        fontWeight = FontWeight.SemiBold,
+    )
+    Text(
+        text = listOfNotNull(
+            stringResource(R.string.coordinates_utm, utm),
+            heightM?.let { stringResource(R.string.coordinates_height, formatElevation(it.roundToInt())) },
+        ).joinToString(" · "),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
 /** The route being planned: what it is like, and what to do with it (spec: Phase 0.7). */
 @Composable
 private fun PlannerCard(
     points: PlanPoints,
+    elevation: ElevationGrid?,
     result: PlanResult,
     snapshot: StatusSnapshot,
     here: GeoPoint?,
@@ -904,15 +986,17 @@ private fun PlannerCard(
 
         if (route != null) {
             val summary = route.summary
+            val profile = remember(route, elevation) { elevation?.let { ElevationProfiles.of(route.points, it) } }
             Text(
-                text = stringResource(
-                    R.string.plan_summary,
-                    formatLength(summary.distanceM.toInt()) ?: "0 m",
-                    durationText(summary.flatMinutes),
-                ),
+                text = if (profile != null) {
+                    stringResource(R.string.plan_summary_climb, formatLength(summary.distanceM.toInt()) ?: "0 m", durationText(profile.minutes))
+                } else {
+                    stringResource(R.string.plan_summary, formatLength(summary.distanceM.toInt()) ?: "0 m", durationText(summary.flatMinutes))
+                },
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
+            profile?.let { HeightSummary(it) }
             positionText(position)?.let {
                 Text(it, style = MaterialTheme.typography.bodyMedium, color = VeredaColors.LocationBlue, fontWeight = FontWeight.SemiBold)
             }
@@ -949,7 +1033,9 @@ private fun PlannerCard(
                 )
             }
             if (summary.tunnels > 0) Text(tunnelsText(summary.tunnels), style = MaterialTheme.typography.bodySmall)
-            Text(stringResource(R.string.plan_climb_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (profile == null) {
+                Text(stringResource(R.string.plan_climb_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             Text(stringResource(R.string.community_route_warning), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
 
@@ -999,7 +1085,7 @@ private fun routeEntry(points: List<GeoPoint>) = TrailEntry(
 )
 
 @Composable
-private fun PeekSurface(modifier: Modifier, content: @Composable () -> Unit) {
+internal fun PeekSurface(modifier: Modifier, content: @Composable () -> Unit) {
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
@@ -1046,7 +1132,7 @@ private fun osmUrl(osmId: String?): String? {
 
 /** A MapView that follows the screen's lifecycle and is torn down when the tab leaves. */
 @Composable
-private fun rememberMapViewWithLifecycle(onReady: (MapLibreMap, Style) -> Unit): MapView {
+private fun rememberMapViewWithLifecycle(onReady: (MapLibreMap) -> Unit): MapView {
     val context = LocalContext.current
     val currentOnReady by rememberUpdatedState(onReady)
     val mapView = remember {
@@ -1057,7 +1143,7 @@ private fun rememberMapViewWithLifecycle(onReady: (MapLibreMap, Style) -> Unit):
                     .target(MADEIRA_CENTRE)
                     .zoom(START_ZOOM)
                     .build()
-                map.setStyle(Style.Builder().fromUri(DEV_STYLE_URL)) { style -> currentOnReady(map, style) }
+                currentOnReady(map)
             }
         }
     }

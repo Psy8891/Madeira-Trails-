@@ -100,7 +100,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -r data/requirements.txt
+        run: pip install -r data/requirements.txt -r data/requirements-maps.txt
 
       - name: Run tests
         run: python -m pytest data/tests -q

@@ -11,6 +11,7 @@ import org.maplibre.android.style.layers.SymbolLayer
 import org.maplibre.android.style.sources.GeoJsonSource
 import pt.vereda.core.catalog.LineStyle
 import pt.vereda.core.catalog.PlaceKind
+import pt.vereda.core.maps.TopoStyle
 
 /** Sources and layers Vereda adds on top of the base map (spec: Map style, Phase 0.6). */
 object MapLayers {
@@ -44,7 +45,14 @@ object MapLayers {
 
     const val EMPTY = """{"type":"FeatureCollection","features":[]}"""
 
-    fun install(context: Context, style: Style) {
+    /** Fonts for Vereda's own labels: the offline style ships its own (TopoStyle). */
+    data class Fonts(val regular: String, val bold: String) {
+        companion object {
+            val ONLINE = Fonts("Noto Sans Regular", "Noto Sans Bold")
+        }
+    }
+
+    fun install(context: Context, style: Style, fonts: Fonts = Fonts.ONLINE) {
         if (style.getSource(TRAILS_SOURCE) != null) return
         hideBasePeakLabels(style)
         PoiIcons.all(context).forEach { (name, bitmap) -> style.addImage(name, bitmap) }
@@ -105,7 +113,7 @@ object MapLayers {
                         PropertyFactory.symbolSortKey(Expression.get("rank")),
                         PropertyFactory.textField(label),
                         PropertyFactory.textSize(11.5f),
-                        PropertyFactory.textFont(arrayOf("Noto Sans Regular")),
+                        PropertyFactory.textFont(arrayOf(fonts.regular)),
                         PropertyFactory.textAnchor(Property.TEXT_ANCHOR_TOP),
                         PropertyFactory.textOffset(arrayOf(0f, 0.9f)),
                         PropertyFactory.textOptional(true),
@@ -190,11 +198,11 @@ object MapLayers {
                     ),
                 ),
         )
-        installRoute(style)
+        installRoute(style, fonts)
     }
 
     /** The planned route (Phase 0.7) and its start, stops and end, above everything else. */
-    private fun installRoute(style: Style) {
+    private fun installRoute(style: Style, fonts: Fonts) {
         style.addLayer(
             LineLayer(ROUTE_CASING, ROUTE_SOURCE).withProperties(
                 PropertyFactory.lineColor("#FFFFFF"),
@@ -224,13 +232,23 @@ object MapLayers {
                 PropertyFactory.iconAllowOverlap(true),
                 PropertyFactory.iconIgnorePlacement(true),
                 PropertyFactory.textField(Expression.get("label")),
-                PropertyFactory.textFont(arrayOf("Noto Sans Bold")),
+                PropertyFactory.textFont(arrayOf(fonts.bold)),
                 PropertyFactory.textSize(12f),
                 PropertyFactory.textColor("#17201B"),
                 PropertyFactory.textAllowOverlap(true),
                 PropertyFactory.textIgnorePlacement(true),
             ),
         )
+    }
+
+    /** Hillshade and contours of the offline style (Layers sheet); the online style has neither. */
+    fun applyTerrain(style: Style, hillshade: Boolean, strength: Float, contours: Boolean) {
+        fun visible(on: Boolean) = PropertyFactory.visibility(if (on) Property.VISIBLE else Property.NONE)
+        style.getLayer(TopoStyle.HILLSHADE_LAYER)?.setProperties(
+            visible(hillshade && strength > 0f),
+            PropertyFactory.hillshadeExaggeration(strength.coerceIn(0f, 1f)),
+        )
+        TopoStyle.CONTOUR_LAYERS.forEach { style.getLayer(it)?.setProperties(visible(contours)) }
     }
 
     /**
