@@ -1,6 +1,6 @@
 name: Update trail status
 
-# Reads the official open/closed list every 30 minutes and publishes status.json on the
+# Reads the official open/closed list at 09:00 and 14:00 Madeira time and publishes status.json on the
 # "status" branch, which the app reads from:
 # https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json
 # The branch always holds a single commit, so it never grows.
@@ -8,9 +8,13 @@ name: Update trail status
 on:
   workflow_dispatch:
   schedule:
-    # Best effort: GitHub may delay or drop scheduled runs under load. The app treats status
-    # older than 24 h as unknown, so a missed run never shows a wrong "open".
-    - cron: "11,41 * * * *"
+    # 09:00 and 14:00 in Madeira (owner's choice, 26 Oct 2026). Cron runs in UTC and Madeira
+    # moves between UTC (winter) and UTC+1 (summer), so both pairs are listed and the `slot` job
+    # skips the pair that doesn't match today's offset. Best effort: GitHub may delay or drop
+    # scheduled runs; the app treats status older than 24 h as unknown, so a missed run never
+    # shows a wrong "open".
+    - cron: "0 9,14 * * *"   # winter (WET, UTC+0)
+    - cron: "0 8,13 * * *"   # summer (WEST, UTC+1)
 
 permissions:
   contents: write
@@ -20,7 +24,29 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  slot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      run: ${{ steps.slot.outputs.run }}
+    steps:
+      - name: Only at 09:00 and 14:00 Madeira time
+        id: slot
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          offset=$(TZ=Atlantic/Madeira date +%z)
+          run=yes
+          if [ -n "$SCHEDULE" ]; then
+            if [ "$offset" = "+0000" ] && [ "$SCHEDULE" != "0 9,14 * * *" ]; then run=no; fi
+            if [ "$offset" = "+0100" ] && [ "$SCHEDULE" != "0 8,13 * * *" ]; then run=no; fi
+          fi
+          echo "Madeira offset $offset, schedule '${SCHEDULE:-manual}', run=$run"
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+
   status:
+    needs: slot
+    if: needs.slot.outputs.run == 'yes'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

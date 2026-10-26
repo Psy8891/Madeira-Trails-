@@ -131,8 +131,8 @@
     <string name="plan_stop_here">Add stop</string>
     <string name="plan_end_here">End here</string>
     <string name="plan_title">Planned route</string>
-    <string name="plan_need_start">Long-press the map where you want to start, or use your location.</string>
-    <string name="plan_need_end">Long-press the map where you want to finish.</string>
+    <string name="plan_need_start">Tap “Start on map” and then the map, or use your location. Long-pressing the map works too.</string>
+    <string name="plan_need_end">Tap “End on map” and then the map where you want to finish, or long-press there.</string>
     <string name="plan_working">Finding the best way…</string>
     <string name="plan_too_far_start">The start is more than 500 m from any path or road. Move it closer to one.</string>
     <string name="plan_too_far_end">The end is more than 500 m from any path or road. Move it closer to one.</string>
@@ -166,4 +166,16 @@
         <item quantity="one">%1$d tunnel: bring a torch.</item>
         <item quantity="other">%1$d tunnels: bring a torch.</item>
     </plurals>
+    <string name="cancel">Cancel</string>
+    <string name="plan_button">Plan a route</string>
+    <string name="plan_intro">Set a start and an end, and Vereda finds the best way on the mapped paths: marked trails and levadas first, roads only where needed. Tap a button below, then tap the map.</string>
+    <string name="plan_long_press_tip">Tip: you can also long-press anywhere on the map to start, add a stop or end there.</string>
+    <string name="plan_pick_start">Tap the map where you want to start</string>
+    <string name="plan_pick_stop">Tap the map to add a stop</string>
+    <string name="plan_pick_end">Tap the map where you want to finish</string>
+    <string name="plan_pick_start_button">Start on map</string>
+    <string name="plan_move_start_button">Move start</string>
+    <string name="plan_pick_stop_button">Add stop</string>
+    <string name="plan_pick_end_button">End on map</string>
+    <string name="plan_move_end_button">Move end</string>
 </resources>

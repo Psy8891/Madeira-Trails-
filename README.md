@@ -22,7 +22,7 @@ offline maps, and a local profile with Done / To-do / Wishlist lists. No account
 | `data/` | Python data jobs (with pytest tests): trail catalog from OpenStreetMap (names, road access, points of interest), official status from Visit Madeira |
 | `.github/workflows/android-ci.yml` | CI: runs the unit and data tests, builds a debug APK and publishes it on every push |
 | `.github/workflows/update-catalog.yml` | Weekly: rebuilds `app/src/main/assets/catalog.json` and `data/catalog-report.md` |
-| `.github/workflows/update-status.yml` | Every 30 min: publishes `status.json` on the `status` branch |
+| `.github/workflows/update-status.yml` | 09:00 and 14:00 Madeira time: publishes `status.json` on the `status` branch |
 
 ## Status
 
