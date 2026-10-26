@@ -60,7 +60,17 @@ class Settings(context: Context) {
             .apply()
     }
 
+    private val _disclaimerAccepted = MutableStateFlow(prefs.getBoolean(KEY_DISCLAIMER, false))
+    /** The first-launch safety notice was accepted (spec: Safety). */
+    val disclaimerAccepted: StateFlow<Boolean> = _disclaimerAccepted.asStateFlow()
+
+    fun acceptDisclaimer() {
+        _disclaimerAccepted.value = true
+        prefs.edit().putBoolean(KEY_DISCLAIMER, true).apply()
+    }
+
     private companion object {
+        const val KEY_DISCLAIMER = "disclaimer_v1"
         const val KEY_DIRECTIONS = "directions"
         const val KEY_WIFI_ONLY = "maps_wifi_only"
         const val KEY_HILLSHADE = "layer_hillshade"

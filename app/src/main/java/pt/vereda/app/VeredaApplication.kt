@@ -9,6 +9,7 @@ import pt.vereda.app.data.MapPackages
 import pt.vereda.app.data.RoutePlanner
 import pt.vereda.app.data.Settings
 import pt.vereda.app.data.Terrain
+import pt.vereda.app.data.Weather
 import pt.vereda.app.data.TrailRepository
 import pt.vereda.app.location.LocationTracker
 
@@ -32,6 +33,10 @@ class VeredaApplication : Application() {
     lateinit var maps: MapPackages
         private set
 
+    /** IPMA weather warnings (Phase 4). */
+    lateinit var weather: Weather
+        private set
+
     /** Heights for climb and the height graph (bundled elevation grid). */
     lateinit var terrain: Terrain
         private set
@@ -50,5 +55,6 @@ class VeredaApplication : Application() {
         settings = Settings(this)
         terrain = Terrain(this, appScope)
         maps = MapPackages(this, appScope, settings).also { it.start() }
+        weather = Weather(appScope)
     }
 }

@@ -26,6 +26,8 @@ import pt.vereda.core.geo.ElevationGrid
 import pt.vereda.core.geo.ElevationProfiles
 import pt.vereda.core.geo.Utm
 import pt.vereda.app.ui.components.HeightSummary
+import pt.vereda.app.ui.components.SafetySection
+import pt.vereda.app.ui.components.WalkInfo
 import pt.vereda.app.ui.maps.rememberOfflineMapState
 import kotlin.math.roundToInt
 import androidx.compose.foundation.layout.Row
@@ -413,6 +415,7 @@ fun MapScreen(
 
     val offlineState = rememberOfflineMapState()
     var showLayers by remember { mutableStateOf(false) }
+    var showEmergency by remember { mutableStateOf(false) }
     Box(modifier.fillMaxSize()) {
         AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
         Column(
@@ -420,6 +423,7 @@ fun MapScreen(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            SosButton(onClick = { showEmergency = true })
             LayersButton(onClick = { showLayers = !showLayers })
         }
         ScaleBarView(
@@ -464,7 +468,7 @@ fun MapScreen(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            val nothingOpen = pressed == null && selection == null && !planning && planPoints.isEmpty && !showLayers
+            val nothingOpen = pressed == null && selection == null && !planning && planPoints.isEmpty && !showLayers && !showEmergency
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             if (nothingOpen) PlanButton(onClick = { planning = true })
             LocateButton(
@@ -495,6 +499,7 @@ fun MapScreen(
             }
             val pressedPoint = pressed
             when {
+                showEmergency -> EmergencyCard(location = location, onClose = { showEmergency = false }, modifier = cardModifier)
                 showLayers -> LayersCard(
                     settings = layerSettings,
                     offline = offline,
@@ -781,6 +786,19 @@ private fun TrailPeekCard(
         notes.forEach { note ->
             Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+        entry.startPoint?.let { start ->
+            SafetySection(
+                WalkInfo(
+                    key = entry.id,
+                    point = start,
+                    minutes = profile?.minutes,
+                    highestM = profile?.maxM,
+                    official = trail.source == TrailSource.OFFICIAL,
+                    levada = trail.name.contains("levada", ignoreCase = true),
+                    tunnels = null,
+                ),
+            )
+        }
         if (onDirections != null) DirectionsToggle(directionsTarget, onDirectionsTarget)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             onDirections?.let { Button(onClick = it) { Text(stringResource(R.string.directions)) } }
@@ -1035,6 +1053,19 @@ private fun PlannerCard(
             if (summary.tunnels > 0) Text(tunnelsText(summary.tunnels), style = MaterialTheme.typography.bodySmall)
             if (profile == null) {
                 Text(stringResource(R.string.plan_climb_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            route.points.firstOrNull()?.let { start ->
+                SafetySection(
+                    WalkInfo(
+                        key = "plan-${route.points.size}-${summary.distanceM.toInt()}",
+                        point = start,
+                        minutes = profile?.minutes ?: summary.flatMinutes,
+                        highestM = profile?.maxM,
+                        official = summary.officialTrails.isNotEmpty(),
+                        levada = summary.mainNames.any { it.contains("levada", ignoreCase = true) },
+                        tunnels = summary.tunnels,
+                    ),
+                )
             }
             Text(stringResource(R.string.community_route_warning), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
