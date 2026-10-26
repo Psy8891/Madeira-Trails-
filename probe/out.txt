@@ -1,0 +1,40 @@
+== fonts releases
+v2.0	Latest	v2.0	2017-12-14T09:08:01Z
+v1.1		v1.1	2017-10-13T10:11:01Z
+v1.0		v1.0	2017-01-12T13:09:08Z
+noto-open-sans.zip	63795760
+noto-sans.zip	61899817
+v2.0.zip	73756700
+total 194796
+drwxr-xr-x  2 runner runner     4096 Oct 26 23:19 .
+drwxr-xr-x 11 runner runner     4096 Oct 26 23:19 ..
+-rw-r--r--  1 runner runner 63795760 Oct 26 23:19 noto-open-sans.zip
+-rw-r--r--  1 runner runner 61899817 Oct 26 23:19 noto-sans.zip
+-rw-r--r--  1 runner runner 73756700 Oct 26 23:19 v2.0.zip
+replace fonts/x/Noto Sans Bold/0-255.pbf? [y]es, [n]o, [A]ll, [N]one, [r]ename:  NULL
+(EOF or read error, treating as "[N]one" ...)
+replace fonts/x/Open Sans Semibold Italic/512-767.pbf? [y]es, [n]o, [A]ll, [N]one, [r]ename:  NULL
+(EOF or read error, treating as "[N]one" ...)
+fonts/x/Noto Sans Italic
+fonts/x/Noto Sans Regular
+fonts/x/Noto Sans Bold
+0-255.pbf
+1024-1279.pbf
+10240-10495.pbf
+10496-10751.pbf
+10752-11007.pbf
+== tippecanoe build
+tippecanoe v2.82.0
+
+real	1m4.317s
+user	2m43.403s
+sys	0m4.695s
+== planetiler
+openjdk version "17.0.20.1" 2026-08-18
+temurin-11-jdk-amd64
+temurin-17-jdk-amd64
+temurin-21-jdk-amd64
+temurin-25-jdk-amd64
+temurin-8-jdk-amd64
+== osm extract
+-rw-r--r-- 1 runner runner 13688480 Oct 26 23:20 madeira.osm.pbf
