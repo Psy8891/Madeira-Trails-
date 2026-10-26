@@ -10,7 +10,7 @@
     <string name="map_dev_banner">Online map, © OpenStreetMap contributors. The offline topo map comes later.</string>
 
     <string name="explore_title">Explore</string>
-    <string name="explore_search_hint">Trail, PR code or peak</string>
+    <string name="explore_search_hint">Trail, PR code, peak or place</string>
     <string name="explore_count">%1$d trails</string>
     <string name="explore_loading">Loading trails…</string>
     <string name="explore_peaks">Peaks</string>
@@ -62,4 +62,54 @@
     <string name="record_placeholder">GPS recording and navigation arrive in Phase 3.</string>
     <string name="me_title">Me</string>
     <string name="me_placeholder">Your profile and the Done, To-do and Wishlist lists arrive in Phase 2. Everything stays on this phone.</string>
+
+    <string name="explore_places">Peaks and places</string>
+    <string name="near_area">near %1$s</string>
+
+    <string name="place_viewpoint">Viewpoint</string>
+    <string name="place_waterfall">Waterfall</string>
+    <string name="place_spring">Spring</string>
+    <string name="place_water">Drinking water</string>
+    <string name="place_shelter">Shelter</string>
+    <string name="place_hut">Mountain hut</string>
+    <string name="place_picnic">Picnic site</string>
+    <string name="place_camp">Campsite</string>
+    <string name="place_cave">Cave</string>
+    <string name="place_trailhead">Trailhead</string>
+    <string name="place_toilets">Toilets</string>
+    <string name="place_parking">Parking</string>
+    <string name="place_bus_stop">Bus stop</string>
+    <string name="place_tunnel">Tunnel</string>
+
+    <string name="marker_start">Start</string>
+    <string name="marker_end">End</string>
+    <string name="marker_access">Getting there</string>
+    <string name="start_on_road">by the road</string>
+    <string name="start_on_named_road">by the road (%1$s)</string>
+    <string name="start_walk_from_road">%1$s walk from the nearest road</string>
+    <string name="start_walk_from_named_road">%1$s walk from the %2$s</string>
+    <string name="start_no_road">no road within 5 km. You reach it along other trails.</string>
+    <string name="end_on_road">by the road</string>
+    <string name="end_on_named_road">by the road (%1$s)</string>
+    <string name="end_walk_to_road">%1$s walk to the nearest road</string>
+    <string name="end_no_road">no road within 5 km</string>
+    <string name="end_loop">back at the start (loop)</string>
+    <string name="place_by_road">by the road</string>
+    <string name="place_walk_from_road">%1$s walk from the nearest road</string>
+    <string name="place_walk_from_named_road">%1$s walk from the %2$s</string>
+    <string name="access_via">%1$s, via %2$s</string>
+    <string name="access_with_parking">%1$s · parking there</string>
+    <string name="trails_here">Trails here</string>
+    <string name="directions">Directions</string>
+    <string name="directions_to_start">Directions to the start</string>
+
+    <string name="locate_show">Show my location</string>
+    <string name="locate_compass">Turn the map with the phone</string>
+    <string name="locate_stop">Stop following my location</string>
+    <string name="location_off">Location is turned off on this phone. Turn it on to see where you are.</string>
+    <string name="location_denied">Without location permission the map can\'t show where you are. You can allow it in the phone\'s settings.</string>
+    <string name="position_on_trail">You\'re on the trail · %1$s walked · %2$s to the end</string>
+    <string name="position_off_trail">You\'re %1$s from the trail</string>
+    <string name="position_off_trail_start">You\'re %1$s from the trail · the start is %2$s away in a straight line</string>
+    <string name="position_from_place">You\'re %1$s away in a straight line</string>
 </resources>

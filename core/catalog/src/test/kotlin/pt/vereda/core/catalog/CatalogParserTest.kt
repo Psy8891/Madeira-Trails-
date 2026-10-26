@@ -22,13 +22,22 @@ class CatalogParserTest {
           {"id":"osm-r4444478","source":"community","name":"Vereda do Pico Grande","from":null,"to":null,
            "island":"madeira","lengthM":5100,"sacScale":"demanding_mountain_hiking",
            "aliases":["Boca da Corrida – Pico Grande"],"noteEn":"Only part of the walk.","notePt":"Só parte do percurso.",
-           "osm":["r4444478"],"lines":["iysfEvttfB}Vng@","not a line ~"]},
+           "osm":["r4444478"],"lines":["iysfEvttfB}Vng@","not a line ~"],
+           "area":"Serra de Água",
+           "ends":[{"lat":32.7186,"lon":-16.9939,"approachM":2400,"road":"ER 228","access":[32.7085,-16.9727],
+                    "parking":[32.7087,-16.9725],"via":["Caminho Real da Encumeada"],"line":"iysfEvttfB}Vng@"},
+                   {"lat":32.737,"lon":-16.988,"approachM":null}]},
           {"id":"osm-w5","source":"community","name":"Broken","island":"madeira","lengthM":900,"osm":["w5"],"lines":["_p~iF"]},
           {"id":"osm-r9","source":"community","name":"Porto Santo walk","island":"porto_santo","lengthM":800,
            "osm":["r9"],"lines":["iysfEvttfB}Vng@"],"someFutureField":{"x":1}}
          ],
-         "places":[{"name":"Pico Grande","kind":"peak","lat":32.7146,"lon":-16.993,"ele":1654,"aliases":["Grande"]},
-                   {"name":"Pico sem altitude","kind":"peak","lat":32.7,"lon":-16.9,"ele":null}]}
+         "places":[{"name":"Pico Grande","kind":"peak","lat":32.7146,"lon":-16.993,"ele":1654,"aliases":["Grande"],
+                    "access":{"approachM":4099,"access":[32.73289,-16.972508],"via":["Vereda da Fajã Escura"]}},
+                   {"name":"Pico sem altitude","kind":"peak","lat":32.7,"lon":-16.9,"ele":null},
+                   {"kind":"peak","lat":32.6,"lon":-16.9},
+                   {"kind":"parking","lat":32.7087,"lon":-16.9725},
+                   {"name":"Miradouro","kind":"viewpoint","lat":32.71,"lon":-16.97},
+                   {"name":"Something new","kind":"volcano","lat":32.71,"lon":-16.97}]}
     """.trimIndent()
 
     private val catalog = CatalogParser.parse(sample)
@@ -76,11 +85,41 @@ class CatalogParserTest {
     }
 
     @Test
+    fun `area and ends with road access are read`() {
+        val pico = catalog.trail("osm-r4444478")!!
+        assertEquals("Serra de Água", pico.area)
+        assertEquals("Serra de Água", pico.trail.area)
+        assertEquals(2, pico.ends.size)
+        val start = pico.startAccess!!
+        assertEquals(2400, start.approachM)
+        assertEquals("ER 228", start.road)
+        assertEquals(listOf("Caminho Real da Encumeada"), start.via)
+        assertEquals(2, start.line.size)
+        assertEquals(32.7087, start.parking!!.lat, 1e-9)
+        assertTrue(start.needsWalk)
+        assertNull(pico.endAccess!!.approachM)
+        assertEquals(32.7186, pico.startPoint!!.lat, 1e-9)
+        assertEquals(32.737, pico.endPoint!!.lat, 1e-9)
+        assertTrue(catalog.trail("pr-6")!!.ends.isEmpty())
+    }
+
+    @Test
     fun `peaks become places`() {
-        assertEquals(listOf("Pico Grande", "Pico sem altitude"), catalog.places.map { it.name })
+        assertEquals(PlaceKind.PEAK, catalog.places[0].kind)
+        assertEquals(listOf("Pico Grande", "Pico sem altitude"), catalog.places.filter { it.kind == PlaceKind.PEAK }.map { it.name })
         assertEquals(1654, catalog.places[0].eleM)
         assertEquals(listOf("Grande"), catalog.places[0].aliases)
         assertNull(catalog.places[1].eleM)
+        assertEquals(4099, catalog.places[0].access!!.approachM)
+        assertEquals(listOf("Vereda da Fajã Escura"), catalog.places[0].access!!.via)
+    }
+
+    @Test
+    fun `points of interest are read, unnamed ones kept and unknown kinds skipped`() {
+        val kinds = catalog.places.map { it.kind to it.name }
+        assertTrue(PlaceKind.PARKING to null in kinds)
+        assertTrue(PlaceKind.VIEWPOINT to "Miradouro" in kinds)
+        assertEquals(4, catalog.places.size) // the unnamed peak and the volcano are left out
         assertEquals(Instant.parse("2026-10-26T14:00:00Z"), catalog.generatedAt)
     }
 

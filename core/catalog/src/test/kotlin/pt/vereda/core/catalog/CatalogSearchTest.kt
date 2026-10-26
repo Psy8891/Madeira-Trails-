@@ -68,6 +68,30 @@ class CatalogSearchTest {
     }
 
     @Test
+    fun `named points of interest are found, unnamed and town ones are not`() {
+        val pois = places + listOf(
+            Place("Miradouro do Pico Grande", PlaceKind.VIEWPOINT, GeoPoint(32.73, -16.98), null),
+            Place("Parque Pico Grande", PlaceKind.PARKING, GeoPoint(32.73, -16.98), null),
+            Place(null, PlaceKind.WATERFALL, GeoPoint(32.73, -16.98), null),
+            Place("Cascata Grande", PlaceKind.WATERFALL, GeoPoint(32.73, -16.98), null),
+        )
+        val found = CatalogSearch.search(trails, pois, "pico grande").places.map { it.name }
+        // Peaks first, then other places with the same match.
+        assertEquals(listOf("Grande", "Achada Grande", "Miradouro do Pico Grande"), found.take(3))
+        assertTrue("Parque Pico Grande" !in found)
+        assertEquals(listOf("Cascata Grande"), CatalogSearch.search(trails, pois, "cascata").places.map { it.name })
+    }
+
+    @Test
+    fun `trails are found by their area`() {
+        val withArea = TrailEntry(
+            Trail("osm-w9", TrailSource.COMMUNITY, null, "Vereda do Pico", null, null, null, Island.MADEIRA, area = "Santo António"),
+            700, null, listOf(line),
+        )
+        assertEquals(listOf("osm-w9"), CatalogSearch.search(listOf(withArea), places, "santo antonio").trails.map { it.id })
+    }
+
+    @Test
     fun `codes still work`() {
         assertEquals("pr-6", CatalogSearch.search(trails, places, "pr6").trails.first().id)
     }

@@ -33,6 +33,7 @@ object VeredaColors {
     val ImportLine = Color(0xFFE4572E) // "My recording" token: the user's own tracks
     val ImportTint = Color(0xFFFCE9E3)
     val ActiveRoute = Color(0xFFD81B60)
+    val LocationBlue = Color(0xFF1673B5) // "Show my location" in docs/design/Main.dc.html
 
     val WaymarkYellow = Color(0xFFF2C200)
     val WaymarkRed = Color(0xFFD32F2F)

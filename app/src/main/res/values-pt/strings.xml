@@ -8,7 +8,7 @@
     <string name="map_dev_banner">Mapa online, © colaboradores do OpenStreetMap. O mapa topográfico offline chega mais tarde.</string>
 
     <string name="explore_title">Explorar</string>
-    <string name="explore_search_hint">Percurso, código PR ou pico</string>
+    <string name="explore_search_hint">Percurso, código PR, pico ou local</string>
     <string name="explore_count">%1$d percursos</string>
     <string name="explore_loading">A carregar percursos…</string>
     <string name="explore_peaks">Picos</string>
@@ -60,4 +60,54 @@
     <string name="record_placeholder">A gravação GPS e a navegação chegam na Fase 3.</string>
     <string name="me_title">Eu</string>
     <string name="me_placeholder">O teu perfil e as listas Feitos, A fazer e Desejos chegam na Fase 2. Tudo fica guardado neste telemóvel.</string>
+
+    <string name="explore_places">Picos e locais</string>
+    <string name="near_area">perto de %1$s</string>
+
+    <string name="place_viewpoint">Miradouro</string>
+    <string name="place_waterfall">Cascata</string>
+    <string name="place_spring">Nascente</string>
+    <string name="place_water">Água potável</string>
+    <string name="place_shelter">Abrigo</string>
+    <string name="place_hut">Casa de abrigo</string>
+    <string name="place_picnic">Parque de merendas</string>
+    <string name="place_camp">Parque de campismo</string>
+    <string name="place_cave">Gruta</string>
+    <string name="place_trailhead">Início de trilho</string>
+    <string name="place_toilets">Casas de banho</string>
+    <string name="place_parking">Estacionamento</string>
+    <string name="place_bus_stop">Paragem de autocarro</string>
+    <string name="place_tunnel">Túnel</string>
+
+    <string name="marker_start">Início</string>
+    <string name="marker_end">Fim</string>
+    <string name="marker_access">Como chegar</string>
+    <string name="start_on_road">junto à estrada</string>
+    <string name="start_on_named_road">junto à estrada (%1$s)</string>
+    <string name="start_walk_from_road">%1$s a pé desde a estrada mais próxima</string>
+    <string name="start_walk_from_named_road">%1$s a pé desde a %2$s</string>
+    <string name="start_no_road">sem estrada a menos de 5 km. Chega-se por outros percursos.</string>
+    <string name="end_on_road">junto à estrada</string>
+    <string name="end_on_named_road">junto à estrada (%1$s)</string>
+    <string name="end_walk_to_road">%1$s a pé até à estrada mais próxima</string>
+    <string name="end_no_road">sem estrada a menos de 5 km</string>
+    <string name="end_loop">volta ao início (circular)</string>
+    <string name="place_by_road">junto à estrada</string>
+    <string name="place_walk_from_road">%1$s a pé desde a estrada mais próxima</string>
+    <string name="place_walk_from_named_road">%1$s a pé desde a %2$s</string>
+    <string name="access_via">%1$s, pela %2$s</string>
+    <string name="access_with_parking">%1$s · tem estacionamento</string>
+    <string name="trails_here">Percursos aqui</string>
+    <string name="directions">Direções</string>
+    <string name="directions_to_start">Direções para o início</string>
+
+    <string name="locate_show">Mostrar a minha localização</string>
+    <string name="locate_compass">Rodar o mapa com o telemóvel</string>
+    <string name="locate_stop">Deixar de seguir a minha localização</string>
+    <string name="location_off">A localização está desligada neste telemóvel. Liga-a para veres onde estás.</string>
+    <string name="location_denied">Sem permissão de localização o mapa não consegue mostrar onde estás. Podes autorizá-la nas definições do telemóvel.</string>
+    <string name="position_on_trail">Estás no percurso · %1$s feitos · faltam %2$s</string>
+    <string name="position_off_trail">Estás a %1$s do percurso</string>
+    <string name="position_off_trail_start">Estás a %1$s do percurso · o início fica a %2$s em linha reta</string>
+    <string name="position_from_place">Estás a %1$s em linha reta</string>
 </resources>

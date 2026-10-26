@@ -33,6 +33,8 @@ object CatalogParser {
                 sacScale = entry?.sacScale,
                 lines = entry?.lines?.let(::decodeLines).orEmpty(),
                 osmIds = entry?.osm.orEmpty(),
+                area = entry?.area,
+                ends = entry?.ends?.let(::ends).orEmpty(),
             )
         }
         val officialIds = official.mapTo(HashSet()) { it.id }
@@ -51,6 +53,7 @@ object CatalogParser {
                         municipality = null,
                         island = island(t.island),
                         aliases = t.aliases,
+                        area = t.area,
                     ),
                     lengthM = t.lengthM,
                     sacScale = t.sacScale,
@@ -58,13 +61,17 @@ object CatalogParser {
                     osmIds = t.osm,
                     noteEn = t.noteEn,
                     notePt = t.notePt,
+                    area = t.area,
+                    ends = ends(t.ends),
                 )
             }
             .filter { it.hasLine }
 
         val places = doc.places.mapNotNull { p ->
-            if (p.kind != "peak" || p.name.isBlank()) return@mapNotNull null
-            Place(p.name, PlaceKind.PEAK, GeoPoint(p.lat, p.lon), p.ele, p.aliases)
+            val kind = PlaceKind.of(p.kind) ?: return@mapNotNull null // a kind from a newer catalog
+            val name = p.name?.trim()?.takeIf { it.isNotEmpty() }
+            if (kind == PlaceKind.PEAK && name == null) return@mapNotNull null
+            Place(name, kind, GeoPoint(p.lat, p.lon), p.ele, p.aliases, p.access?.let(::access))
         }
 
         return Catalog(
@@ -74,6 +81,20 @@ object CatalogParser {
             places = places,
         )
     }
+
+    private fun ends(ends: List<CatalogEndJson>): List<TrailEnd> =
+        ends.map { e -> TrailEnd(GeoPoint(e.lat, e.lon), access(e)) }
+
+    private fun access(a: AccessJson): RoadAccess = RoadAccess(
+        approachM = a.approachM,
+        roadPoint = a.access?.toPoint(),
+        road = a.road,
+        via = a.via,
+        line = a.line?.let { runCatching { Polyline.decode(it) }.getOrNull() }.orEmpty(),
+        parking = a.parking?.toPoint(),
+    )
+
+    private fun List<Double>.toPoint(): GeoPoint? = if (size >= 2) GeoPoint(this[0], this[1]) else null
 
     private fun decodeLines(encoded: List<String>): List<List<GeoPoint>> =
         encoded.mapNotNull { line -> runCatching { Polyline.decode(line) }.getOrNull()?.takeIf { it.size >= 2 } }
@@ -107,14 +128,49 @@ internal data class CatalogTrailJson(
     val lines: List<String> = emptyList(),
     val noteEn: String? = null,
     val notePt: String? = null,
+    val area: String? = null,
+    val ends: List<CatalogEndJson> = emptyList(),
 )
+
+/** Road access as the catalog writes it, for a trail end or a place. */
+internal interface AccessJson {
+    val approachM: Int?
+    val access: List<Double>?
+    val road: String?
+    val via: List<String>
+    val line: String?
+    val parking: List<Double>?
+}
+
+@Serializable
+internal data class CatalogEndJson(
+    val lat: Double,
+    val lon: Double,
+    override val approachM: Int? = null,
+    override val access: List<Double>? = null,
+    override val road: String? = null,
+    override val via: List<String> = emptyList(),
+    override val line: String? = null,
+    override val parking: List<Double>? = null,
+) : AccessJson
+
+@Serializable
+internal data class CatalogPlaceAccessJson(
+    override val approachM: Int? = null,
+    override val access: List<Double>? = null,
+    override val road: String? = null,
+    override val via: List<String> = emptyList(),
+    override val line: String? = null,
+    override val parking: List<Double>? = null,
+) : AccessJson
 
 @Serializable
 internal data class CatalogPlaceJson(
-    val name: String,
+    val name: String? = null,
     val kind: String = "peak",
     val lat: Double,
     val lon: Double,
     val ele: Int? = null,
     val aliases: List<String> = emptyList(),
+    val access: CatalogPlaceAccessJson? = null,
 )

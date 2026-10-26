@@ -46,6 +46,41 @@ class BundledCatalogTest {
     }
 
     @Test
+    fun `peaks have their full names and Pico Alto can be reached from a road`() {
+        val c = catalog()
+        val peaks = c.places.filter { it.kind == PlaceKind.PEAK }
+        assertTrue(peaks.none { it.name == "Grande" || it.name == "Ruivo" || it.name == "Alto" })
+        val grande = peaks.single { it.name == "Pico Grande" }
+        assertEquals(1654, grande.eleM)
+        val alto = peaks.filter { it.name == "Pico Alto" }
+        assertTrue(alto.isNotEmpty())
+        assertTrue(alto.any { it.access?.approachM != null }, "No road access for any Pico Alto")
+    }
+
+    @Test
+    fun `trails have start and end with road access, and points of interest exist`() {
+        val c = catalog()
+        val withLine = c.trails.filter { it.hasLine }
+        val withEnds = withLine.count { it.ends.isNotEmpty() }
+        assertTrue(withEnds * 10 >= withLine.size * 9, "only $withEnds of ${withLine.size} trails have ends")
+        assertTrue(withLine.count { it.startAccess?.approachM != null } * 10 >= withLine.size * 9)
+        val kinds = c.places.map { it.kind }.toSet()
+        assertTrue(setOf(PlaceKind.VIEWPOINT, PlaceKind.WATERFALL, PlaceKind.PARKING).all { it in kinds })
+        val pr1 = c.trail("pr-1")!!
+        assertTrue(pr1.startAccess!!.approachM!! < 300, "PR 1 should start by the Pico do Areeiro car park")
+    }
+
+    @Test
+    fun `the places GeoJSON for the whole catalog is built quickly`() {
+        val c = catalog()
+        val start = System.nanoTime()
+        val json = TrailGeoJson.places(c.places)
+        val ms = (System.nanoTime() - start) / 1_000_000
+        assertTrue(json.length > 10_000)
+        assertTrue(ms < 2_000, "took $ms ms")
+    }
+
+    @Test
     fun `the map GeoJSON for the whole catalog is built quickly`() {
         val c = catalog()
         val start = System.nanoTime()

@@ -246,7 +246,7 @@ Only the IPMA weather warnings and the trail status are fetched live; the catalo
 | Job | Runs | Does | Publishes |
 | --- | --- | --- | --- |
 | `build-maps` | Monthly + manual (Phase 1) | Clips the OSM extract with osmium; Planetiler builds base vector tiles (z0–15); GDAL `gdal_contour` (10 m interval, 50 m index) + tippecanoe builds contour tiles (z11–15); the DTM is encoded as Terrarium RGB WebP tiles (z8–14) for MapLibre hillshade | `madeira-base.pmtiles`, `madeira-contours.pmtiles`, `madeira-dem.pmtiles` and the same for Porto Santo, as a versioned GitHub Release (e.g. `maps-2026.11`) |
-| `update-catalog` (`data/scripts/build_catalog.py`) | Mondays + manual | Reads the Geofabrik Portugal extract clipped to Madeira with osmium (pyosmium); falls back to three small Overpass queries over four mirrors (the public Overpass servers ask automated jobs not to rely on them). Takes hiking/foot relations, named paths and named peaks; official trails matched by PR ref, then by official name; other named routes and named paths (≥ 400 m, not streets) become community trails; lines chained and simplified (Douglas-Peucker 3 m), stored as encoded polylines (precision 1e5) | `app/src/main/assets/catalog.json` + `data/catalog-report.md` (match count, missing codes, checklist of `data/wanted.json`), committed to `main`; then starts a new APK build. Community trails matching a `wanted.json` entry get its `searchAlias`, so "Boca da Corrida – Pico Grande" finds "Vereda do Pico Grande" |
+| `update-catalog` (`data/scripts/build_catalog.py`) | Mondays + manual | Reads the Geofabrik Portugal extract clipped to Madeira with osmium (pyosmium); falls back to three small Overpass queries over four mirrors (the public Overpass servers ask automated jobs not to rely on them). Takes hiking/foot relations, named paths and named peaks; official trails matched by PR ref, then by official name; other named routes and named paths (≥ 400 m, not streets) become community trails; lines chained and simplified (Douglas-Peucker 3 m), stored as encoded polylines (precision 1e5) | `app/src/main/assets/catalog.json` + `data/catalog-report.md` (match count, missing codes, checklist of `data/wanted.json`), committed to `main`; then starts a new APK build. Community trails matching a `wanted.json` entry get its `searchAlias`, so "Boca da Corrida – Pico Grande" finds "Vereda do Pico Grande". Since Phase 0.6 it also cleans names, adds each trail's area and road access (`ends`), and collects points of interest; the clipped extract is kept on the `osm-extract` release |
 | `update-status` (`data/scripts/build_status.py`) | Every 30 min + manual | Reads the [Visit Madeira hiking page](https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/), which shows every listed trail as Open / Restricted / Closed; needs at least 30 trails or it counts as a failure | `status.json` + `rows.txt` on the `status` branch (one force-pushed commit), read by the app from `https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json` |
 
 **`data/official.json` is the hand-kept list of the 42 official trails** (code, name, island). It grows into the curated record described below (official URL, fee, official distance and duration, difficulty, aliases, feature tags) and is the place to fix anything OSM gets wrong.
@@ -352,13 +352,33 @@ Trails and status arrive from the catalog and are replaced on each sync; everyth
     {"id": "pr-6", "source": "official", "code": "PR 6", "name": "Levada das 25 Fontes", "island": "madeira",
      "lengthM": 4300, "osm": ["r2239199"], "lines": ["_p~iF~ps|U_ulLnnqC…"]},
     {"id": "osm-r4444478", "source": "community", "name": "Vereda do Pico Grande", "from": null, "to": null,
-     "island": "madeira", "lengthM": 5100, "sacScale": null, "osm": ["r4444478"], "lines": ["…"]}
+     "island": "madeira", "lengthM": 5100, "sacScale": null, "osm": ["r4444478"], "lines": ["…"],
+     "area": "Serra de Água",
+     "ends": [
+       {"lat": 32.7186, "lon": -16.9939, "approachM": 2400, "road": "ER 228",
+        "access": [32.7085, -16.9727], "parking": [32.7087, -16.9725], "via": ["Caminho Real da Encumeada"],
+        "line": "…"},
+       {"lat": 32.737, "lon": -16.988, "approachM": null}
+     ]}
   ],
-  "places": [{"name": "Pico Grande", "kind": "peak", "lat": 32.7146, "lon": -16.993, "ele": 1654}]
+  "places": [
+    {"name": "Pico Grande", "kind": "peak", "lat": 32.7146, "lon": -16.993, "ele": 1654, "aliases": ["Grande"]},
+    {"name": "Miradouro do Pináculo", "kind": "viewpoint", "lat": 32.66, "lon": -16.87},
+    {"kind": "parking", "lat": 32.7087, "lon": -16.9725}
+  ]
 }
 ```
 
-`lines` holds one or more encoded polylines (Google format, precision 1e5). Community trails can carry `aliases` and a `noteEn`/`notePt` from `data/wanted.json` (e.g. that OSM maps only the summit part of Pico Grande); places carry other OSM names as `aliases`, because OSM names many Madeira peaks without "Pico" ("Grande", "Ruivo"), and search also tries "Pico <name>". An official trail is matched by its PR ref first; a relation that only shares an official trail's name is used for it only when no relation carries that ref (there is a Levada do Moinho in Porto Moniz, PR 7, and another in Ponta do Sol). All 42 official trails are always listed; one without an OSM line has `"lines": []` and the app says the line is missing instead of hiding the trail. Later schema versions add the curated fields (municipality, fee, official URL, duration, difficulty, route type, elevation profile, feature tags, aliases).
+`lines` holds one or more encoded polylines (Google format, precision 1e5). Community trails can carry `aliases` and a `noteEn`/`notePt` from `data/wanted.json` (e.g. that OSM maps only the summit part of Pico Grande); places carry other OSM names as `aliases`, because OSM names many Madeira peaks without "Pico" ("Grande", "Ruivo"), and search also tries "Pico <name>". An official trail is matched by its PR ref first; a relation that only shares an official trail's name is used for it only when no relation carries that ref (there is a Levada do Moinho in Porto Moniz, PR 7, and another in Ponta do Sol). All 42 official trails are always listed; one without an OSM line has `"lines": []` and the app says the line is missing instead of hiding the trail.
+
+Added in Phase 0.6:
+
+- **Full names.** A peak's `name` is the name people use: when OSM names it with a bare word ("Grande", "Ruivo", "Alto") or starts with "do/da", the catalog writes "Pico Grande" and keeps the OSM name in `aliases`. Community trail names are cleaned: stray symbols trimmed ("^Percurso de Treino"), `name:pt` used when the main name is in another language ("Umgehungsvariante für Tunnel"), capitals after "da/do/das/dos/de" lowered, and fixes from `data/name-fixes.json` (keyed by OSM id) applied last. The report lists names that still look odd.
+- **`area`**: the nearest village, town or named locality (OSM `place=*`) to the middle of the line, so a community trail reads "Vereda do Pico · near Santo António" in search instead of a bare name. Official trails keep their curated start and end names.
+- **`ends`**: up to two entries, start first. For each end of the main line, the job walks the OSM path network (paths, footways, steps, tracks and the other trails) to the nearest point a car can reach (a public road, not a track), up to 5 km. `approachM` is that walk (0 when the end is on a road, null when no road is found within 5 km), `line` its encoded line, `access` the road point, `road` the road's ref or name, `parking` the nearest parking within 300 m of `access`, `via` the names of the paths used. The end with the shorter approach is the start. This is what makes a trail like Pico Alto, which starts in the middle of other trails, possible to find from the road.
+- **`places`** now holds points of interest as well as peaks, from OSM: `peak`, `viewpoint`, `waterfall`, `spring`, `water` (drinking water), `shelter`, `hut`, `picnic`, `camp`, `cave`, `toilets`, `parking`, `bus_stop` and `tunnel` (each end of a tunnel on a footpath or levada). `name` is optional except for peaks. Parking, toilets and bus stops are kept only within 400 m of a trail or an access point, so towns don't fill the map.
+
+Later schema versions add the curated fields (municipality, fee, official URL, duration, difficulty, route type, elevation profile, feature tags, aliases).
 
 **status.json:**
 
@@ -522,6 +542,18 @@ Goal: after testing the skeleton, the owner asked for trails on the map, live st
 - [ ] Tapping a trail opens the map with its line drawn (official solid, community dashed, colour by status), zoomed to fit, and a card with name, length, status with age and a link to the official page.
 - [ ] A trail without a line says so on its card.
 - [ ] GPX import from the phone's files (system file picker); imported tracks are kept privately in app storage, listed under "My imports" and drawn on the map.
+
+### Phase 0.6 — Find your way (asked for 26 Oct 2026)
+
+Goal: after using Phase 0.5, the owner asked for complete names, a way to reach trails that start in the middle of other trails (Pico Alto), the phone's position on the map, and more points of interest. Still on the online development map; recording and navigation stay in Phase 3.
+
+- [ ] Peaks show their full name ("Pico Grande", not "Grande") in search, cards and map labels, in English and Portuguese; community trail names are cleaned (see *Data model*) and show their area.
+- [ ] Every trail with a line shows a start marker (green) and an end marker (chequered flag) when picked.
+- [ ] When a trail's end is not on a road, the card says how to reach it ("Start: 2.4 km from the ER 228, via Caminho Real da Encumeada"), the approach is drawn as a dotted line, and the road point (with parking when there is one) is marked.
+- [ ] A locate button shows the phone's position (blue dot with accuracy circle and heading). Taps cycle: centre on me → follow with compass → free. Location is asked for on the first tap, only while the app is in use, never in the background.
+- [ ] With a trail picked and a position known, the card shows where you are: "On the trail · 2.3 km walked · 3.1 km to the end", or "450 m from the trail" (off it by more than 40 m, using `:core:geo` `Route.snap`), or the distance to the start.
+- [ ] Points of interest from the catalog are drawn with icons from zoom 12 (peaks with name and height from zoom 10) and can be tapped; the base map's own peak labels are hidden so names aren't doubled.
+- [ ] Search finds named viewpoints, waterfalls, shelters and other named points as well as peaks.
 
 ### Phase 1 — Map that works offline
 

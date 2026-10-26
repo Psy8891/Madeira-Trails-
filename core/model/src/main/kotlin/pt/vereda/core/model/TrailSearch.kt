@@ -6,8 +6,8 @@ import java.text.Normalizer
  * Offline trail search: accent-insensitive ("caldeirao" finds "Caldeirão") and code-aware
  * ("pr6", "PR 6", "6" and "6.1" all work).
  *
- * Ranking: exact code match, then code prefix, then every word found in name, ends, municipality
- * and aliases, then (for queries of three or more real words) partial matches with at least two
+ * Ranking: exact code match, then code prefix, then every word found in name, ends, municipality,
+ * area and aliases, then (for queries of three or more real words) partial matches with at least two
  * words found, most words first. So "boca da corrida pico grande" still finds "Vereda do Pico
  * Grande". Ties keep catalog order.
  */
@@ -62,6 +62,7 @@ object TrailSearch {
             trail.from?.let(::add)
             trail.to?.let(::add)
             trail.municipality?.let(::add)
+            trail.area?.let(::add)
             addAll(trail.aliases)
         }.joinToString(" ") { normalize(it) }
         return matchTokens(text, tokens)

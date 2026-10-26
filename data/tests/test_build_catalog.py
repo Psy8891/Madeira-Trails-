@@ -180,8 +180,9 @@ def test_peaks_keep_other_osm_names_as_aliases():
     }
     catalog, _ = build(data)
     places = {p["name"]: p for p in catalog["places"]}
-    assert places["Grande"]["aliases"] == ["Pico Grande"]
-    assert "aliases" not in places["Ruivo"]
+    # The full name is shown; OSM's own name stays searchable.
+    assert places["Pico Grande"]["aliases"] == ["Grande"]
+    assert places["Pico Ruivo"]["aliases"] == ["Ruivo"]
 
 
 def test_report_finds_peaks_named_without_pico():

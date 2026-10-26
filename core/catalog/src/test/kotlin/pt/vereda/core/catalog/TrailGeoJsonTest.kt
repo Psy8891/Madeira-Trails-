@@ -14,6 +14,7 @@ import pt.vereda.core.model.Trail
 import pt.vereda.core.model.TrailSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class TrailGeoJsonTest {
 
@@ -59,6 +60,43 @@ class TrailGeoJsonTest {
         val text = TrailGeoJson.point(GeoPoint(32.7146, -16.993), "Pico Grande")
         val feature = Json.parseToJsonElement(text).jsonObject["features"]!!.jsonArray.single().jsonObject
         assertEquals("Point", feature["geometry"]!!.jsonObject["type"]!!.jsonPrimitive.content)
+    }
+
+    @Test
+    fun `places carry kind, label with height and an index id`() {
+        val places = listOf(
+            Place("Pico Grande", PlaceKind.PEAK, GeoPoint(32.737, -16.988), 1654),
+            Place(null, PlaceKind.PARKING, GeoPoint(32.71, -16.98), null),
+            Place("Miradouro \"Alto\"", PlaceKind.VIEWPOINT, GeoPoint(32.72, -16.97), 900),
+        )
+        val features = Json.parseToJsonElement(TrailGeoJson.places(places)).jsonObject["features"]!!.jsonArray
+        val props = features.map { it.jsonObject["properties"]!!.jsonObject }
+        assertEquals(listOf("0", "1", "2"), props.map { it["id"]!!.jsonPrimitive.content })
+        assertEquals(listOf("peak", "parking", "viewpoint"), props.map { it["kind"]!!.jsonPrimitive.content })
+        assertEquals("Pico Grande\n1654 m", props[0]["label"]!!.jsonPrimitive.content)
+        assertEquals("", props[1]["label"]!!.jsonPrimitive.content)
+        assertEquals("Miradouro \"Alto\"", props[2]["label"]!!.jsonPrimitive.content) // no height off peaks
+        assertEquals(10.0, props[0]["minZoom"]!!.jsonPrimitive.double)
+        // Higher peaks win label collisions, then named places, then the rest.
+        val ranks = props.map { it["rank"]!!.jsonPrimitive.content.toInt() }
+        assertTrue(ranks[0] < ranks[2] && ranks[2] < ranks[1])
+    }
+
+    @Test
+    fun `markers show the walk from the road only when there is one`() {
+        val start = GeoPoint(32.73, -16.98)
+        val end = GeoPoint(32.737, -16.988)
+        val road = GeoPoint(32.71, -16.986)
+        val walk = RoadAccess(2400, road, "ER 228", listOf("Caminho Real"), listOf(road, GeoPoint(32.72, -16.985), start), GeoPoint(32.7101, -16.986))
+
+        fun roles(text: String) = Json.parseToJsonElement(text).jsonObject["features"]!!.jsonArray
+            .map { it.jsonObject["properties"]!!.jsonObject["role"]!!.jsonPrimitive.content }
+
+        assertEquals(listOf("approach", "road", "parking", "end", "start"), roles(TrailGeoJson.markers(start, end, walk)))
+        val onRoad = RoadAccess(0, start, "ER 228", parking = GeoPoint(32.7301, -16.98))
+        assertEquals(listOf("parking", "end", "start"), roles(TrailGeoJson.markers(start, end, onRoad)))
+        assertEquals(listOf("start"), roles(TrailGeoJson.markers(start, null, RoadAccess(null))))
+        assertEquals(listOf("approach", "road", "parking", "place"), roles(TrailGeoJson.markers(null, null, walk, end)))
     }
 
     @Test

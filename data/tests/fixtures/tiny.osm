@@ -11,6 +11,17 @@
     <tag k="natural" v="peak"/><tag k="name" v="Pico Grande"/><tag k="ele" v="1654"/>
   </node>
   <node id="9" lat="32.7000" lon="-16.9000" version="1"><tag k="natural" v="peak"/></node>
+  <node id="10" lat="32.7130" lon="-16.9850" version="1"/>
+  <node id="11" lat="32.7121" lon="-16.9859" version="1">
+    <tag k="tourism" v="viewpoint"/><tag k="name" v="Miradouro do Teste"/>
+  </node>
+  <node id="12" lat="32.7125" lon="-16.9855" version="1"><tag k="place" v="village"/><tag k="name" v="Aldeia do Teste"/></node>
+  <node id="13" lat="32.7131" lon="-16.9851" version="1"/>
+  <node id="14" lat="32.7132" lon="-16.9849" version="1"/>
+  <node id="15" lat="32.7133" lon="-16.9851" version="1"/>
+  <node id="16" lat="32.9000" lon="-17.1000" version="1"><tag k="highway" v="bus_stop"/><tag k="name" v="Far away"/></node>
+  <node id="17" lat="32.6605" lon="-17.0480" version="1"/>
+  <node id="18" lat="32.6606" lon="-17.0470" version="1"/>
   <way id="100" version="1">
     <nd ref="1"/><nd ref="2"/><nd ref="3"/>
     <tag k="highway" v="path"/><tag k="name" v="Vereda do Pico Grande"/>
@@ -26,6 +37,18 @@
   <way id="103" version="1">
     <nd ref="4"/><nd ref="5"/>
     <tag k="highway" v="residential"/><tag k="name" v="Rua"/>
+  </way>
+  <way id="104" version="1">
+    <nd ref="3"/><nd ref="10"/>
+    <tag k="highway" v="residential"/><tag k="name" v="Rua do Teste"/><tag k="ref" v="ER 999"/>
+  </way>
+  <way id="105" version="1">
+    <nd ref="13"/><nd ref="14"/><nd ref="15"/><nd ref="13"/>
+    <tag k="amenity" v="parking"/>
+  </way>
+  <way id="106" version="1">
+    <nd ref="17"/><nd ref="18"/>
+    <tag k="highway" v="path"/><tag k="tunnel" v="yes"/><tag k="name" v="Túnel do Teste"/>
   </way>
   <relation id="4444478" version="1">
     <member type="way" ref="100" role=""/>

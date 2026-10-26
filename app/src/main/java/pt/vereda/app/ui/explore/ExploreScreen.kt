@@ -50,6 +50,7 @@ import pt.vereda.app.ui.components.checkedAgo
 import pt.vereda.app.ui.components.formatElevation
 import pt.vereda.app.ui.components.formatLength
 import pt.vereda.app.ui.map.MapTarget
+import pt.vereda.app.ui.map.kindLabel
 import pt.vereda.core.catalog.CatalogSearch
 import pt.vereda.core.catalog.Place
 import pt.vereda.core.catalog.TrailEntry
@@ -148,7 +149,7 @@ fun ExploreScreen(onOpen: (MapTarget) -> Unit, modifier: Modifier = Modifier) {
                 )
             }
             if (shownPlaces.isNotEmpty()) {
-                item(key = "peaks-title") { SectionTitle(stringResource(R.string.explore_peaks)) }
+                item(key = "peaks-title") { SectionTitle(stringResource(R.string.explore_places)) }
                 items(shownPlaces) { place ->
                     PlaceCard(place, onClick = { onOpen(MapTarget.PlaceTarget(place)) })
                 }
@@ -165,7 +166,7 @@ fun ExploreScreen(onOpen: (MapTarget) -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
-private const val MAX_PLACES = 5
+private const val MAX_PLACES = 8
 
 @Composable
 private fun StatusLine(load: StatusLoad, now: Instant, onRetry: () -> Unit) {
@@ -221,7 +222,11 @@ private fun TrailCard(entry: TrailEntry, state: pt.vereda.core.model.StatusState
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
-            val details = listOfNotNull(trail.fromTo, trail.municipality, formatLength(entry.lengthM))
+            val details = listOfNotNull(
+                trail.fromTo,
+                trail.municipality ?: trail.area?.let { stringResource(R.string.near_area, it) },
+                formatLength(entry.lengthM),
+            )
             if (details.isNotEmpty()) {
                 Text(
                     text = details.joinToString(" · "),
@@ -253,9 +258,13 @@ private fun PlaceCard(place: Place, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
-                Text(place.displayName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Text(
-                    text = stringResource(R.string.place_peak),
+                    text = place.displayName ?: kindLabel(place.kind),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = kindLabel(place.kind),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

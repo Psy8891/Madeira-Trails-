@@ -68,6 +68,76 @@ object TrailGeoJson {
         append("]}")
     }
 
+    /**
+     * Points of interest. Properties: id (index into [places]), kind (catalog key), label (name,
+     * with the height on a second line for peaks), minZoom, and rank (lower is drawn first when
+     * labels collide: peaks by height, then named places).
+     */
+    fun places(places: List<Place>): String = buildString {
+        append("{\"type\":\"FeatureCollection\",\"features\":[")
+        places.forEachIndexed { index, place ->
+            if (index > 0) append(',')
+            append("{\"type\":\"Feature\",\"properties\":{\"id\":").append(index)
+            append(",\"kind\":\"").append(place.kind.key).append('"')
+            append(",\"label\":").append(JsonPrimitive(label(place)))
+            append(",\"minZoom\":").append(place.kind.minZoom)
+            append(",\"rank\":").append(rank(place))
+            append("},\"geometry\":{\"type\":\"Point\",\"coordinates\":")
+            appendPosition(place.point)
+            append("}}")
+        }
+        append("]}")
+    }
+
+    internal fun label(place: Place): String {
+        val name = place.displayName ?: return ""
+        val ele = place.eleM
+        return if (place.kind == PlaceKind.PEAK && ele != null) "$name\n$ele m" else name
+    }
+
+    private fun rank(place: Place): Int = when {
+        place.kind == PlaceKind.PEAK -> 3000 - (place.eleM ?: 0).coerceIn(0, 2999)
+        place.name != null -> 5000
+        else -> 9000
+    }
+
+    /**
+     * Start and end markers and the walk from the road for a picked trail or place.
+     * Properties: role = start | end | approach | road | parking | place.
+     */
+    fun markers(start: GeoPoint?, end: GeoPoint?, access: RoadAccess?, place: GeoPoint? = null): String = buildString {
+        append("{\"type\":\"FeatureCollection\",\"features\":[")
+        var first = true
+        fun feature(role: String, geometry: StringBuilder.() -> Unit) {
+            if (!first) append(',')
+            first = false
+            append("{\"type\":\"Feature\",\"properties\":{\"role\":\"").append(role).append("\"},\"geometry\":")
+            geometry()
+            append('}')
+        }
+        fun pointFeature(role: String, p: GeoPoint) = feature(role) {
+            append("{\"type\":\"Point\",\"coordinates\":")
+            appendPosition(p)
+            append('}')
+        }
+        if (access != null && access.needsWalk && access.line.size >= 2) {
+            feature("approach") {
+                append("{\"type\":\"LineString\",\"coordinates\":[")
+                access.line.forEachIndexed { i, p ->
+                    if (i > 0) append(',')
+                    appendPosition(p)
+                }
+                append("]}")
+            }
+        }
+        if (access != null && access.needsWalk) access.roadPoint?.let { pointFeature("road", it) }
+        access?.parking?.let { pointFeature("parking", it) }
+        end?.let { pointFeature("end", it) }
+        start?.let { pointFeature("start", it) }
+        place?.let { pointFeature("place", it) }
+        append("]}")
+    }
+
     fun point(point: GeoPoint, name: String): String = buildString {
         append("{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{\"name\":")
         append(JsonPrimitive(name))

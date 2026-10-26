@@ -28,6 +28,8 @@ data class Trail(
     val municipality: String?,
     val island: Island,
     val aliases: List<String> = emptyList(),
+    /** Nearest village or locality, for trails without curated ends ("near Santo António"). */
+    val area: String? = null,
 ) {
     /** "Rabaçal → 25 Fontes", or null when either end is unknown. */
     val fromTo: String? get() = if (from != null && to != null) "$from → $to" else null

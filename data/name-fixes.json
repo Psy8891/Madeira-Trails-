@@ -1,0 +1,15 @@
+{
+  "_comment": "Hand fixes applied after the automatic clean-up (docs/SPEC.md, Data model). peaks: OSM name -> full name; trails: catalog id -> name.",
+  "peaks": {
+    "Arieiro": "Pico do Arieiro",
+    "Gato": "Pico do Gato",
+    "Torres": "Pico das Torres",
+    "Juncal": "Pico do Juncal",
+    "Poiso": "Pico do Poiso",
+    "Cidrão": "Pico do Cidrão"
+  },
+  "trails": {
+    "osm-w641486116": "Variante do túnel (Levada da Ribeira da Janela)",
+    "osm-w110691771": "Levada da Corrida ou da Rouca (oeste)"
+  }
+}
