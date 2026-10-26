@@ -7,27 +7,38 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v6
       - name: Probe
+        shell: bash
         run: |
+          set +e
           mkdir -p probe
+          exec > >(tee probe/out.txt) 2>&1
           sudo apt-get -qq update >/dev/null && sudo apt-get -qq install -y gdal-bin >/dev/null
-          {
-            M=https://geoservices.madeira.gov.pt/geoserver/EL_modelodigitalterreno_madeira10m/wcs
-            curl -sS -m 60 "$M?service=WCS&version=2.0.1&request=DescribeCoverage&coverageId=EL_modelodigitalterreno_madeira10m__el_mdtmadeira_gridcoverage" | head -c 3000; echo
-            time curl -sS -m 600 -o madeira.tif -w "tif %{http_code} %{size_download}\n" "$M?service=WCS&version=2.0.1&request=GetCoverage&coverageId=EL_modelodigitalterreno_madeira10m__el_mdtmadeira_gridcoverage&format=image/tiff"
-            file madeira.tif; gdalinfo -stats madeira.tif | grep -v "^  " | head -40
-            P=https://geoservices.madeira.gov.pt/geoserver/EL_mdt_portosanto10m/wcs
-            time curl -sS -m 600 -o portosanto.tif -w "ps tif %{http_code} %{size_download}\n" "$P?service=WCS&version=2.0.1&request=GetCoverage&coverageId=EL_mdt_portosanto10m__MDT_PortoSanto_2007_10m&format=image/tiff"
-            file portosanto.tif; gdalinfo -stats portosanto.tif | grep -v "^  " | head -40
-            echo "== sample Pico Ruivo (32.7587,-16.9431) and Areeiro (32.7357,-16.9284)"
-            gdallocationinfo -valonly -wgs84 madeira.tif -16.9431 32.7587 || true
-            gdallocationinfo -valonly -wgs84 madeira.tif -16.9284 32.7357 || true
-                    } > probe/out.txt 2>&1
-          ls -la *.tif >> probe/out.txt || true
+          M=https://geoservices.madeira.gov.pt/geoserver/EL_modelodigitalterreno_madeira10m/wcs
+          C=EL_modelodigitalterreno_madeira10m__el_mdtmadeira_gridcoverage
+          curl -sS -m 120 "$M?service=WCS&version=2.0.1&request=DescribeCoverage&coverageId=$C" -o describe.xml
+          grep -o 'srsName="[^"]*"\|axisLabels="[^"]*"\|<gml:lowerCorner>[^<]*\|<gml:upperCorner>[^<]*\|<gml:high>[^<]*\|<gml:offsetVector[^>]*>[^<]*' describe.xml | head -20
+          cp describe.xml probe/
+          P=https://geoservices.madeira.gov.pt/geoserver/EL_mdt_portosanto10m/wcs
+          curl -sS -m 120 "$P?service=WCS&version=2.0.1&request=DescribeCoverage&coverageId=EL_mdt_portosanto10m__MDT_PortoSanto_2007_10m" -o describe_ps.xml
+          grep -o 'srsName="[^"]*"\|axisLabels="[^"]*"\|<gml:lowerCorner>[^<]*\|<gml:upperCorner>[^<]*\|<gml:high>[^<]*' describe_ps.xml | head -10
+          echo "== Porto Santo full tif"
+          time curl -sS -m 900 -o portosanto.tif -w "ps %{http_code} %{size_download}\n" "$P?service=WCS&version=2.0.1&request=GetCoverage&coverageId=EL_mdt_portosanto10m__MDT_PortoSanto_2007_10m&format=image/tiff"
+          file portosanto.tif; gdalinfo -stats portosanto.tif | grep -v "^    " | head -30
+          echo "== Madeira scaled 0.25"
+          time curl -sS -m 900 -o mad_q.tif -w "q %{http_code} %{size_download}\n" "$M?service=WCS&version=2.0.1&request=GetCoverage&coverageId=$C&format=image/tiff&SCALEFACTOR=0.25"
+          file mad_q.tif; gdalinfo mad_q.tif | grep -v "^    " | head -30
+          echo "== Madeira full, 25 min max"
+          time curl -sS -m 1500 -o madeira.tif -w "full %{http_code} %{size_download}\n" "$M?service=WCS&version=2.0.1&request=GetCoverage&coverageId=$C&format=image/tiff"
+          file madeira.tif; gdalinfo -stats madeira.tif | grep -v "^    " | head -40
+          gdallocationinfo -valonly -wgs84 madeira.tif -16.9431 32.7587
+          gdallocationinfo -valonly -wgs84 madeira.tif -16.9284 32.7357
+          ls -la *.tif
       - name: Save
+        if: always()
         run: |
           git config user.name probe; git config user.email probe@example.invalid
           git add probe && git commit -qm "probe output" && git push -q origin HEAD:probe-dem
