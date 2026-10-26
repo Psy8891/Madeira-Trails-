@@ -517,7 +517,7 @@ Goal: the map and catalog files exist and are trustworthy.
 Goal: after testing the skeleton, the owner asked for trails on the map, live status and unofficial trails before the offline map work. This phase does that on the online development map and is kept small.
 
 - [ ] The bundled catalog is parsed in `:core:catalog` (pure Kotlin, unit-tested): polyline decoding, bounds, search over trails and peaks.
-- [ ] status.json is fetched from the status branch on start and on pull-to-refresh; the freshness rule (24 h, `stale`) decides the chip, and with no network the chip says unknown.
+- [ ] status.json is fetched from the status branch on start, when the app returns to the front (if the last fetch is over 10 min old) and from a Retry button; the last copy is cached for offline use, and the freshness rule (24 h, `stale`) decides the chip, so old data shows as unknown.
 - [ ] Explore lists official trails, community trails and imports, with source and status chips; search also finds peaks ("Pico Grande").
 - [ ] Tapping a trail opens the map with its line drawn (official solid, community dashed, colour by status), zoomed to fit, and a card with name, length, status with age and a link to the official page.
 - [ ] A trail without a line says so on its card.
