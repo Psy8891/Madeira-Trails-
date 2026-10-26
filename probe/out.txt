@@ -1,0 +1,28 @@
+== EL_mdt_madeira10m
+404 477
+wms 404 477
+== EL_mdt_madeira
+404 474
+wms 404 474
+== EL_mdt_madeira5m
+404 476
+wms 404 476
+== EL_mdt_madeira_10m
+404 478
+wms 404 478
+== EL_mdt_portosanto5m
+404 479
+wms 404 479
+== EL_mdt_portosanto10m
+200 7035
+<wcs:CoverageId>EL_mdt_portosanto10m__MDT_PortoSanto_2007_10m
+wms 200 10009
+<Name>WMS
+<Name>MDT_PortoSanto_2007_10m
+<Name>raster
+== EL
+404 462
+wms 404 462
+== EL_mdt
+404 466
+wms 404 466
