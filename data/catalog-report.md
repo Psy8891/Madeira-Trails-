@@ -1,10 +1,10 @@
 # Catalog report
 
-Generated 2026-10-26T14:13:28Z from OpenStreetMap.
+Generated 2026-10-26T14:17:34Z from OpenStreetMap.
 
 - Official trails with a line: **42 of 42**
 - Missing official lines: none
-- Community trails: **383**
+- Community trails: **385**
 - Named peaks: **163**
 
 ## Popular unofficial trails (data/wanted.json)
