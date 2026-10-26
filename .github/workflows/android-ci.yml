@@ -81,10 +81,29 @@ jobs:
             **/build/test-results/
           if-no-files-found: ignore
 
+  data-tests:
+    name: Data job tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r data/requirements.txt
+
+      - name: Run tests
+        run: python -m pytest data/tests -q
+
   publish:
     name: Publish APK to the latest-debug release
-    needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [build, data-tests]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

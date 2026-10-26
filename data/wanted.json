@@ -1,0 +1,16 @@
+{
+  "_about": "Popular unofficial trails found in guides and trail sites. Used only as a checklist: the catalog job reports which of these OpenStreetMap already has. Geometry never comes from these sources.",
+  "trails": [
+    {"name": "Boca da Corrida – Pico Grande", "match": ["pico grande"], "source": "user request"},
+    {"name": "Vereda do Larano (Machico / Caniçal – Porto da Cruz)", "match": ["larano", "boca do risco"], "source": "https://www.rexby.com/Madeira_Hiking/t/madeira-hiking-guide-for-first-time-tourists-20-trails-from-easy-levadas-to-epic-ridges"},
+    {"name": "Caminho da Entrosa (São Cristóvão – Arco de São Jorge)", "match": ["entrosa"], "source": "https://www.saltinourhair.com/madeira/best-hikes-madeira/"},
+    {"name": "Levada Nova (Ponta do Sol)", "match": ["levada nova"], "source": "https://www.saltinourhair.com/madeira/best-hikes-madeira/"},
+    {"name": "Levada do Moinho (Ponta do Sol)", "match": ["levada do moinho", "levada dos moinhos"], "source": "https://www.saltinourhair.com/madeira/best-hikes-madeira/"},
+    {"name": "Ribeira do Inferno (old ER101, São Vicente)", "match": ["ribeira do inferno"], "source": "https://www.saltinourhair.com/madeira/best-hikes-madeira/"},
+    {"name": "Levada do Norte", "match": ["levada do norte"], "source": "https://bookatrekking.com/pt/blog/caminhando-na-madeira/"},
+    {"name": "Chão da Ribeira – Fanal", "match": ["chao da ribeira"], "source": "https://www.rexby.com/Madeira_Hiking/t/madeira-hiking-guide-for-first-time-tourists-20-trails-from-easy-levadas-to-epic-ridges"},
+    {"name": "Levada da Ribeira da Janela", "match": ["levada da ribeira da janela"], "source": "https://www.dnoticias.pt/2023/10/16/379314-percursos-pedestres-dos-concelhos-afectados-pelos-incendios-reabertos/"},
+    {"name": "Vereda do Galhano", "match": ["galhano"], "source": "https://www.dnoticias.pt/2023/10/16/379314-percursos-pedestres-dos-concelhos-afectados-pelos-incendios-reabertos/"},
+    {"name": "Levada do Brasileiro", "match": ["levada do brasileiro"], "source": "https://www.dnoticias.pt/2023/10/16/379314-percursos-pedestres-dos-concelhos-afectados-pelos-incendios-reabertos/"}
+  ]
+}

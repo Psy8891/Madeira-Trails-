@@ -1,0 +1,62 @@
+name: Update trail status
+
+# Reads the official open/closed list every 30 minutes and publishes status.json on the
+# "status" branch, which the app reads from:
+# https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json
+# The branch always holds a single commit, so it never grows.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "7,37 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-status
+  cancel-in-progress: false
+
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r data/requirements.txt
+
+      - name: Get the previous status
+        run: |
+          mkdir -p out
+          if git fetch --depth 1 origin status 2>/dev/null; then
+            git show FETCH_HEAD:status.json > previous.json || true
+          fi
+
+      - name: Read the official status
+        run: |
+          python data/scripts/build_status.py \
+            --out out/status.json \
+            --previous previous.json \
+            --debug-out out/rows.txt
+          {
+            echo "## Trail status"
+            echo '```'
+            cat out/rows.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish to the status branch
+        run: |
+          cd out
+          git init -q -b status
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add status.json rows.txt
+          git commit -q -m "Trail status $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" status

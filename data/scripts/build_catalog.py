@@ -1,0 +1,275 @@
+"""Builds the trail catalog bundled in the app from OpenStreetMap (ODbL).
+
+- Official trails: hiking route relations whose ref (or name) is a PR code from data/official.json.
+- Community trails: other named hiking route relations, plus named footpaths that are not part of
+  any route, chained into continuous lines.
+- Places: named peaks, so searches like "Pico Grande" always land somewhere on the map.
+
+Writes app/src/main/assets/catalog.json and data/catalog-report.md.
+Usage: python data/scripts/build_catalog.py [--input overpass.json]
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import json
+import pathlib
+import re
+import sys
+import time
+from collections import defaultdict
+
+import requests
+
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from geo_utils import (  # noqa: E402
+    chain_lines,
+    encode_polyline,
+    length_m,
+    normalize,
+    parse_pr_code,
+    simplify,
+)
+
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+OFFICIAL = ROOT / "data" / "official.json"
+WANTED = ROOT / "data" / "wanted.json"
+OUT_CATALOG = ROOT / "app" / "src" / "main" / "assets" / "catalog.json"
+OUT_REPORT = ROOT / "data" / "catalog-report.md"
+
+BBOX = "32.55,-17.30,33.15,-16.25"  # Madeira + Porto Santo
+PORTO_SANTO_MIN_LAT = 32.95
+MIN_COMMUNITY_LENGTH_M = 400
+ENDPOINTS = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+]
+USER_AGENT = "VeredaCatalog/1.0 (+https://github.com/Psy8891/Madeira-Trails-)"
+
+QUERY = f"""
+[out:json][timeout:240];
+relation["route"~"^(hiking|foot)$"]({BBOX});
+out geom;
+way["highway"~"^(path|footway|steps|track)$"]["name"]({BBOX});
+out geom;
+node["natural"="peak"]["name"]({BBOX});
+out;
+"""
+
+# Named footways that are streets or urban paths, not trails.
+URBAN_NAME = re.compile(
+    r"^(rua|travessa|beco|largo|avenida|estrada|calcada|escadinhas|praca|caminho municipal)\b"
+)
+TRAIL_WORDS = re.compile(r"\b(levada|vereda|caminho|trilho|percurso|pico|ponta)\b")
+
+
+def fetch_overpass() -> dict:
+    last_error: Exception | None = None
+    for attempt in range(3):
+        for url in ENDPOINTS:
+            try:
+                response = requests.post(
+                    url, data={"data": QUERY}, headers={"User-Agent": USER_AGENT}, timeout=300
+                )
+                response.raise_for_status()
+                return response.json()
+            except Exception as error:  # noqa: BLE001 - try the next mirror
+                last_error = error
+                print(f"Overpass {url} failed: {error}", file=sys.stderr)
+        time.sleep(30 * (attempt + 1))
+    raise SystemExit(f"Overpass unavailable: {last_error}")
+
+
+def way_points(element: dict) -> list[tuple[float, float]]:
+    return [(g["lat"], g["lon"]) for g in element.get("geometry", []) if g]
+
+
+def centre_lat(lines: list[list[tuple[float, float]]]) -> float:
+    lats = [p[0] for line in lines for p in line]
+    return (min(lats) + max(lats)) / 2 if lats else 0.0
+
+
+def encode_lines(lines: list[list[tuple[float, float]]]) -> list[str]:
+    return [encode_polyline(simplify(line, 3.0)) for line in lines if len(line) >= 2]
+
+
+def island_of(lines) -> str:
+    return "porto_santo" if centre_lat(lines) > PORTO_SANTO_MIN_LAT else "madeira"
+
+
+def build(data: dict) -> tuple[dict, str]:
+    official_list = json.loads(OFFICIAL.read_text(encoding="utf-8"))
+    official_by_code = {o["code"]: o for o in official_list}
+    official_names = {normalize(o["name"]) for o in official_list}
+
+    official_lines: dict[str, list] = defaultdict(list)
+    official_osm: dict[str, list[str]] = defaultdict(list)
+    community: list[dict] = []
+    route_way_ids: set[int] = set()
+    places: list[dict] = []
+    path_ways: list[dict] = []
+
+    for el in data.get("elements", []):
+        tags = el.get("tags", {})
+        if el["type"] == "relation":
+            members = [m for m in el.get("members", []) if m.get("type") == "way" and m.get("geometry")]
+            lines = [[(g["lat"], g["lon"]) for g in m["geometry"] if g] for m in members]
+            lines = [line for line in lines if len(line) >= 2]
+            if not lines:
+                continue
+            route_way_ids.update(m["ref"] for m in members)
+            porto_santo = centre_lat(lines) > PORTO_SANTO_MIN_LAT
+            code = parse_pr_code(tags.get("ref"), porto_santo) or parse_pr_code(tags.get("name"), porto_santo)
+            if code in official_by_code:
+                official_lines[code].extend(lines)
+                official_osm[code].append(f"r{el['id']}")
+                continue
+            name = tags.get("name")
+            if not name or normalize(name) in official_names:
+                continue  # unnamed, or an official trail mapped without its PR ref
+            chains = chain_lines(lines)
+            total = sum(length_m(c) for c in chains)
+            if total < MIN_COMMUNITY_LENGTH_M:
+                continue
+            community.append(
+                {
+                    "id": f"osm-r{el['id']}",
+                    "source": "community",
+                    "name": name,
+                    "from": tags.get("from"),
+                    "to": tags.get("to"),
+                    "island": island_of(chains),
+                    "lengthM": round(total),
+                    "sacScale": None,
+                    "osm": [f"r{el['id']}"],
+                    "lines": encode_lines(chains),
+                }
+            )
+        elif el["type"] == "way":
+            path_ways.append(el)
+        elif el["type"] == "node" and tags.get("name"):
+            ele = tags.get("ele")
+            try:
+                ele_m = round(float(str(ele).replace(",", ".").split()[0])) if ele else None
+            except ValueError:
+                ele_m = None
+            places.append(
+                {"name": tags["name"], "kind": "peak", "lat": round(el["lat"], 6), "lon": round(el["lon"], 6), "ele": ele_m}
+            )
+
+    # Named paths that are not already part of a route relation, grouped by name.
+    by_name: dict[str, list[dict]] = defaultdict(list)
+    for way in path_ways:
+        if way["id"] in route_way_ids:
+            continue
+        name = way["tags"]["name"]
+        key = normalize(name)
+        if URBAN_NAME.match(key):
+            continue
+        if way["tags"].get("highway") == "track" and not TRAIL_WORDS.search(key):
+            continue
+        by_name[name].append(way)
+
+    for name, ways in by_name.items():
+        chains = chain_lines([way_points(w) for w in ways])
+        total = sum(length_m(c) for c in chains)
+        if total < MIN_COMMUNITY_LENGTH_M:
+            continue
+        sac = next((w["tags"].get("sac_scale") for w in ways if w["tags"].get("sac_scale")), None)
+        community.append(
+            {
+                "id": f"osm-w{min(w['id'] for w in ways)}",
+                "source": "community",
+                "name": name,
+                "from": None,
+                "to": None,
+                "island": island_of(chains),
+                "lengthM": round(total),
+                "sacScale": sac,
+                "osm": [f"w{w['id']}" for w in sorted(ways, key=lambda w: w["id"])][:20],
+                "lines": encode_lines(chains),
+            }
+        )
+
+    trails = []
+    missing = []
+    for o in official_list:
+        code = o["code"]
+        chains = chain_lines(official_lines.get(code, []))
+        if not chains:
+            missing.append(code)
+        trails.append(
+            {
+                "id": code.lower().replace(" ", "-"),
+                "source": "official",
+                "code": code,
+                "name": o["name"],
+                "island": o["island"],
+                "lengthM": round(sum(length_m(c) for c in chains)) if chains else None,
+                "osm": official_osm.get(code, []),
+                "lines": encode_lines(chains),
+            }
+        )
+
+    community.sort(key=lambda t: normalize(t["name"]))
+    trails.extend(community)
+    places.sort(key=lambda p: normalize(p["name"]))
+
+    catalog = {
+        "schema": 1,
+        "generatedAt": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "attribution": "© OpenStreetMap contributors (ODbL)",
+        "trails": trails,
+        "places": places,
+    }
+    return catalog, report(catalog, missing)
+
+
+def report(catalog: dict, missing: list[str]) -> str:
+    trails = catalog["trails"]
+    official = [t for t in trails if t["source"] == "official"]
+    community = [t for t in trails if t["source"] == "community"]
+    names = " | ".join(normalize(t["name"]) for t in trails)
+    place_names = " | ".join(normalize(p["name"]) for p in catalog["places"])
+
+    lines = [
+        "# Catalog report",
+        "",
+        f"Generated {catalog['generatedAt']} from OpenStreetMap.",
+        "",
+        f"- Official trails with a line: **{len(official) - len(missing)} of {len(official)}**",
+        f"- Missing official lines: {', '.join(missing) if missing else 'none'}",
+        f"- Community trails: **{len(community)}**",
+        f"- Named peaks: **{len(catalog['places'])}**",
+        "",
+        "## Popular unofficial trails (data/wanted.json)",
+        "",
+        "| Trail | In OpenStreetMap as a trail | Peak/place found |",
+        "| --- | --- | --- |",
+    ]
+    wanted = json.loads(WANTED.read_text(encoding="utf-8"))["trails"]
+    for w in wanted:
+        terms = [normalize(m) for m in w["match"]]
+        as_trail = any(term in names for term in terms)
+        as_place = any(term in place_names for term in terms)
+        lines.append(f"| {w['name']} | {'yes' if as_trail else 'no'} | {'yes' if as_place else 'no'} |")
+    return "\n".join(lines) + "\n"
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", help="Use a saved Overpass JSON response instead of downloading")
+    args = parser.parse_args()
+    data = json.loads(pathlib.Path(args.input).read_text()) if args.input else fetch_overpass()
+
+    catalog, report_md = build(data)
+    OUT_CATALOG.parent.mkdir(parents=True, exist_ok=True)
+    OUT_CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    OUT_REPORT.write_text(report_md, encoding="utf-8")
+    print(report_md)
+    print(f"catalog.json: {OUT_CATALOG.stat().st_size / 1024:.0f} KiB")
+
+
+if __name__ == "__main__":
+    main()
