@@ -584,6 +584,25 @@ edges:  varint count, then per edge: varint from, varint to, varint length in dm
 - [ ] Saved routes are kept on the phone with imports (the filter is now *Mine*), drawn on the map and followed with the same "on the trail" card.
 - [ ] Any trail or route can be exported as GPX 1.1 through the Android share sheet, with the OpenStreetMap attribution in the metadata.
 
+### Phase 0.8 — Directions in the app (asked for 26 Oct 2026)
+
+Goal: see the whole hike in Vereda instead of leaving for Google Maps. The owner's choice: only the hike itself (walking), no car directions; a toggle decides where *Directions* opens.
+
+**Toggle** — trail and peak cards show a two-sided switch next to *Directions*: **In Vereda** | **Google Maps**. The choice is kept on the phone (default *In Vereda*) and applies to every card until changed.
+
+**In Vereda** (`HikePlans` in `:core:catalog`, pure Kotlin, unit-tested) fills the route planner:
+- *Start*: the chosen start option's road point when it needs a walk, otherwise the trail's start. If the phone is within 1 km of that start, it starts from the phone instead.
+- *Trail* (trail cards): hidden via points keep the route on the trail's own line: its start (when the walk begins elsewhere), then the points at ¼, ½ and ¾ of its main line. *End*: the trail's end, or its start for a loop.
+- *Peak cards*: from the start as above to the peak.
+- The planner card opens with the route, its summary and warnings, *Save* (named after the trail or peak), *Export GPX* and following with the blue dot. Via points are not shown as stops and cannot be removed; *Reverse* reverses them too.
+- No route to show (a trail without a line, or a peak right on a road): *Directions* opens Google Maps instead.
+
+**Google Maps**: as before, directions to the chosen start (a road point).
+
+- [ ] The toggle shows on trail and peak cards, remembers its side after the app restarts, and *Directions* follows it.
+- [ ] In Vereda, Pico Grande via Boca da Corrida shows the full walk on the map with the route card; a trail card shows the approach plus the whole trail, end included.
+- [ ] Saving the route uses the trail or peak name.
+
 ### Phase 1 — Map that works offline
 
 Goal: open the app in airplane mode and see Madeira in detail.

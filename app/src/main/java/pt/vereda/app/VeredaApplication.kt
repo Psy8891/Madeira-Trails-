@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.maplibre.android.MapLibre
 import pt.vereda.app.data.RoutePlanner
+import pt.vereda.app.data.Settings
 import pt.vereda.app.data.TrailRepository
 import pt.vereda.app.location.LocationTracker
 
@@ -25,6 +26,10 @@ class VeredaApplication : Application() {
     lateinit var location: LocationTracker
         private set
 
+    /** Small choices kept on the phone (where Directions opens). */
+    lateinit var settings: Settings
+        private set
+
     override fun onCreate() {
         super.onCreate()
         // MapLibre must be initialised once before any MapView is created.
@@ -32,5 +37,6 @@ class VeredaApplication : Application() {
         repository = TrailRepository(this, appScope).also { it.start() }
         location = LocationTracker(this)
         planner = RoutePlanner(this, appScope)
+        settings = Settings(this)
     }
 }
