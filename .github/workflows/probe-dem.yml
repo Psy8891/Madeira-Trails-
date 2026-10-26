@@ -1,0 +1,39 @@
+name: Probe DEM sources (temporary)
+on:
+  push:
+    branches: [probe-dem]
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - name: Probe
+        run: |
+          mkdir -p probe
+          {
+            echo "== WCS capabilities (madeira geoserver)"
+            curl -sS -m 60 "https://geoservices.madeira.gov.pt/geoserver/ows?service=WCS&version=2.0.1&request=GetCapabilities" -o wcs.xml -w "%{http_code} %{size_download}\n" || true
+            grep -o '<wcs:CoverageId>[^<]*' wcs.xml | head -50 || true
+            echo "== WMS caps mdt madeira"
+            curl -sS -m 60 "https://geoservices.madeira.gov.pt/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities" -o wms.xml -w "%{http_code} %{size_download}\n" || true
+            grep -io '<Name>[^<]*md[ts][^<]*' wms.xml | head -40 || true
+            echo "== Copernicus"
+            for t in Copernicus_DSM_COG_10_N32_00_W017_00_DEM Copernicus_DSM_COG_10_N32_00_W018_00_DEM Copernicus_DSM_COG_10_N33_00_W017_00_DEM; do
+              curl -sS -m 60 -o /dev/null -w "$t %{http_code} %{size_download}\n" "https://copernicus-dem-30m.s3.amazonaws.com/$t/$t.tif" || true
+            done
+            echo "== Planetiler"
+            curl -sSIL -m 60 https://github.com/onthegomap/planetiler/releases/latest/download/planetiler.jar | grep -i "^location\|^HTTP" | tail -3
+            echo "== tools"
+            which gdalinfo tippecanoe java ogr2ogr || true
+            java -version 2>&1 | head -1
+            apt-cache policy gdal-bin tippecanoe 2>/dev/null | grep -A1 "^gdal-bin\|^tippecanoe" || true
+          } > probe/out.txt 2>&1
+          cp wcs.xml probe/ 2>/dev/null || true
+          head -c 200000 wms.xml > probe/wms.xml 2>/dev/null || true
+      - name: Save
+        run: |
+          git config user.name probe; git config user.email probe@example.invalid
+          git add probe && git commit -qm "probe output" && git push -q origin HEAD:probe-dem
