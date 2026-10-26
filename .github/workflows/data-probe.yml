@@ -1,0 +1,89 @@
+name: Data probe
+
+# One-off exploration of the data sources (OpenStreetMap, Visit Madeira, IFCN).
+# Results are pushed to the data-probe branch so they can be inspected.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out
+        uses: actions/checkout@v6
+
+      - name: Fetch sources
+        run: |
+          set -u
+          out="$RUNNER_TEMP/probe"
+          mkdir -p "$out"
+          ua="VeredaDataProbe/0.1 (personal hiking app; github.com/Psy8891)"
+          overpass() {
+            curl -sS --max-time 180 -A "$ua" --data-urlencode "data@$1" https://overpass-api.de/api/interpreter -o "$2" \
+              -w "$2 -> HTTP %{http_code}, %{size_download} bytes\n" || echo "$2 failed"
+          }
+
+          cat > q_routes.ql <<'EOF'
+          [out:json][timeout:150];
+          (
+            relation["route"~"^(hiking|foot|walking)$"](32.55,-17.35,32.95,-16.60);
+            relation["route"~"^(hiking|foot|walking)$"](32.98,-16.45,33.12,-16.25);
+          );
+          out tags;
+          EOF
+          overpass q_routes.ql "$out/osm_route_relations.json"
+
+          cat > q_named_paths.ql <<'EOF'
+          [out:json][timeout:150];
+          way["highway"~"^(path|footway|track|steps|bridleway)$"]["name"](32.55,-17.35,32.95,-16.60);
+          out tags center;
+          EOF
+          overpass q_named_paths.ql "$out/osm_named_paths.json"
+
+          cat > q_pico_grande.ql <<'EOF'
+          [out:json][timeout:150];
+          (
+            nwr["name"~"Pico Grande|Boca da Corrida",i](32.55,-17.35,32.95,-16.60);
+            relation["route"](around:3000,32.7016,-17.0186);
+          );
+          out tags center;
+          EOF
+          overpass q_pico_grande.ql "$out/osm_pico_grande.json"
+
+          fetch() {
+            curl -sSL --max-time 60 -A "Mozilla/5.0 (Linux; Android 16) VeredaDataProbe" "$1" -o "$2" \
+              -w "$2 -> HTTP %{http_code}, %{size_download} bytes\n" || echo "$2 failed"
+          }
+          fetch "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/" "$out/vm_hiking_en.html"
+          fetch "https://www.visitmadeira.com/pt-pt/info-uteis/passeios-a-pe/alertas-e-lista-de-percursos" "$out/vm_alertas_pt.html"
+          fetch "https://visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-6-levada-das-25-fontes/" "$out/vm_pr6_en.html"
+          fetch "https://visitmadeira.com/media/rcradgkh/percursos-pedestres-classificados.pdf" "$out/vm_status.pdf"
+          fetch "https://visitmadeira.com/media/bl4glmch/percursos-pedestres-classificados-abertos-fechados.pdf" "$out/vm_status_abertos_fechados.pdf"
+          fetch "https://ifcn.madeira.gov.pt/pt/atividades-de-natureza/percursos-pedestres-recomendados.html" "$out/ifcn_percursos.html"
+
+          for f in "$out"/*.html; do
+            echo "== $f"
+            grep -oiE '(https?:)?//[^"'"'"' ]+(\.json|\.geojson|\.kml|\.gpx|arcgis[^"'"'"' ]*|/api/[^"'"'"' ]*|FeatureServer[^"'"'"' ]*|mapserver[^"'"'"' ]*)' "$f" | sort -u | head -80
+          done > "$out/links_found.txt" 2>&1 || true
+
+          if command -v pdftotext >/dev/null; then
+            for f in "$out"/*.pdf; do pdftotext -layout "$f" "${f%.pdf}.txt" || true; done
+          fi
+          ls -la "$out"
+
+      - name: Push results to data-probe branch
+        run: |
+          cp -r "$RUNNER_TEMP/probe" "$RUNNER_TEMP/probe-copy"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan data-probe
+          git rm -rf -q .
+          cp -r "$RUNNER_TEMP/probe-copy/." .
+          git add -A
+          git commit -q -m "Data probe results ${GITHUB_RUN_NUMBER}"
+          git push -f origin data-probe
