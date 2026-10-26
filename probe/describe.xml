@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><wcs:CoverageDescriptions xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcsgs="http://www.geoserver.org/wcsgs/2.0" xsi:schemaLocation=" http://www.opengis.net/wcs/2.0 http://schemas.opengis.net/wcs/2.0/wcsDescribeCoverage.xsd http://www.geoserver.org/wcsgs/2.0 https://geoservices.madeira.gov.pt/geoserver/schemas/wcs/2.0/wcsgs.xsd">
+  <wcs:CoverageDescription gml:id="EL_modelodigitalterreno_madeira10m__el_mdtmadeira_gridcoverage">
+    <gml:description>Generated from ArcGrid</gml:description>
+    <gml:name>Modelo Digital de Terreno da Ilha da Madeira</gml:name>
+    <gml:boundedBy>
+      <gml:Envelope srsName="http://www.opengis.net/def/crs/EPSG/0/5016" axisLabels="E N" uomLabels="m m" srsDimension="2">
+        <gml:lowerCorner>208410.68 3234604.88</gml:lowerCorner>
+        <gml:upperCorner>744920.6799999999 4039154.88</gml:upperCorner>
+      </gml:Envelope>
+    </gml:boundedBy>
+    <wcs:CoverageId>EL_modelodigitalterreno_madeira10m__el_mdtmadeira_gridcoverage</wcs:CoverageId>
+    <gml:coverageFunction>
+      <gml:GridFunction>
+        <gml:sequenceRule axisOrder="+1 +2">Linear</gml:sequenceRule>
+        <gml:startPoint>0 0</gml:startPoint>
+      </gml:GridFunction>
+    </gml:coverageFunction>
+    <gmlcov:metadata>
+      <gmlcov:Extension>
+        <ows:Keywords>
+          <ows:Keyword>WCS</ows:Keyword>
+          <ows:Keyword>ArcGrid</ows:Keyword>
+          <ows:Keyword>MDT</ows:Keyword>
+          <ows:Keyword>DTM</ows:Keyword>
+          <ows:Keyword>Altitude</ows:Keyword>
+          <ows:Keyword>Elevation</ows:Keyword>
+          <ows:Keyword>Cobertura</ows:Keyword>
+          <ows:Keyword>Coverage</ows:Keyword>
+        </ows:Keywords>
+        <ows:Metadata xlink:type="simple" xlink:href="https://snig.dgterritorio.gov.pt/rndg/srv/por/csw-inspire?service=CSW&amp;request=GetRecordById&amp;version=2.0.2&amp;outputFormat=application/xml&amp;outputSchema=http://www.isotc211.org/2005/gmd&amp;ElementSetName=full&amp;Id=74238358-6eee-45e1-a8fa-3a518321d4ba"/>
+      </gmlcov:Extension>
+    </gmlcov:metadata>
+    <gml:domainSet>
+      <gml:RectifiedGrid gml:id="grid00__EL_modelodigitalterreno_madeira10m__el_mdtmadeira_gridcoverage" dimension="2">
+        <gml:limits>
+          <gml:GridEnvelope>
+            <gml:low>0 0</gml:low>
+            <gml:high>53650 80454</gml:high>
+          </gml:GridEnvelope>
+        </gml:limits>
+        <gml:axisLabels>i j</gml:axisLabels>
+        <gml:origin>
+          <gml:Point gml:id="p00_EL_modelodigitalterreno_madeira10m__el_mdtmadeira_gridcoverage" srsName="http://www.opengis.net/def/crs/EPSG/0/5016">
+            <gml:pos>208410.68 4039154.88</gml:pos>
+          </gml:Point>
+        </gml:origin>
+        <gml:offsetVector srsName="http://www.opengis.net/def/crs/EPSG/0/5016">10.0 0.0</gml:offsetVector>
+        <gml:offsetVector srsName="http://www.opengis.net/def/crs/EPSG/0/5016">0.0 -10.0</gml:offsetVector>
+      </gml:RectifiedGrid>
+    </gml:domainSet>
+    <gmlcov:rangeType>
+      <swe:DataRecord xmlns:swe="http://www.opengis.net/swe/2.0">
+        <swe:field name="madeira_10">
+          <swe:Quantity>
+            <swe:description>madeira_10</swe:description>
+            <swe:nilValues>
+              <swe:NilValues>
+                <swe:nilValue reason="http://www.opengis.net/def/nil/OGC/0/unknown">-999.0</swe:nilValue>
+              </swe:NilValues>
+            </swe:nilValues>
+            <swe:uom code="W.m-2.Sr-1"/>
+            <swe:constraint>
+              <swe:AllowedValues>
+                <swe:interval>-1.7976931348623157E308 1.7976931348623157E308</swe:interval>
+              </swe:AllowedValues>
+            </swe:constraint>
+          </swe:Quantity>
+        </swe:field>
+      </swe:DataRecord>
+    </gmlcov:rangeType>
+    <wcs:ServiceParameters>
+      <wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+      <wcs:nativeFormat>image/tiff</wcs:nativeFormat>
+    </wcs:ServiceParameters>
+  </wcs:CoverageDescription>
+</wcs:CoverageDescriptions>

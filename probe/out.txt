@@ -1,0 +1,94 @@
+
+Running kernel seems to be up-to-date.
+
+Restarting services...
+ systemctl restart php8.3-fpm.service polkit.service rsyslog.service udisks2.service
+
+Service restarts being deferred:
+ systemctl restart ModemManager.service
+ systemctl restart networkd-dispatcher.service
+ systemctl restart walinuxagent.service
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+srsName="http://www.opengis.net/def/crs/EPSG/0/5016"
+axisLabels="E N"
+<gml:lowerCorner>208410.68 3234604.88
+<gml:upperCorner>744920.6799999999 4039154.88
+<gml:high>53650 80454
+srsName="http://www.opengis.net/def/crs/EPSG/0/5016"
+<gml:offsetVector srsName="http://www.opengis.net/def/crs/EPSG/0/5016">10.0 0.0
+<gml:offsetVector srsName="http://www.opengis.net/def/crs/EPSG/0/5016">0.0 -10.0
+srsName="http://www.opengis.net/def/crs/EPSG/0/3061"
+axisLabels="E N"
+<gml:lowerCorner>366997.5 3649002.5
+<gml:upperCorner>383007.5 3666502.5
+<gml:high>1600 1749
+srsName="http://www.opengis.net/def/crs/EPSG/0/3061"
+srsName="http://www.opengis.net/def/crs/EPSG/0/3061"
+srsName="http://www.opengis.net/def/crs/EPSG/0/3061"
+== Porto Santo full tif
+ps 200 45466576
+
+real	0m9.477s
+user	0m0.133s
+sys	0m0.122s
+portosanto.tif: TIFF image data, big-endian, direntries=16, height=1750, bps=64, compression=none, PhotometricInterpretation=BlackIsZero, width=1601
+Driver: GTiff/GeoTIFF
+Files: portosanto.tif
+Size is 1601, 1750
+Coordinate System is:
+PROJCRS["Porto Santo 1995 / UTM zone 28N",
+Data axis to CRS axis mapping: 1,2
+Origin = (366997.500000000000000,3666502.500000000000000)
+Pixel Size = (10.000000000000000,-10.000000000000000)
+Metadata:
+  AREA_OR_POINT=Area
+  TIFFTAG_RESOLUTIONUNIT=1 (unitless)
+  TIFFTAG_XRESOLUTION=1
+  TIFFTAG_YRESOLUTION=1
+Image Structure Metadata:
+  INTERLEAVE=BAND
+Corner Coordinates:
+Upper Left  (  366997.500, 3666502.500) ( 16d25'32.59"W, 33d 7'42.90"N)
+Lower Left  (  366997.500, 3649002.500) ( 16d25'23.44"W, 32d58'14.81"N)
+Upper Right (  383007.500, 3666502.500) ( 16d15'14.89"W, 33d 7'49.55"N)
+Lower Right (  383007.500, 3649002.500) ( 16d15' 6.85"W, 32d58'21.42"N)
+Center      (  375002.500, 3657752.500) ( 16d20'19.44"W, 33d 3' 2.28"N)
+Band 1 Block=1600x48 Type=Float64, ColorInterp=Gray
+  Minimum=-0.722, Maximum=512.112, Mean=16.917, StdDev=51.044
+  Metadata:
+== Madeira scaled 0.25
+q 200 2206315363
+
+real	6m0.866s
+user	0m4.110s
+sys	0m4.550s
+mad_q.tif: TIFF image data, big-endian, direntries=17, height=20114, bps=64, compression=none, PhotometricInterpretation=BlackIsZero, width=13413
+Driver: GTiff/GeoTIFF
+Files: mad_q.tif
+Size is 13413, 20114
+Coordinate System is:
+PROJCRS["PTRA08 / UTM zone 28N",
+Data axis to CRS axis mapping: 1,2
+Origin = (208400.679999999993015,4039146.725238095037639)
+Pixel Size = (40.000000000000000,-40.000045869496255)
+Metadata:
+  AREA_OR_POINT=Area
+  TIFFTAG_RESOLUTIONUNIT=1 (unitless)
+  TIFFTAG_XRESOLUTION=1
+  TIFFTAG_YRESOLUTION=1
+Image Structure Metadata:
+  INTERLEAVE=BAND
+Corner Coordinates:
+Upper Left  (  208400.680, 4039146.725) ( 18d15'12.99"W, 36d27'11.76"N)
+Lower Left  (  208400.680, 3234585.803) ( 17d59'56.73"W, 29d12'23.25"N)
+Upper Right (  744920.680, 4039146.725) ( 12d15'59.89"W, 36d27'58.78"N)
+Lower Right (  744920.680, 3234585.803) ( 12d28'50.07"W, 29d12'58.88"N)
+Center      (  476660.680, 3636866.264) ( 15d14'58.12"W, 32d52'10.81"N)
+Band 1 Block=720x672 Type=Float64, ColorInterp=Gray
+  NoData Value=-999
+== Madeira full, 25 min max
