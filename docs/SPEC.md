@@ -552,7 +552,7 @@ Goal: after using Phase 0.5, the owner asked for complete names, a way to reach 
 - [ ] When a trail's end is not on a road, the card says how to reach it ("Start: 2.4 km from the ER 228, via Caminho Real da Encumeada"), the approach is drawn as a dotted line, and the road point (with parking when there is one) is marked.
 - [ ] A locate button shows the phone's position (blue dot with accuracy circle and heading). Taps cycle: centre on me → follow with compass → free. Location is asked for on the first tap, only while the app is in use, never in the background.
 - [ ] With a trail picked and a position known, the card shows where you are: "On the trail · 2.3 km walked · 3.1 km to the end", or "450 m from the trail" (off it by more than 40 m, using `:core:geo` `Route.snap`), or the distance to the start.
-- [ ] Points of interest from the catalog are drawn with icons from zoom 12 (peaks with name and height from zoom 10) and can be tapped; the base map's own peak labels are hidden so names aren't doubled.
+- [ ] Points of interest from the catalog are drawn with icons (peaks with name and height from zoom 10; viewpoints, waterfalls, huts, campsites and trailheads from 12; springs, shelters, picnic sites, caves and tunnels from 13; water and parking from 13.5; toilets and bus stops from 14; other names from 14) and can be tapped; the base map's own peak labels are hidden so names aren't doubled. Community trails that mostly repeat an official trail's line are left out of the catalog.
 - [ ] Search finds named viewpoints, waterfalls, shelters and other named points as well as peaks.
 
 ### Phase 1 — Map that works offline
