@@ -17,6 +17,7 @@ offline maps, and a local profile with Done / To-do / Wishlist lists. No account
 | `app/` | The Android app (Kotlin, Jetpack Compose, MapLibre) |
 | `core/model/` | Plain Kotlin models: trails, status, the official trail list, search |
 | `core/geo/` | Plain Kotlin geo logic: distances, track stats, off-route detection, UTM, GPX |
+| `core/route/` | Plain Kotlin: reads the walking network and plans routes (A*) |
 | `core/catalog/` | Plain Kotlin: reads the trail catalog and live status, search over trails and places, where you are on a trail, GPX import, map GeoJSON |
 | `data/` | Python data jobs (with pytest tests): trail catalog from OpenStreetMap (names, road access, points of interest), official status from Visit Madeira |
 | `.github/workflows/android-ci.yml` | CI: runs the unit and data tests, builds a debug APK and publishes it on every push |
@@ -25,15 +26,19 @@ offline maps, and a local profile with Done / To-do / Wishlist lists. No account
 
 ## Status
 
-Phase 0.6 (see the spec). The app opens on a map of Madeira (a temporary online base map until
+Phase 0.7 (see the spec). The app opens on a map of Madeira (a temporary online base map until
 the offline packages exist) with every trail drawn: official trails coloured by their live
 official status, community trails from OpenStreetMap dashed, and peaks, viewpoints, waterfalls,
 water, shelters, parking and tunnels as icons. The locate button shows where you are (follow, then
 follow with compass). Explore searches trails, peaks and named places (accent-insensitive, partial
 names work), filters by source, and opens a trail on the map with its start, end and the walk from
 the nearest road, plus a card with its status age, how to get to the start and where you are on
-it. **Import GPX** adds your own files (from a guide, Wikiloc or a friend); they stay on the
-phone. Record and Me are still placeholders.
+it, with up to three ways in (well-known trailheads first, such as Boca da Corrida for Pico
+Grande). Long-press the map to plan your own route: start, stops and end are routed on the
+phone, offline, over the OpenStreetMap path network (marked trails first, difficult paths
+avoided), and the route can be saved, followed with the blue dot or exported as GPX.
+**Import GPX** adds your own files (from a guide, Wikiloc or a friend); they stay on the phone.
+Record and Me are still placeholders.
 
 Live status: <https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json>
 (what the app reads), parsed rows in
