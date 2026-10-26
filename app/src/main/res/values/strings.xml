@@ -62,6 +62,11 @@
     <string name="record_placeholder">GPS recording and navigation arrive in Phase 3.</string>
     <string name="me_title">Me</string>
     <string name="me_placeholder">Your profile and the Done, To-do and Wishlist lists arrive in Phase 2. Everything stays on this phone.</string>
+    <string name="language_title">Language</string>
+    <string name="language_note">Changes Vereda only, not your phone.</string>
+    <string name="language_system">Phone setting</string>
+    <string name="language_english" translatable="false">English</string>
+    <string name="language_portuguese" translatable="false">Português</string>
 
     <string name="explore_places">Peaks and places</string>
     <string name="near_area">near %1$s</string>

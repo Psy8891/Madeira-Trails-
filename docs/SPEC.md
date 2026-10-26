@@ -603,6 +603,17 @@ Goal: see the whole hike in Vereda instead of leaving for Google Maps. The owner
 - [ ] In Vereda, Pico Grande via Boca da Corrida shows the full walk on the map with the route card; a trail card shows the approach plus the whole trail, end included.
 - [ ] Saving the route uses the trail or peak name.
 
+### Phase 0.9 — Language switch (asked for 26 Oct 2026)
+
+Goal: change the app's language without changing the phone's. The *Me* tab gets a **Language** setting with three choices: **Phone setting** (default), **English** and **Português**. No German or French in v1.
+
+- `AppLanguage` (`:core:model`, unit-tested) maps each choice to a language tag ("", "en", "pt") and back; unknown or regional tags ("pt-PT", "en-GB") resolve to their language, anything else to *Phone setting*.
+- Android 13 and later: the choice is the per-app language (`LocaleManager`), so it also shows in Android's *App languages* settings (`res/xml/locales_config.xml`). Android 8–12: kept in the app's settings and applied when the screen is created.
+- Changing it redraws the app at once in the new language; the map, cards and catalog notes follow it.
+
+- [ ] Me → Language switches every screen between English and Portuguese immediately, and the choice survives restarting the app.
+- [ ] *Phone setting* goes back to the phone's language.
+
 ### Phase 1 — Map that works offline
 
 Goal: open the app in airplane mode and see Madeira in detail.
