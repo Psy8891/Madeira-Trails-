@@ -1,0 +1,560 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-10-26T13:40:50Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 318663295,
+  "lat": 32.7109712,
+  "lon": -16.9868483,
+  "tags": {
+    "highway": "turning_circle",
+    "name": "Largo da Boca da Corrida"
+  }
+},
+{
+  "type": "node",
+  "id": 1832777798,
+  "lat": 32.7107708,
+  "lon": -16.9865188,
+  "tags": {
+    "ele": "1225",
+    "name": "Boca da Corrida",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 3700377066,
+  "lat": 32.7533559,
+  "lon": -17.0210116,
+  "tags": {
+    "hiking": "yes",
+    "information": "guidepost",
+    "name": "Boca da Corrida 12,6 km",
+    "tourism": "information"
+  }
+},
+{
+  "type": "node",
+  "id": 7343007810,
+  "lat": 32.7106693,
+  "lon": -16.9861027,
+  "tags": {
+    "name": "Boca da Corrida",
+    "tourism": "viewpoint"
+  }
+},
+{
+  "type": "way",
+  "id": 166436871,
+  "center": {
+    "lat": 32.7108218,
+    "lon": -16.9869482
+  },
+  "tags": {
+    "amenity": "ranger_station",
+    "building": "government",
+    "name": "Posto Florestal da Boca da Corrida",
+    "operator": "Instituto das Florestas e Conservação da Natureza",
+    "police": "forest"
+  }
+},
+{
+  "type": "way",
+  "id": 451615700,
+  "center": {
+    "lat": 32.7209739,
+    "lon": -16.9919202
+  },
+  "tags": {
+    "access": "no",
+    "foot": "no",
+    "layer": "-1",
+    "name": "Túnel do Pico Grande",
+    "name:en": "Tunnel of Pico Grande",
+    "oneway": "yes",
+    "tunnel": "yes",
+    "tunnel:name": "Pico Grande",
+    "usage": "irrigation",
+    "waterway": "drain",
+    "width": "0.5"
+  }
+},
+{
+  "type": "relation",
+  "id": 1905395,
+  "center": {
+    "lat": 32.6555342,
+    "lon": -16.9837552
+  },
+  "tags": {
+    "from": "Funchal",
+    "name": "R 7: Funchal > Ribeira Brava",
+    "network": "SIGA",
+    "network:wikidata": "Q131480575",
+    "operator": "RODOESTE",
+    "public_transport:version": "2",
+    "ref": "7",
+    "route": "bus",
+    "to": "Ribeira Brava",
+    "type": "route",
+    "via": "Aviceiro",
+    "website": "https://www.rodoeste.com.pt/assets/front/pdf/schedules/service/CARREIRA%20No%207_FUNCHAL_RIBEIRA%20BRAVA.pdf"
+  }
+},
+{
+  "type": "relation",
+  "id": 2742108,
+  "center": {
+    "lat": 32.7426232,
+    "lon": -17.0355955
+  },
+  "tags": {
+    "alt_name": "ER104",
+    "description": "Ribeira Brava – São Vicente",
+    "name": "Via Expresso 4",
+    "ref": "VE4",
+    "route": "road",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 3311217,
+  "center": {
+    "lat": 32.6660519,
+    "lon": -17.0181933
+  },
+  "tags": {
+    "description": "Ribeira Brava – Câmara de Lobos",
+    "ref": "ER229",
+    "route": "road",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 3311218,
+  "center": {
+    "lat": 32.6749157,
+    "lon": -17.0349451
+  },
+  "tags": {
+    "description": "Campanário – Boa Morte",
+    "name": "Estrada Regional 112",
+    "ref": "ER112",
+    "route": "road",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 3322623,
+  "center": {
+    "lat": 32.7523349,
+    "lon": -17.0238954
+  },
+  "tags": {
+    "description": "Rosário – Serra de Água",
+    "ref": "ER228",
+    "route": "road",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 4442868,
+  "center": {
+    "lat": 32.7126574,
+    "lon": -16.9991494
+  },
+  "tags": {
+    "from": "Boca da Corrida",
+    "name": "Vereda da Trompica",
+    "network": "lwn",
+    "ref": "VT",
+    "route": "hiking",
+    "to": "Trompica",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 4444478,
+  "center": {
+    "lat": 32.7339526,
+    "lon": -16.9857395
+  },
+  "tags": {
+    "from": "PR 12 Caminho Real da Encumeada",
+    "name": "Vereda do Pico Grande",
+    "ref": "VPG",
+    "route": "hiking",
+    "sac_scale": "demanding_mountain_hiking",
+    "to": "Pico Grande",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 4451073,
+  "center": {
+    "lat": 32.6908465,
+    "lon": -17.0439365
+  },
+  "tags": {
+    "from": "Fajã",
+    "name": "Vereda da Eira do Mourão",
+    "ref": "VEM",
+    "roundtrip": "yes",
+    "route": "hiking",
+    "to": "Eira do Mourão",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 4451074,
+  "center": {
+    "lat": 32.7018296,
+    "lon": -17.0362560
+  },
+  "tags": {
+    "from": "Meia Légua",
+    "name": "Vereda do Espigão",
+    "ref": "Espigão",
+    "roundtrip": "yes",
+    "route": "hiking",
+    "to": "Espigão",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 4462224,
+  "center": {
+    "lat": 32.7020754,
+    "lon": -17.0443949
+  },
+  "tags": {
+    "from": "Meia Légua",
+    "incline": "up",
+    "name": "Vereda das Furnas",
+    "ref": "Furnas",
+    "route": "hiking",
+    "to": "Furnas",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 5563074,
+  "center": {
+    "lat": 32.6910662,
+    "lon": -17.0029898
+  },
+  "tags": {
+    "name": "Levada do Norte (South)",
+    "network": "lwn",
+    "ref": "LNS",
+    "route": "hiking",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 8657742,
+  "center": {
+    "lat": 32.6779250,
+    "lon": -16.9820646
+  },
+  "tags": {
+    "name": "Regional Road 117",
+    "name:pt": "Estrada Regional 117",
+    "network": "rwn",
+    "operator": "Estradas da Madeira",
+    "ref": "ER117",
+    "route": "road",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 10959402,
+  "center": {
+    "lat": 32.7188179,
+    "lon": -17.0402385
+  },
+  "tags": {
+    "ascent": "1521",
+    "distance": "18.4",
+    "mtb:scale:apm": "513",
+    "name": "[CIMA PR05] Paul da Serra * Serra de Auga",
+    "network": "lcn",
+    "operator": "CIMA",
+    "ref": "CIMA PR05-1",
+    "route": "bicycle",
+    "type": "route",
+    "website": "https://www.retocima.es/por05.htm"
+  }
+},
+{
+  "type": "relation",
+  "id": 15588052,
+  "center": {
+    "lat": 32.6617024,
+    "lon": -17.0182543
+  },
+  "tags": {
+    "fixme": "incomplete",
+    "from": "Ribeira Brava",
+    "name": "R 4: Ribeira Brava > Funchal",
+    "network": "SIGA",
+    "note": "itinerary in Ribeira Brava should be checked",
+    "operator": "Rodoeste",
+    "public_transport:version": "2",
+    "ref": "4",
+    "route": "bus",
+    "to": "Funchal",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 19661598,
+  "center": {
+    "lat": 32.7278353,
+    "lon": -16.9774206
+  },
+  "tags": {
+    "distance": "38",
+    "from": "São Vicente",
+    "name": "Caminho Real 25",
+    "network": "rwn",
+    "ref": "CR25",
+    "route": "hiking",
+    "to": "Funchal",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 19789265,
+  "center": {
+    "lat": 32.6617024,
+    "lon": -17.0179533
+  },
+  "tags": {
+    "fixme": "C.do.Lobes-Funchal missing",
+    "from": "Funchal",
+    "name": "R 4: Funchal > Ribeira Brava",
+    "network": "SIGA",
+    "operator": "Rodoeste",
+    "public_transport:version": "2",
+    "ref": "4",
+    "route": "bus",
+    "to": "Ribeira Brava",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 19860074,
+  "center": {
+    "lat": 32.6554132,
+    "lon": -16.9836822
+  },
+  "tags": {
+    "from": "Ribeira Brava",
+    "name": "R 7: Ribeira Brava > Funchal",
+    "network": "SIGA",
+    "network:wikidata": "Q131480575",
+    "note": "itinerary in Ribeira Brava should be checked",
+    "operator": "RODOESTE",
+    "public_transport:version": "2",
+    "ref": "7",
+    "route": "bus",
+    "to": "Funchal",
+    "type": "route",
+    "via": "Aviceiro",
+    "website": "https://www.rodoeste.com.pt/assets/front/pdf/schedules/service/CARREIRA%20No%207_FUNCHAL_RIBEIRA%20BRAVA.pdf"
+  }
+},
+{
+  "type": "relation",
+  "id": 19876756,
+  "center": {
+    "lat": 32.6862877,
+    "lon": -17.0405784
+  },
+  "tags": {
+    "from": "Ribeira Brava",
+    "name": "R 127: Ribeira Brava > Lugar de Serra (via Boa Morte)",
+    "network": "SIGA",
+    "note": "WIP",
+    "operator": "Rodoeste",
+    "public_transport:version": "2",
+    "ref": "127",
+    "route": "bus",
+    "to": "Lugar de Serra",
+    "type": "route",
+    "via": "Boa Morte",
+    "website": "https://www.rodoeste.com.pt/assets/front/pdf/schedules/service/CARREIRA%20No%20127_BOA%20MORTE.pdf"
+  }
+},
+{
+  "type": "relation",
+  "id": 19879243,
+  "center": {
+    "lat": 32.6867076,
+    "lon": -17.0402774
+  },
+  "tags": {
+    "from": "Lugar de Serra",
+    "name": "R 127: Lugar de Serra > Ribeira Brava (via Boa Morte)",
+    "network": "SIGA",
+    "operator": "Rodoeste",
+    "public_transport:version": "2",
+    "ref": "127",
+    "route": "bus",
+    "to": "Ribeira Brava",
+    "type": "route",
+    "via": "Boa Morte",
+    "website": "https://www.rodoeste.com.pt/assets/front/pdf/schedules/service/CARREIRA%20No%20127_BOA%20MORTE.pdf"
+  }
+},
+{
+  "type": "relation",
+  "id": 19902595,
+  "center": {
+    "lat": 32.7057407,
+    "lon": -17.0423168
+  },
+  "tags": {
+    "from": "Ribeira Brava",
+    "name": "R 100: Ribeira Brava > Serra de Água",
+    "network": "SIGA",
+    "operator": "Rodoeste",
+    "public_transport:version": "2",
+    "ref": "100",
+    "route": "bus",
+    "to": "Lombo do Moleiro",
+    "type": "route",
+    "via": "Serra de Água",
+    "website": "https://www.rodoeste.com.pt/assets/front/pdf/schedules/service/CARREIRA%20No%20100_SERRA%20DE%20AGUA.pdf"
+  }
+},
+{
+  "type": "relation",
+  "id": 19906339,
+  "center": {
+    "lat": 32.7049314,
+    "lon": -17.0428599
+  },
+  "tags": {
+    "from": "Lombo do Moleiro",
+    "name": "R 100: Serra de Água > Ribeira Brava",
+    "network": "SIGA",
+    "operator": "Rodoeste",
+    "public_transport:version": "2",
+    "ref": "100",
+    "route": "bus",
+    "to": "Ribeira Brava",
+    "type": "route",
+    "via": "Serra de Água",
+    "website": "https://www.rodoeste.com.pt/assets/front/pdf/schedules/service/CARREIRA%20No%20100_SERRA%20DE%20AGUA.pdf"
+  }
+},
+{
+  "type": "relation",
+  "id": 19907768,
+  "center": {
+    "lat": 32.7382370,
+    "lon": -17.0409111
+  },
+  "tags": {
+    "from": "Ribeira Brava",
+    "name": "R 6: Ribeira Brava > São Vicente (via Túnel Encumeda)",
+    "network": "SIGA",
+    "operator": "Rodoeste",
+    "public_transport:version": "2",
+    "ref": "6",
+    "route": "bus",
+    "to": "São Vicente",
+    "type": "route",
+    "via": "Túnel Encumeda",
+    "website": "https://www.rodoeste.com.pt/assets/front/pdf/schedules/service/CARREIRA%20No%206_FUNCHAL_ARCO%20SAO%20JORGE.pdf"
+  }
+},
+{
+  "type": "relation",
+  "id": 19914370,
+  "center": {
+    "lat": 32.7374459,
+    "lon": -17.0414542
+  },
+  "tags": {
+    "from": "São Vicente",
+    "name": "R 6: São Vicente > Ribeira Brava (via Túnel Encumeda)",
+    "network": "SIGA",
+    "operator": "Rodoeste",
+    "public_transport:version": "2",
+    "ref": "6",
+    "route": "bus",
+    "to": "Ribeira Brava",
+    "type": "route",
+    "via": "Túnel Encumeda",
+    "website": "https://www.rodoeste.com.pt/assets/front/pdf/schedules/service/CARREIRA%20No%206_FUNCHAL_ARCO%20SAO%20JORGE.pdf"
+  }
+},
+{
+  "type": "relation",
+  "id": 19918116,
+  "center": {
+    "lat": 32.7382370,
+    "lon": -17.0395124
+  },
+  "tags": {
+    "from": "Ribeira Brava",
+    "name": "R 6: Ribeira Brava > São Vicente (via Encumeda)",
+    "network": "SIGA",
+    "operator": "Rodoeste",
+    "public_transport:version": "2",
+    "ref": "6",
+    "route": "bus",
+    "to": "São Vicente",
+    "type": "route",
+    "via": "Encumeda",
+    "website": "https://www.rodoeste.com.pt/assets/front/pdf/schedules/service/CARREIRA%20No%206_FUNCHAL_ARCO%20SAO%20JORGE.pdf"
+  }
+},
+{
+  "type": "relation",
+  "id": 19920759,
+  "center": {
+    "lat": 32.7374459,
+    "lon": -17.0400554
+  },
+  "tags": {
+    "from": "São Vicente",
+    "name": "R 6: São Vicente > Ribeira Brava (via Encumeda)",
+    "network": "SIGA",
+    "operator": "Rodoeste",
+    "public_transport:version": "2",
+    "ref": "6",
+    "route": "bus",
+    "to": "Ribeira Brava",
+    "type": "route",
+    "via": "Encumeda",
+    "website": "https://www.rodoeste.com.pt/assets/front/pdf/schedules/service/CARREIRA%20No%206_FUNCHAL_ARCO%20SAO%20JORGE.pdf"
+  }
+}
+
+  ]
+}
