@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="hand-written test fixture">
+  <node id="1" lat="32.7100" lon="-16.9900" version="1"/>
+  <node id="2" lat="32.7110" lon="-16.9880" version="1"/>
+  <node id="3" lat="32.7120" lon="-16.9860" version="1"/>
+  <node id="4" lat="32.6600" lon="-17.0500" version="1"/>
+  <node id="5" lat="32.6610" lon="-17.0450" version="1"/>
+  <node id="6" lat="40.0000" lon="-8.0000" version="1"/>
+  <node id="7" lat="40.0010" lon="-8.0010" version="1"/>
+  <node id="8" lat="32.7146" lon="-16.9930" version="1">
+    <tag k="natural" v="peak"/><tag k="name" v="Pico Grande"/><tag k="ele" v="1654"/>
+  </node>
+  <node id="9" lat="32.7000" lon="-16.9000" version="1"><tag k="natural" v="peak"/></node>
+  <way id="100" version="1">
+    <nd ref="1"/><nd ref="2"/><nd ref="3"/>
+    <tag k="highway" v="path"/><tag k="name" v="Vereda do Pico Grande"/>
+  </way>
+  <way id="101" version="1">
+    <nd ref="4"/><nd ref="5"/>
+    <tag k="highway" v="path"/><tag k="name" v="Levada Nova"/>
+  </way>
+  <way id="102" version="1">
+    <nd ref="6"/><nd ref="7"/>
+    <tag k="highway" v="path"/><tag k="name" v="Mainland path"/>
+  </way>
+  <way id="103" version="1">
+    <nd ref="4"/><nd ref="5"/>
+    <tag k="highway" v="residential"/><tag k="name" v="Rua"/>
+  </way>
+  <relation id="4444478" version="1">
+    <member type="way" ref="100" role=""/>
+    <member type="node" ref="8" role="guidepost"/>
+    <tag k="type" v="route"/><tag k="route" v="hiking"/><tag k="name" v="Vereda do Pico Grande"/>
+  </relation>
+  <relation id="900" version="1">
+    <member type="way" ref="102" role=""/>
+    <tag k="type" v="route"/><tag k="route" v="hiking"/><tag k="name" v="Mainland route"/>
+  </relation>
+  <relation id="901" version="1">
+    <member type="way" ref="103" role=""/>
+    <tag k="type" v="route"/><tag k="route" v="bus"/><tag k="name" v="Bus"/>
+  </relation>
+</osm>

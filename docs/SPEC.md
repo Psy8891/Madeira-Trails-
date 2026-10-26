@@ -64,7 +64,7 @@ Since 1 January 2026 every classified (PR) trail needs a timed booking on SIMpli
 | Closed trails: access is a misdemeanour with fines of €250–€2,500 for individuals | Closed trails drawn red-dashed, Navigate blocked behind a warning | [DN Madeira, 2023](https://www.dnoticias.pt/2023/10/25/380569-turistas-identificados-pela-policia-florestal-na-vereda-do-areeiro/) |
 | Status is published as an official PDF and on each Visit Madeira trail page, often with partial openings ("open to km 1.2") and detours | Status model has open / partial / closed / unknown plus a note and km range | [Status PDF](https://visitmadeira.com/media/rcradgkh/percursos-pedestres-classificados.pdf) |
 
-Fees and rules change yearly, so they live in the downloadable catalog, never hard-coded in the app.
+Fees and rules change yearly, so they live in the catalog data, never hard-coded in the app code.
 
 ### Official trail list (catalog seed)
 
@@ -223,7 +223,7 @@ Every map and trail byte in the app comes from open data we are allowed to redis
 
 **Attribution line** (map corner and About screen): "© OpenStreetMap contributors · Terrain © DROTe · Status: IFCN / Visit Madeira · Warnings © IPMA". DROTe asks for the credit "Informação geográfica cedida pela Direção Regional do Ordenamento do Território" or "© DROTe" ([terms](https://snig.dgterritorio.gov.pt/rndg/srv/api/records/0bcce93f-12e4-44ec-90b8-4fb42fe49b15)).
 
-**ODbL obligation:** the trail catalog is a derived database, so it is published under ODbL in the public data repo with attribution. That costs nothing and keeps the app clean.
+**ODbL obligation:** the trail catalog is a derived database, so it is published under ODbL in this public repo with attribution. That costs nothing and keeps the app clean.
 
 **The GPX rule:** a GPX is bundled only if its licence allows redistribution (OSM, open-data portals, Creative Commons without NC for a free app is fine). GPX files from AllTrails, Wikiloc, komoot or guidebooks stay private imports on the user's phone.
 
@@ -231,31 +231,36 @@ Every map and trail byte in the app comes from open data we are allowed to redis
 
 ## Data pipeline
 
-A separate public repo, `vereda-data`, turns open data into static files with three scheduled GitHub Actions jobs; the app only ever downloads files, so there is no server to run or pay for.
+The data jobs live in this repo under `data/` (Python, tested with pytest in CI) and run as scheduled GitHub Actions; the app only ever downloads static files, so there is no server to run or pay for.
 
 ```mermaid
 flowchart LR
-  A["OSM extract + DROTe 10 m DTM"] --> B["build-maps (monthly)"] --> C["PMTiles packages (GitHub Release)"] --> APP["Vereda app"]
-  D["OSM routes + official.yaml"] --> E["build-catalog (daily, 42/42 check)"] --> F["catalog.json (GitHub Pages, ODbL)"] --> APP
-  G["Visit Madeira status pages + PDF"] --> H["status (every 30 min)"] --> I["status.json (GitHub Pages)"] --> APP
+  A["OSM extract + DROTe 10 m DTM"] --> B["build-maps (monthly, later)"] --> C["PMTiles packages (GitHub Release)"] --> APP["Vereda app"]
+  D["OSM extract (Geofabrik) + data/official.json"] --> E["update-catalog (weekly)"] --> F["app/src/main/assets/catalog.json (bundled, ODbL)"] --> APP
+  G["Visit Madeira hiking page"] --> H["update-status (every 30 min)"] --> I["status.json on the status branch"] --> APP
   J["IPMA API (weather warnings)"] -- "live, on demand" --> APP
 ```
 
-Only the IPMA weather warnings are fetched live; everything else is a static file the phone keeps for offline use.
+Only the IPMA weather warnings and the trail status are fetched live; the catalog ships inside the APK and is refreshed by a new build.
 
 | Job | Runs | Does | Publishes |
 | --- | --- | --- | --- |
-| `build-maps` | Monthly + manual | Clips the OSM extract with osmium; Planetiler builds base vector tiles (z0–15); GDAL `gdal_contour` (10 m interval, 50 m index) + tippecanoe builds contour tiles (z11–15); the DTM is encoded as Terrarium RGB WebP tiles (z8–14) for MapLibre hillshade | `madeira-base.pmtiles`, `madeira-contours.pmtiles`, `madeira-dem.pmtiles` and the same for Porto Santo, as a versioned GitHub Release (e.g. `maps-2026.11`) |
-| `build-catalog` | Daily | Pulls OSM hiking relations and named levada/vereda paths; joins them with the hand-kept `official.yaml`; computes stats from the DTM; validates that all 42 official codes matched | `catalog.json`, `trails.geojson` on GitHub Pages + a match report |
-| `status` | Every 30 min | Reads each official trail page and the status PDF; parses ABERTO / PARCIALMENTE / ENCERRADO plus notes; applies `status-overrides.yaml` | `status.json` on GitHub Pages |
+| `build-maps` | Monthly + manual (Phase 1) | Clips the OSM extract with osmium; Planetiler builds base vector tiles (z0–15); GDAL `gdal_contour` (10 m interval, 50 m index) + tippecanoe builds contour tiles (z11–15); the DTM is encoded as Terrarium RGB WebP tiles (z8–14) for MapLibre hillshade | `madeira-base.pmtiles`, `madeira-contours.pmtiles`, `madeira-dem.pmtiles` and the same for Porto Santo, as a versioned GitHub Release (e.g. `maps-2026.11`) |
+| `update-catalog` (`data/scripts/build_catalog.py`) | Mondays + manual | Reads the Geofabrik Portugal extract clipped to Madeira with osmium (pyosmium); falls back to three small Overpass queries over four mirrors (the public Overpass servers ask automated jobs not to rely on them). Takes hiking/foot relations, named paths and named peaks; official trails matched by PR ref, then by official name; other named routes and named paths (≥ 400 m, not streets) become community trails; lines chained and simplified (Douglas-Peucker 3 m), stored as encoded polylines (precision 1e5) | `app/src/main/assets/catalog.json` + `data/catalog-report.md` (match count, missing codes, checklist of `data/wanted.json`), committed to `main`; then starts a new APK build. Community trails matching a `wanted.json` entry get its `searchAlias`, so "Boca da Corrida – Pico Grande" finds "Vereda do Pico Grande" |
+| `update-status` (`data/scripts/build_status.py`) | Every 30 min + manual | Reads the [Visit Madeira hiking page](https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/), which shows every listed trail as Open / Restricted / Closed; needs at least 30 trails or it counts as a failure | `status.json` + `rows.txt` on the `status` branch (one force-pushed commit), read by the app from `https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json` |
 
-**`official.yaml` is the human-curated heart of the catalog.** One entry per official trail: code, official name, municipality, island, official URL, fee, official distance and duration, difficulty, accessible flag, OSM relation id, aliases ("25 fontes"), feature tags. It is the place to fix anything OSM gets wrong.
+**`data/official.json` is the hand-kept list of the 42 official trails** (code, name, island). It grows into the curated record described below (official URL, fee, official distance and duration, difficulty, aliases, feature tags) and is the place to fix anything OSM gets wrong.
+
+**`data/wanted.json` is the checklist of popular unofficial walks** taken from guides (Boca da Corrida – Pico Grande, Vereda do Larano, Caminho da Entrosa, Levada Nova, Levada do Moinho, …). The catalog report shows which of them OSM already maps; missing ones are fixed by mapping them in OSM, never by copying GPX from AllTrails, Wikiloc or guidebooks.
 
 **Status rules (safety-critical):**
 
 - A parse failure keeps the last good value and sets `stale: true`; nothing is ever guessed as open.
-- Every entry carries `checkedAt` and `sourceUrl`; the app shows the age and treats anything older than 24 h as unknown.
-- `status-overrides.yaml` lets you set a status by hand (with expiry) when the official page lags behind the news.
+- Every entry carries `checkedAt` and `sourceUrl`; the app shows the age and treats anything older than 24 h, or marked stale, as unknown.
+- Trails missing from the page (PR 6.7 and PR 23 as of 26 Oct 2026) stay unknown.
+- "Restricted" on the page maps to `partial`.
+- The official status PDF is not used: on 26 Oct 2026 it still showed PR 1 partly closed months after it reopened.
+- Later: `status-overrides.yaml` to set a status by hand (with expiry) when the official page lags behind the news.
 - Be polite to the source: one request per page per run, a clear User-Agent with contact email, honour errors.
 
 **Elevation stats:** sample the DTM every 10 m along the line, smooth with a 3-point median, count climb only on changes of 3 m or more. Estimated time when no official figure exists: 4 km/h on the flat plus 1 h per 600 m of climb (Naismith-style), rounded to 15 min.
@@ -270,13 +275,12 @@ Only the IPMA weather warnings are fetched live; everything else is a static fil
     "version": "2026.11",
     "minApp": 1,
     "files": [
-      {"role": "base", "url": "https://github.com/<you>/vereda-data/releases/download/maps-2026.11/madeira-base.pmtiles", "bytes": 0, "sha256": "…"},
+      {"role": "base", "url": "https://github.com/Psy8891/Madeira-Trails-/releases/download/maps-2026.11/madeira-base.pmtiles", "bytes": 0, "sha256": "…"},
       {"role": "contours", "url": "…/madeira-contours.pmtiles", "bytes": 0, "sha256": "…"},
       {"role": "dem", "url": "…/madeira-dem.pmtiles", "bytes": 0, "sha256": "…"}
     ]
   }],
-  "catalog": {"url": "https://<you>.github.io/vereda-data/catalog.json", "version": "2026-10-26"},
-  "status": {"url": "https://<you>.github.io/vereda-data/status.json"}
+  "status": {"url": "https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json"}
 }
 ```
 
@@ -337,46 +341,42 @@ Trails and status arrive from the catalog and are replaced on each sync; everyth
 | `Folder` | `id`, `name`, `parentId?` | Saved items, Gaia-style |
 | `MapPackage` | `id`, `version`, `state`, `bytesTotal`, `bytesDone`, `path`, `sha256` |  |
 
-**catalog.json** (one entry shown):
+**catalog.json** (as built today; one entry of each kind shown):
 
 ```json
 {
-  "version": "2026-10-26",
-  "trails": [{
-    "id": "pr-6",
-    "source": "official",
-    "code": "PR 6",
-    "name": "Levada das 25 Fontes",
-    "from": "Rabaçal", "to": "25 Fontes",
-    "island": "madeira", "municipality": "Calheta",
-    "lengthM": 4300, "durationMin": 180,
-    "ascentM": 0, "descentM": 0, "minAltM": 0, "maxAltM": 0,
-    "difficulty": "moderate", "routeType": "out_and_back",
-    "feeEur": 4.5, "accessible": false,
-    "tags": ["levada", "waterfall", "laurel_forest", "tunnel"],
-    "aliases": ["25 fontes", "25 springs"],
-    "officialUrl": "https://visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-6-levada-das-25-fontes/",
-    "osmRelation": 0,
-    "polyline": "…",
-    "profile": [[0, 1274], [10, 1273]]
-  }]
+  "schema": 1,
+  "generatedAt": "2026-10-26T14:00:00Z",
+  "attribution": "© OpenStreetMap contributors (ODbL)",
+  "trails": [
+    {"id": "pr-6", "source": "official", "code": "PR 6", "name": "Levada das 25 Fontes", "island": "madeira",
+     "lengthM": 4300, "osm": ["r2239199"], "lines": ["_p~iF~ps|U_ulLnnqC…"]},
+    {"id": "osm-r4444478", "source": "community", "name": "Vereda do Pico Grande", "from": null, "to": null,
+     "island": "madeira", "lengthM": 5100, "sacScale": null, "osm": ["r4444478"], "lines": ["…"]}
+  ],
+  "places": [{"name": "Pico Grande", "kind": "peak", "lat": 32.7146, "lon": -16.993, "ele": 1654}]
 }
 ```
 
-The zeros are placeholders the pipeline fills. The 4.3 km and 3 h come from the [official PR 6 page](https://visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-6-levada-das-25-fontes/).
+`lines` holds one or more encoded polylines (Google format, precision 1e5). All 42 official trails are always listed; one without an OSM line has `"lines": []` and the app says the line is missing instead of hiding the trail. Later schema versions add the curated fields (municipality, fee, official URL, duration, difficulty, route type, elevation profile, feature tags, aliases).
 
 **status.json:**
 
 ```json
 {
-  "generatedAt": "2026-10-26T12:00:00Z",
+  "schema": 1,
+  "generatedAt": "2026-10-26T14:07:00Z",
+  "ok": true,
+  "source": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/",
   "trails": {
-    "pr-1": {"state": "partial", "noteEn": "Open only between Pico do Areeiro and Pedra Rija viewpoint (km 1.2).", "notePt": "…", "sourceUrl": "…", "checkedAt": "2026-10-26T11:48:00Z", "stale": false}
+    "pr-7": {"code": "PR 7", "state": "closed", "label": "Closed",
+             "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-7-levada-do-moinho/",
+             "checkedAt": "2026-10-26T14:07:00Z", "stale": false}
   }
 }
 ```
 
-The PR 1 note mirrors the wording in the official status PDF read for this spec; the live value comes from the job.
+`state` is `open`, `partial` or `closed`. When a run fails, `ok` is false, `error` says why, and every entry keeps its old `checkedAt` with `"stale": true`.
 
 **Backup .zip:** `backup.json` (lists, entries, completions, tracks without points, waypoints, folders, profile) + `tracks/<id>.gpx` + `imports/<id>.gpx`. Versioned with `"schema": 1`; import merges by id and never deletes.
 
@@ -502,15 +502,26 @@ The app needs location only while it is in use or recording, never in the backgr
 
 Five phases, each ending in something you can install and test on your Pixel; give Claude Code one phase at a time and tick every box before the next.
 
-### Phase 0 — Data (repo `vereda-data`)
+### Phase 0 — Data (`data/` in this repo)
 
 Goal: the map and catalog files exist and are trustworthy.
 
 - [ ] `build-maps` produces base, contours and DEM PMTiles for Madeira and Porto Santo; they open correctly in the PMTiles web viewer.
 - [ ] Contours at 10 m match the DTM (spot-check Pico Ruivo 1,862 m and Pico do Areeiro).
-- [ ] `build-catalog` matches 42 of 42 official codes, or the job fails listing the missing ones.
+- [ ] `update-catalog` matches 42 of 42 official codes, or the report lists the missing ones so they can be fixed in OSM.
 - [ ] `status.json` refreshes every 30 min with `checkedAt`; a broken source page yields `stale: true`, not a wrong state.
 - [ ] `manifest.json` lists real file sizes and SHA-256 hashes.
+
+### Phase 0.5 — Trails and status in the app (pulled forward, 26 Oct 2026)
+
+Goal: after testing the skeleton, the owner asked for trails on the map, live status and unofficial trails before the offline map work. This phase does that on the online development map and is kept small.
+
+- [ ] The bundled catalog is parsed in `:core:catalog` (pure Kotlin, unit-tested): polyline decoding, bounds, search over trails and peaks.
+- [ ] status.json is fetched from the status branch on start and on pull-to-refresh; the freshness rule (24 h, `stale`) decides the chip, and with no network the chip says unknown.
+- [ ] Explore lists official trails, community trails and imports, with source and status chips; search also finds peaks ("Pico Grande").
+- [ ] Tapping a trail opens the map with its line drawn (official solid, community dashed, colour by status), zoomed to fit, and a card with name, length, status with age and a link to the official page.
+- [ ] A trail without a line says so on its card.
+- [ ] GPX import from the phone's files (system file picker); imported tracks are kept privately in app storage, listed under "My imports" and drawn on the map.
 
 ### Phase 1 — Map that works offline
 
@@ -561,7 +572,7 @@ Most risk sits in GPS logic, status parsing and offline behaviour, so those get 
 | Level | What | Tooling |
 | --- | --- | --- |
 | Unit (JVM) | GPX round-trip, distance and climb maths, auto-pause, off-route and wrong-way logic, status freshness, search normalisation ("Caldeirão" = "caldeirao"), UTM conversion | JUnit 5, Kotest assertions, Turbine for Flows |
-| Pipeline | Status parser against saved copies of the official PDF and pages (open, partial, closed, broken HTML); catalog JSON Schema validation; 42/42 match check | pytest or Kotlin script tests in `vereda-data` CI |
+| Pipeline | Status parser against saved copies of the official PDF and pages (open, partial, closed, broken HTML); catalog JSON Schema validation; 42/42 match check | pytest in `data/tests`, run by CI on every push |
 | Database | Migrations, sync never deletes user data, backup export → import gives identical lists | Room testing, instrumented |
 | UI | Screens render each `UiState` (loading, empty, error, stale status) | Compose UI tests, screenshot tests (Roborazzi or Paparazzi) |
 | End-to-end | Onboarding → download → find PR 6 → save to To-do → navigate with a replayed GPX → stop → marked Done | Maestro flows on an emulator in GitHub Actions |

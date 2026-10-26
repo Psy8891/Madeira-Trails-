@@ -13,6 +13,10 @@ data class TrailStatus(
     val noteEn: String? = null,
     val notePt: String? = null,
     val sourceUrl: String? = null,
+    /** The wording on the official page ("Restricted"). */
+    val label: String? = null,
+    /** The status job could not read the source on its last run; this is an old value. */
+    val stale: Boolean = false,
 )
 
 /**
@@ -28,7 +32,7 @@ object StatusRules {
 
     /** The state the UI may show for [status] at [now]. */
     fun effectiveState(status: TrailStatus?, now: Instant): StatusState {
-        if (status == null) return StatusState.UNKNOWN
+        if (status == null || status.stale) return StatusState.UNKNOWN
         if (status.checkedAt.isAfter(now.plus(CLOCK_SKEW))) return StatusState.UNKNOWN
         if (Duration.between(status.checkedAt, now) > MAX_AGE) return StatusState.UNKNOWN
         return status.state

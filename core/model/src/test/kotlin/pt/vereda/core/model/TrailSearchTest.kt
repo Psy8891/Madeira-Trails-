@@ -68,6 +68,40 @@ class TrailSearchTest {
 
     @Test
     fun `unknown text finds nothing`() {
-        assertEquals(emptyList(), codes("levada do sol nascente"))
+        assertEquals(emptyList(), codes("levada qwerty asdf"))
+        assertEquals(emptyList(), codes("pico qwerty"))
+    }
+
+    private fun community(id: String, name: String, aliases: List<String> = emptyList()) =
+        Trail(id, TrailSource.COMMUNITY, null, name, null, null, null, Island.MADEIRA, aliases)
+
+    @Test
+    fun `long queries also find partial matches with the most words first`() {
+        val list = listOf(
+            community("osm-1", "Vereda do Pico Grande"),
+            community("osm-2", "Caminho da Boca da Corrida ao Pico Grande"),
+            community("osm-3", "Vereda do Pico Ruivo"),
+        )
+        assertEquals(listOf("osm-2", "osm-1"), TrailSearch.search(list, "boca da corrida - pico grande").map { it.id })
+    }
+
+    @Test
+    fun `partial matches need whole words and at least two of them`() {
+        val list = listOf(community("osm-1", "Vereda do Pico Grande"), community("osm-2", "Levada da Corridinha"))
+        assertEquals(emptyList(), TrailSearch.search(list, "boca da corrida rabacal").map { it.id })
+        assertEquals(emptyList(), TrailSearch.search(list, "pico grande").filter { it.id == "osm-2" })
+    }
+
+    @Test
+    fun `aliases from the guides are searched`() {
+        val list = listOf(community("osm-1", "Vereda do Pico Grande", listOf("Boca da Corrida – Pico Grande")))
+        assertEquals(listOf("osm-1"), TrailSearch.search(list, "boca da corrida").map { it.id })
+    }
+
+    @Test
+    fun `matchText ranks full and partial matches`() {
+        assertEquals(2 to 2, TrailSearch.matchText(listOf("Pico Grande"), "pico grande"))
+        assertEquals(3 to 2, TrailSearch.matchText(listOf("Pico Grande"), "boca corrida pico grande"))
+        assertEquals(null, TrailSearch.matchText(listOf("Pico Ruivo"), "pico grande"))
     }
 }

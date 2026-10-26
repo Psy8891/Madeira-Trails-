@@ -28,6 +28,12 @@ object VeredaColors {
     val UnknownText = Color(0xFF5F6368)
     val UnknownTint = Color(0xFFEEEFF1)
 
+    val CommunityLine = Color(0xFF5B6B9A)
+    val CommunityTint = Color(0xFFE9ECF4)
+    val ImportLine = Color(0xFFE4572E) // "My recording" token: the user's own tracks
+    val ImportTint = Color(0xFFFCE9E3)
+    val ActiveRoute = Color(0xFFD81B60)
+
     val WaymarkYellow = Color(0xFFF2C200)
     val WaymarkRed = Color(0xFFD32F2F)
 }

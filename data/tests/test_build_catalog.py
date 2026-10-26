@@ -128,3 +128,10 @@ def test_peaks_become_places_with_elevation():
 def test_report_checks_the_wanted_list():
     _, report = build(overpass_sample())
     assert "| Boca da Corrida – Pico Grande | yes | yes |" in report
+
+
+def test_wanted_search_alias_is_added_to_matching_community_trails():
+    catalog, _ = build(overpass_sample())
+    trails = by_id(catalog)
+    assert trails["osm-r555"]["aliases"] == ["Boca da Corrida – Pico Grande"]
+    assert "aliases" not in trails["osm-w10"]  # Levada Nova has no search alias

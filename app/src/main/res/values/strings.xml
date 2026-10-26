@@ -7,11 +7,51 @@
     <string name="tab_record">Record</string>
     <string name="tab_me">Me</string>
 
-    <string name="map_dev_banner">Temporary online map. The offline Madeira topo map arrives with the data pipeline (Phase 0).</string>
+    <string name="map_dev_banner">Online map, © OpenStreetMap contributors. The offline topo map comes later.</string>
 
     <string name="explore_title">Explore</string>
-    <string name="explore_search_hint">Name, PR code or place</string>
-    <string name="explore_count">%1$d official trails · status not loaded yet</string>
+    <string name="explore_search_hint">Trail, PR code or peak</string>
+    <string name="explore_count">%1$d trails</string>
+    <string name="explore_loading">Loading trails…</string>
+    <string name="explore_peaks">Peaks</string>
+    <string name="explore_trails">Trails</string>
+
+    <string name="filter_all">All</string>
+    <string name="filter_official">Official</string>
+    <string name="filter_community">Community</string>
+    <string name="filter_imports">My imports</string>
+
+    <string name="source_community">Community</string>
+    <string name="source_import">My import</string>
+    <string name="place_peak">Peak</string>
+
+    <string name="import_gpx">Import GPX</string>
+    <string name="import_done">Track imported. It stays on this phone.</string>
+    <string name="import_no_track">This file has no track or route to show.</string>
+    <string name="import_not_gpx">Vereda can\'t read this file. Pick a .gpx file.</string>
+    <string name="import_too_big">This file is too big (over 20 MB).</string>
+    <string name="import_private">Your own imported track. It stays on this phone and nobody has checked it.</string>
+    <string name="import_delete">Delete</string>
+
+    <string name="status_loading">Loading the official status…</string>
+    <string name="status_failed">Couldn\'t load the official status, so trails show as unknown.</string>
+    <string name="status_source_line">Official status from visitmadeira.com, %1$s</string>
+    <string name="status_with_source">Official status: %1$s (visitmadeira.com, %2$s).</string>
+    <string name="status_none_for_trail">No official status for this trail. Check the official page before you go.</string>
+    <string name="status_too_old">The official status is over 24 hours old, so it shows as unknown. Check the official page before you go.</string>
+    <string name="checked_just_now">checked just now</string>
+    <string name="checked_minutes_ago">checked %1$d min ago</string>
+    <string name="checked_hours_ago">checked %1$d h ago</string>
+    <string name="checked_days_ago">checked %1$d days ago</string>
+
+    <string name="official_booking">Official trails need a booking on SIMplifica before you walk.</string>
+    <string name="community_warning">Community trail from OpenStreetMap. Not maintained or checked by the authorities, so judge the conditions yourself.</string>
+    <string name="trail_no_line">This trail has no line in OpenStreetMap yet, so it can\'t be drawn.</string>
+    <string name="trail_no_line_short">No map line yet</string>
+    <string name="official_page">Official page</string>
+    <string name="view_on_osm">OpenStreetMap</string>
+    <string name="close">Close</string>
+    <string name="retry">Retry</string>
 
     <string name="status_open">Open</string>
     <string name="status_partial">Partly open</string>

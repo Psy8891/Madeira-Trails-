@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import pt.vereda.app.R
 import pt.vereda.app.ui.theme.VeredaColors
 import pt.vereda.core.model.StatusState
+import pt.vereda.core.model.Trail
+import pt.vereda.core.model.TrailSource
 
 /** Trail code with the yellow-over-red PR waymark, e.g. "PR 6". */
 @Composable
@@ -76,3 +78,39 @@ fun StatusChip(state: StatusState, modifier: Modifier = Modifier) {
 }
 
 private data class Style(val line: Color, val text: Color, val tint: Color, val label: Int)
+
+/** "Community" or "My import" in place of the PR badge for trails that aren't official. */
+@Composable
+fun SourceChip(source: TrailSource, modifier: Modifier = Modifier) {
+    val (color, tint, label) = when (source) {
+        TrailSource.OFFICIAL -> return
+        TrailSource.COMMUNITY -> Triple(VeredaColors.CommunityLine, VeredaColors.CommunityTint, R.string.source_community)
+        TrailSource.IMPORT -> Triple(VeredaColors.ImportLine, VeredaColors.ImportTint, R.string.source_import)
+    }
+    Surface(modifier = modifier, shape = RoundedCornerShape(6.dp), color = tint) {
+        Text(
+            text = stringResource(label),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = color,
+        )
+    }
+}
+
+/** The badge row every trail shows: PR code or source, plus official status. */
+@Composable
+fun TrailBadges(trail: Trail, state: StatusState, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        if (trail.source == TrailSource.OFFICIAL) {
+            trail.code?.let { PrBadge(it) }
+            StatusChip(state)
+        } else {
+            SourceChip(trail.source)
+        }
+    }
+}

@@ -6,7 +6,8 @@
 - Places: named peaks, so searches like "Pico Grande" always land somewhere on the map.
 
 Writes app/src/main/assets/catalog.json and data/catalog-report.md.
-Usage: python data/scripts/build_catalog.py [--input overpass.json]
+Usage: python data/scripts/build_catalog.py [--pbf madeira.osm.pbf | --input overpass.json]
+Without options it asks the public Overpass servers.
 """
 
 from __future__ import annotations
@@ -38,7 +39,8 @@ WANTED = ROOT / "data" / "wanted.json"
 OUT_CATALOG = ROOT / "app" / "src" / "main" / "assets" / "catalog.json"
 OUT_REPORT = ROOT / "data" / "catalog-report.md"
 
-BBOX = "32.55,-17.30,33.15,-16.25"  # Madeira + Porto Santo
+BBOX = "32.55,-17.30,33.15,-16.25"  # Madeira + Porto Santo (south, west, north, east)
+MIN_ROUTES_IN_EXTRACT = 15  # fewer means the extract doesn't cover Madeira
 PORTO_SANTO_MIN_LAT = 32.95
 MIN_COMMUNITY_LENGTH_M = 400
 ENDPOINTS = [
@@ -96,6 +98,18 @@ def fetch_overpass() -> dict:
     for name, query in QUERIES.items():
         elements.extend(fetch_query(name, query)["elements"])
     return {"elements": elements}
+
+
+def read_extract(path: str) -> dict:
+    import osm_extract  # needs pyosmium; only this path uses it
+
+    bbox = tuple(float(v) for v in BBOX.split(","))
+    data = osm_extract.read(path, bbox)
+    routes = sum(1 for e in data["elements"] if e["type"] == "relation")
+    print(f"Extract {path}: {routes} route relations, {len(data['elements'])} elements")
+    if routes < MIN_ROUTES_IN_EXTRACT:
+        raise SystemExit(f"Extract has only {routes} hiking routes; it probably doesn't cover Madeira")
+    return data
 
 
 def way_points(element: dict) -> list[tuple[float, float]]:
@@ -231,6 +245,18 @@ def build(data: dict) -> tuple[dict, str]:
             }
         )
 
+    # Names people search for that OSM doesn't use ("Boca da Corrida – Pico Grande").
+    wanted = json.loads(WANTED.read_text(encoding="utf-8"))["trails"]
+    for t in community:
+        key = normalize(t["name"])
+        aliases = [
+            w["searchAlias"]
+            for w in wanted
+            if w.get("searchAlias") and any(normalize(m) in key for m in w["match"])
+        ]
+        if aliases:
+            t["aliases"] = aliases
+
     community.sort(key=lambda t: normalize(t["name"]))
     trails.extend(community)
     places.sort(key=lambda p: normalize(p["name"]))
@@ -279,8 +305,14 @@ def report(catalog: dict, missing: list[str]) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", help="Use a saved Overpass JSON response instead of downloading")
+    parser.add_argument("--pbf", help="Read an OpenStreetMap extract (.osm.pbf) instead of asking Overpass")
     args = parser.parse_args()
-    data = json.loads(pathlib.Path(args.input).read_text()) if args.input else fetch_overpass()
+    if args.pbf:
+        data = read_extract(args.pbf)
+    elif args.input:
+        data = json.loads(pathlib.Path(args.input).read_text())
+    else:
+        data = fetch_overpass()
 
     catalog, report_md = build(data)
     OUT_CATALOG.parent.mkdir(parents=True, exist_ok=True)

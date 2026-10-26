@@ -5,11 +5,51 @@
     <string name="tab_record">Gravar</string>
     <string name="tab_me">Eu</string>
 
-    <string name="map_dev_banner">Mapa online provisório. O mapa topográfico offline da Madeira chega com o pipeline de dados (Fase 0).</string>
+    <string name="map_dev_banner">Mapa online, © colaboradores do OpenStreetMap. O mapa topográfico offline chega mais tarde.</string>
 
     <string name="explore_title">Explorar</string>
-    <string name="explore_search_hint">Nome, código PR ou local</string>
-    <string name="explore_count">%1$d percursos oficiais · estado ainda não carregado</string>
+    <string name="explore_search_hint">Percurso, código PR ou pico</string>
+    <string name="explore_count">%1$d percursos</string>
+    <string name="explore_loading">A carregar percursos…</string>
+    <string name="explore_peaks">Picos</string>
+    <string name="explore_trails">Percursos</string>
+
+    <string name="filter_all">Todos</string>
+    <string name="filter_official">Oficiais</string>
+    <string name="filter_community">Comunidade</string>
+    <string name="filter_imports">Importados</string>
+
+    <string name="source_community">Comunidade</string>
+    <string name="source_import">Importado</string>
+    <string name="place_peak">Pico</string>
+
+    <string name="import_gpx">Importar GPX</string>
+    <string name="import_done">Trilho importado. Fica só neste telemóvel.</string>
+    <string name="import_no_track">Este ficheiro não tem nenhum trilho ou rota para mostrar.</string>
+    <string name="import_not_gpx">O Vereda não consegue ler este ficheiro. Escolhe um ficheiro .gpx.</string>
+    <string name="import_too_big">Este ficheiro é demasiado grande (mais de 20 MB).</string>
+    <string name="import_private">Trilho importado por ti. Fica só neste telemóvel e ninguém o verificou.</string>
+    <string name="import_delete">Apagar</string>
+
+    <string name="status_loading">A carregar o estado oficial…</string>
+    <string name="status_failed">Não foi possível carregar o estado oficial, por isso os percursos aparecem como desconhecidos.</string>
+    <string name="status_source_line">Estado oficial de visitmadeira.com, %1$s</string>
+    <string name="status_with_source">Estado oficial: %1$s (visitmadeira.com, %2$s).</string>
+    <string name="status_none_for_trail">Sem estado oficial para este percurso. Consulta a página oficial antes de ir.</string>
+    <string name="status_too_old">O estado oficial tem mais de 24 horas, por isso aparece como desconhecido. Consulta a página oficial antes de ir.</string>
+    <string name="checked_just_now">verificado agora mesmo</string>
+    <string name="checked_minutes_ago">verificado há %1$d min</string>
+    <string name="checked_hours_ago">verificado há %1$d h</string>
+    <string name="checked_days_ago">verificado há %1$d dias</string>
+
+    <string name="official_booking">Os percursos oficiais precisam de reserva no SIMplifica antes de caminhar.</string>
+    <string name="community_warning">Percurso da comunidade OpenStreetMap. Não é mantido nem verificado pelas autoridades, por isso avalia tu as condições.</string>
+    <string name="trail_no_line">Este percurso ainda não tem linha no OpenStreetMap, por isso não pode ser desenhado.</string>
+    <string name="trail_no_line_short">Ainda sem linha no mapa</string>
+    <string name="official_page">Página oficial</string>
+    <string name="view_on_osm">OpenStreetMap</string>
+    <string name="close">Fechar</string>
+    <string name="retry">Tentar de novo</string>
 
     <string name="status_open">Aberto</string>
     <string name="status_partial">Parcialmente aberto</string>

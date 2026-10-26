@@ -2,6 +2,8 @@ name: Update trail catalog
 
 # Rebuilds app/src/main/assets/catalog.json from OpenStreetMap, commits it if it changed,
 # and starts a new app build so the release APK carries the new trails.
+# Source: the Geofabrik extract of Portugal clipped to Madeira; the public Overpass servers are
+# only a fallback because they ask automated jobs not to rely on them.
 
 on:
   workflow_dispatch:
@@ -30,8 +32,25 @@ jobs:
       - name: Install dependencies
         run: pip install -r data/requirements.txt
 
+      - name: Download the OpenStreetMap extract
+        id: extract
+        continue-on-error: true
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q osmium-tool
+          curl -sSfL --retry 3 -o portugal.osm.pbf https://download.geofabrik.de/europe/portugal-latest.osm.pbf
+          ls -lh portugal.osm.pbf
+          osmium extract -b -17.30,32.55,-16.25,33.15 portugal.osm.pbf -o madeira.osm.pbf --overwrite
+          ls -lh madeira.osm.pbf
+
       - name: Build catalog from OpenStreetMap
-        run: python data/scripts/build_catalog.py
+        run: |
+          if [ -f madeira.osm.pbf ] && python data/scripts/build_catalog.py --pbf madeira.osm.pbf; then
+            echo "Built from the Geofabrik extract."
+          else
+            echo "::warning title=Catalog::Extract not usable, asking Overpass instead"
+            python data/scripts/build_catalog.py
+          fi
 
       - name: Report
         run: cat data/catalog-report.md >> "$GITHUB_STEP_SUMMARY"
@@ -47,6 +66,8 @@ jobs:
             echo "Catalog unchanged."
           else
             git commit -m "Update trail catalog from OpenStreetMap"
+            # main may have moved on while the job ran.
+            git pull --rebase origin main
             git push
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi

@@ -27,6 +27,12 @@ class StatusRulesTest {
     }
 
     @Test
+    fun `stale status is unknown even when recent`() {
+        val stale = status(StatusState.OPEN, Duration.ofMinutes(5)).copy(stale = true)
+        assertEquals(StatusState.UNKNOWN, StatusRules.effectiveState(stale, now))
+    }
+
+    @Test
     fun `status exactly 24 hours old is still shown`() {
         assertEquals(StatusState.OPEN, StatusRules.effectiveState(status(StatusState.OPEN, Duration.ofHours(24)), now))
     }

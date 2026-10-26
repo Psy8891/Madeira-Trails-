@@ -19,3 +19,4 @@ rootProject.name = "Vereda"
 include(":app")
 include(":core:model")
 include(":core:geo")
+include(":core:catalog")
