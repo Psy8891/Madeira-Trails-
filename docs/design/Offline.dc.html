@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Offline maps</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F5F3F}a:hover{color:#174A31}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F6F4EE; font-family: Inter, system-ui, sans-serif; color: #17201B">
+  <header style="height: 64px; padding: 0 8px 0 4px; display: flex; align-items: center; gap: 4px">
+    <a href="Me.dc.html" aria-label="Back" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#17201B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <h1 style="margin: 0; font: 700 28px 'Barlow Semi Condensed', Inter, sans-serif">Offline maps</h1>
+  </header>
+
+  <main style="padding: 0 16px; display: flex; flex-direction: column; gap: 14px">
+    <p style="margin: 0; font-size: 13.5px; line-height: 1.45; color: #3E4842">Each island downloads as one package with the topo map, 10 m contours and hillshade. Once it's here, the map works with no signal.</p>
+
+    <section aria-label="Map packages" style="display: flex; flex-direction: column; border-radius: 16px; background: #FFFFFF; border: 1px solid #ECE9E1; overflow: hidden">
+      <div style="display: flex; gap: 12px; align-items: center; padding: 14px">
+        <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true" style="flex: 0 0 auto; border-radius: 12px"><rect width="52" height="52" fill="#AFD5EA"></rect><path d="M6 30 C8 22 16 18 24 19 C30 16 38 17 44 21 C48 24 47 30 42 32 C36 35 28 34 22 35 C16 36 8 36 6 30 Z" fill="#CFE3BE" stroke="#9A744A" stroke-opacity="0.5"></path><path d="M14 27 C20 24 28 23 36 25" fill="none" stroke="#B08A5E" stroke-opacity="0.6"></path></svg>
+        <span style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 700">Madeira</span><span style="font-size: 12.5px; color: #4E5A53">Version 2026.10 · [size] MB</span>
+          <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: #1B7A44"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1B7A44" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>Downloaded · up to date</span></span>
+        <button aria-label="Delete Madeira package" style="width: 44px; height: 44px; border: 1px solid #DDD8CC; border-radius: 12px; background: #FFFFFF; display: flex; align-items: center; justify-content: center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>
+        </button>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center; padding: 14px; border-top: 1px solid #ECE9E1">
+        <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true" style="flex: 0 0 auto; border-radius: 12px"><rect width="52" height="52" fill="#AFD5EA"></rect><path d="M14 30 C14 24 20 20 27 21 C33 21 38 24 38 28 C38 33 32 35 26 35 C20 35 14 34 14 30 Z" fill="#E3E8C8" stroke="#9A744A" stroke-opacity="0.5"></path></svg>
+        <span style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 700">Porto Santo</span><span style="font-size: 12.5px; color: #4E5A53">Version 2026.10 · [size] MB</span><span style="font-size: 12px; color: #4E5A53">Not downloaded</span></span>
+        <button style="height: 44px; padding: 0 14px; border: 0; border-radius: 12px; background: #1F5F3F; display: flex; align-items: center; gap: 6px; font: 600 14px Inter, system-ui, sans-serif; color: #FFFFFF">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg>Download</button>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center; padding: 14px; border-top: 1px solid #ECE9E1">
+        <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true" style="flex: 0 0 auto; border-radius: 12px"><rect width="52" height="52" fill="#E9EEF0"></rect><circle cx="26" cy="26" r="14" fill="none" stroke="#9AA39D" stroke-width="1.5"></circle><path d="M12 26h28M26 12c-5 4-5 24 0 28M26 12c5 4 5 24 0 28" fill="none" stroke="#9AA39D" stroke-width="1.2"></path></svg>
+        <span style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 700">Overview map</span><span style="font-size: 12.5px; color: #4E5A53">Whole archipelago at low detail · built into the app</span></span>
+      </div>
+    </section>
+
+    <section aria-label="Trail data" style="display: flex; flex-direction: column; gap: 6px">
+      <h2 style="margin: 0; font: 600 20px 'Barlow Semi Condensed', Inter, sans-serif">Trail data</h2>
+      <div style="display: flex; flex-direction: column; border-radius: 16px; background: #FFFFFF; border: 1px solid #ECE9E1; overflow: hidden">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px"><span style="display: flex; flex-direction: column"><span style="font-size: 14.5px; font-weight: 600">Trail catalog</span><span style="font-size: 12.5px; color: #4E5A53">42 official trails + community routes</span></span><span style="font-size: 12.5px; color: #4E5A53">Today 06:00</span></div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-top: 1px solid #ECE9E1"><span style="display: flex; flex-direction: column"><span style="font-size: 14.5px; font-weight: 600">Trail status</span><span style="font-size: 12.5px; color: #4E5A53">Shown as unknown after 24 h</span></span><span style="font-size: 12.5px; color: #4E5A53">18 min ago</span></div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-top: 1px solid #ECE9E1"><span style="display: flex; flex-direction: column"><span style="font-size: 14.5px; font-weight: 600">Weather warnings</span><span style="font-size: 12.5px; color: #4E5A53">IPMA, refreshed when online</span></span><span style="font-size: 12.5px; color: #4E5A53">12:00</span></div>
+      </div>
+    </section>
+
+    <section aria-label="Download settings" style="display: flex; flex-direction: column; border-radius: 16px; background: #FFFFFF; border: 1px solid #ECE9E1; overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; min-height: 48px">
+        <span style="flex: 1 1 auto; font-size: 14.5px; font-weight: 600">Download on Wi-Fi only</span>
+        <button role="switch" aria-checked="true" aria-label="Download on Wi-Fi only" style="width: 46px; height: 28px; border: 0; border-radius: 14px; background: #1F5F3F; position: relative; padding: 0"><span style="position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; display: block"></span></button>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; min-height: 48px; border-top: 1px solid #ECE9E1">
+        <span style="flex: 1 1 auto; font-size: 14.5px; font-weight: 600">Update maps automatically</span>
+        <button role="switch" aria-checked="true" aria-label="Update maps automatically" style="width: 46px; height: 28px; border: 0; border-radius: 14px; background: #1F5F3F; position: relative; padding: 0"><span style="position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; display: block"></span></button>
+      </div>
+    </section>
+
+    <p style="margin: 0; font-size: 11.5px; line-height: 1.5; color: #4E5A53">Map data © OpenStreetMap contributors (ODbL). Terrain © DROTe – Direção Regional do Ordenamento do Território.</p>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

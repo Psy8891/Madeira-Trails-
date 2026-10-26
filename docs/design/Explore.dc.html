@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Explore trails</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F5F3F}a:hover{color:#174A31}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F6F4EE; font-family: Inter, system-ui, sans-serif; color: #17201B">
+  <header style="padding: 16px 16px 0; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <h1 style="margin: 0; font: 700 30px 'Barlow Semi Condensed', Inter, sans-serif">Explore</h1>
+      <div role="group" aria-label="View" style="display: flex; padding: 3px; border-radius: 12px; background: #EAE7DE">
+        <button aria-pressed="true" style="height: 36px; padding: 0 12px; border: 0; border-radius: 9px; background: #FFFFFF; font: 600 13px Inter, system-ui, sans-serif; color: #17201B; box-shadow: 0 1px 3px rgba(23,32,27,0.14)">List</button>
+        <a href="Main.dc.html" style="height: 36px; padding: 0 12px; border-radius: 9px; display: flex; align-items: center; font: 500 13px Inter, system-ui, sans-serif; color: #4E5A53; text-decoration: none">Map</a>
+      </div>
+    </div>
+    <label style="height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: #FFFFFF; border: 1px solid #E3E0D6; border-radius: 14px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+      <input type="search" placeholder="Name, PR code or place" aria-label="Search trails" style="border: 0; outline: none; flex: 1 1 auto; min-width: 0; font: 400 15px Inter, system-ui, sans-serif; color: #17201B; background: transparent">
+    </label>
+    <div style="display: flex; gap: 8px; overflow: hidden; margin-right: -16px">
+      <button style="flex: 0 0 auto; height: 34px; padding: 0 12px; border: 0; border-radius: 17px; background: #1F5F3F; color: #FFFFFF; font: 600 13px Inter, system-ui, sans-serif; display: flex; align-items: center; gap: 6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>Open now</button>
+      <button style="flex: 0 0 auto; height: 34px; padding: 0 12px; border: 1px solid #DDD8CC; border-radius: 17px; background: #FFFFFF; color: #17201B; font: 500 13px Inter, system-ui, sans-serif">Under 2 h</button>
+      <button style="flex: 0 0 auto; height: 34px; padding: 0 12px; border: 1px solid #DDD8CC; border-radius: 17px; background: #FFFFFF; color: #17201B; font: 500 13px Inter, system-ui, sans-serif">Levadas</button>
+      <button style="flex: 0 0 auto; height: 34px; padding: 0 12px; border: 1px solid #DDD8CC; border-radius: 17px; background: #FFFFFF; color: #17201B; font: 500 13px Inter, system-ui, sans-serif">Peaks</button>
+      <button style="flex: 0 0 auto; height: 34px; padding: 0 12px; border: 1px solid #DDD8CC; border-radius: 17px; background: #FFFFFF; color: #17201B; font: 500 13px Inter, system-ui, sans-serif">Accessible</button>
+      <button style="flex: 0 0 auto; height: 34px; padding: 0 12px; border: 1px solid #DDD8CC; border-radius: 17px; background: #FFFFFF; color: #17201B; font: 500 13px Inter, system-ui, sans-serif">Porto Santo</button>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <span style="font-size: 13px; color: #4E5A53"><strong style="color: #17201B">Official trails</strong> · nearest first</span>
+      <button style="height: 36px; padding: 0 12px; border: 1px solid #DDD8CC; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; gap: 6px; font: 600 13px Inter, system-ui, sans-serif; color: #17201B">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#17201B" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"></path></svg>Filters
+        <span style="min-width: 18px; height: 18px; border-radius: 9px; background: #1F5F3F; color: #FFFFFF; font-size: 11px; display: flex; align-items: center; justify-content: center">2</span>
+      </button>
+    </div>
+  </header>
+
+  <main style="padding: 12px 16px 0; display: flex; flex-direction: column; gap: 10px">
+    <a href="Trail.dc.html" style="display: flex; gap: 12px; padding: 12px; background: #FFFFFF; border: 1px solid #ECE9E1; border-radius: 16px; text-decoration: none; color: #17201B">
+      <svg width="86" height="86" viewBox="0 0 86 86" aria-hidden="true" style="flex: 0 0 auto; border-radius: 12px"><rect width="86" height="86" fill="#CFE3BE"></rect><path d="M0 18 C20 10 40 26 60 16 S80 10 86 14" fill="none" stroke="#B08A5E" stroke-opacity="0.5"></path><path d="M0 34 C22 26 44 42 64 32 S82 28 86 30" fill="none" stroke="#9A744A" stroke-opacity="0.6"></path><path d="M0 52 C20 44 42 60 62 50 S80 46 86 48" fill="none" stroke="#B08A5E" stroke-opacity="0.5"></path><path d="M66 10 C58 24 50 30 48 40 C44 52 32 58 26 66 L24 76" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"></path><path d="M66 10 C58 24 50 30 48 40 C44 52 32 58 26 66 L24 76" fill="none" stroke="#2E9E5B" stroke-width="3.5" stroke-linecap="round"></path><circle cx="66" cy="10" r="4" fill="#FFFFFF" stroke="#17201B" stroke-width="1.5"></circle><circle cx="24" cy="76" r="4" fill="#17201B"></circle></svg>
+      <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; align-items: center; gap: 6px">
+          <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 6px; border: 1px solid #D8D4C8; border-radius: 6px; font: 700 12.5px 'Barlow Semi Condensed', Inter, sans-serif"><span style="display: inline-flex; flex-direction: column; width: 3.5px"><span style="height: 4.5px; background: #F2C200; display: block"></span><span style="height: 4.5px; background: #D32F2F; display: block"></span></span>PR 6</span>
+          <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; background: #E3F3EA; color: #1B7A44; font-size: 11.5px; font-weight: 600"><span style="width: 6px; height: 6px; border-radius: 3px; background: #2E9E5B; display: block"></span>Open</span>
+          <span style="margin-left: auto; font-size: 12px; font-weight: 600; color: #3E4842">€4.50</span>
+        </div>
+        <span style="font: 600 18px/1.15 'Barlow Semi Condensed', Inter, sans-serif">Levada das 25 Fontes</span>
+        <span style="font-size: 12.5px; color: #4E5A53">Calheta · Rabaçal → 25 Fontes</span>
+        <span style="font-size: 12.5px; font-weight: 600; color: #17201B">4.3 km · 3 h · Moderate</span>
+      </div>
+    </a>
+
+    <a href="Trail.dc.html" style="display: flex; gap: 12px; padding: 12px; background: #FFFFFF; border: 1px solid #ECE9E1; border-radius: 16px; text-decoration: none; color: #17201B">
+      <svg width="86" height="86" viewBox="0 0 86 86" aria-hidden="true" style="flex: 0 0 auto; border-radius: 12px"><rect width="86" height="86" fill="#E6DFD3"></rect><path d="M0 22 C18 14 38 30 58 20 S80 14 86 18" fill="none" stroke="#9A744A" stroke-opacity="0.6"></path><path d="M0 40 C20 32 42 48 62 38 S82 34 86 36" fill="none" stroke="#B08A5E" stroke-opacity="0.5"></path><path d="M0 58 C22 50 44 66 64 56 S82 52 86 54" fill="none" stroke="#B08A5E" stroke-opacity="0.5"></path><path d="M14 70 C20 56 30 50 38 42 C46 34 56 30 62 22 L70 14" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"></path><path d="M14 70 C20 56 26 52 30 48" fill="none" stroke="#E3A008" stroke-width="3.5" stroke-linecap="round"></path><path d="M30 48 C38 42 46 34 56 30 C60 26 64 20 70 14" fill="none" stroke="#C62828" stroke-width="3" stroke-dasharray="4 3" stroke-linecap="round"></path><circle cx="14" cy="70" r="4" fill="#FFFFFF" stroke="#17201B" stroke-width="1.5"></circle><path d="M70 9 L74 17 H66 Z" fill="#17201B"></path></svg>
+      <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; align-items: center; gap: 6px">
+          <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 6px; border: 1px solid #D8D4C8; border-radius: 6px; font: 700 12.5px 'Barlow Semi Condensed', Inter, sans-serif"><span style="display: inline-flex; flex-direction: column; width: 3.5px"><span style="height: 4.5px; background: #F2C200; display: block"></span><span style="height: 4.5px; background: #D32F2F; display: block"></span></span>PR 1</span>
+          <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; background: #FDF0D5; color: #8A5300; font-size: 11.5px; font-weight: 600"><span style="width: 6px; height: 6px; border-radius: 3px; background: #E3A008; display: block"></span>Partly open</span>
+          <span style="margin-left: auto; font-size: 12px; font-weight: 600; color: #3E4842">€10.50</span>
+        </div>
+        <span style="font: 600 18px/1.15 'Barlow Semi Condensed', Inter, sans-serif">Vereda do Pico do Areeiro</span>
+        <span style="font-size: 12.5px; color: #4E5A53">Santana · Pico do Areeiro → Pico Ruivo</span>
+        <span style="font-size: 12.5px; color: #8A5300; font-weight: 600">Open only to Pedra Rija viewpoint (km 1.2)</span>
+      </div>
+    </a>
+
+    <a href="Trail.dc.html" style="display: flex; gap: 12px; padding: 12px; background: #FFFFFF; border: 1px solid #ECE9E1; border-radius: 16px; text-decoration: none; color: #17201B">
+      <svg width="86" height="86" viewBox="0 0 86 86" aria-hidden="true" style="flex: 0 0 auto; border-radius: 12px"><rect width="86" height="86" fill="#CFE3BE"></rect><rect x="0" y="58" width="86" height="28" fill="#E9E4DE"></rect><path d="M0 16 C20 8 40 24 60 14 S80 8 86 12" fill="none" stroke="#B08A5E" stroke-opacity="0.5"></path><path d="M0 32 C22 24 44 40 64 30 S82 26 86 28" fill="none" stroke="#9A744A" stroke-opacity="0.6"></path><path d="M20 8 C26 20 34 28 40 36 C46 46 50 54 58 62 L64 74" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"></path><path d="M20 8 C26 20 34 28 40 36 C46 46 50 54 58 62 L64 74" fill="none" stroke="#2E9E5B" stroke-width="3.5" stroke-linecap="round"></path><circle cx="20" cy="8" r="4" fill="#FFFFFF" stroke="#17201B" stroke-width="1.5"></circle><circle cx="64" cy="74" r="4" fill="#17201B"></circle></svg>
+      <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; align-items: center; gap: 6px">
+          <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 6px; border: 1px solid #D8D4C8; border-radius: 6px; font: 700 12.5px 'Barlow Semi Condensed', Inter, sans-serif"><span style="display: inline-flex; flex-direction: column; width: 3.5px"><span style="height: 4.5px; background: #F2C200; display: block"></span><span style="height: 4.5px; background: #D32F2F; display: block"></span></span>PR 3.1</span>
+          <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; background: #E3F3EA; color: #1B7A44; font-size: 11.5px; font-weight: 600"><span style="width: 6px; height: 6px; border-radius: 3px; background: #2E9E5B; display: block"></span>Open</span>
+          <span style="margin-left: auto; font-size: 12px; font-weight: 600; color: #3E4842">€4.50</span>
+        </div>
+        <span style="font: 600 18px/1.15 'Barlow Semi Condensed', Inter, sans-serif">Caminho Real do Monte</span>
+        <span style="font-size: 12.5px; color: #4E5A53">Funchal · Ribeira das Cales → Monte</span>
+        <span style="font-size: 12.5px; font-weight: 600; color: #17201B">4.2 km · 2 h · Moderate</span>
+      </div>
+    </a>
+
+    <a href="Trail.dc.html" style="display: flex; gap: 12px; padding: 12px; background: #FFFFFF; border: 1px solid #ECE9E1; border-radius: 16px; text-decoration: none; color: #17201B">
+      <svg width="86" height="86" viewBox="0 0 86 86" aria-hidden="true" style="flex: 0 0 auto; border-radius: 12px"><rect width="86" height="86" fill="#E3E8C8"></rect><path d="M0 30 C20 22 42 38 62 28 S82 24 86 26" fill="none" stroke="#B08A5E" stroke-opacity="0.5"></path><path d="M0 50 C22 42 44 58 64 48 S82 44 86 46" fill="none" stroke="#9A744A" stroke-opacity="0.6"></path><path d="M10 40 C24 36 38 44 52 40 S72 34 78 38" fill="none" stroke="#1A8FD6" stroke-width="1.5"></path><path d="M10 44 C24 40 38 48 52 44 S72 38 78 42" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"></path><path d="M10 44 C24 40 38 48 52 44 S72 38 78 42" fill="none" stroke="#2E9E5B" stroke-width="3.5" stroke-linecap="round"></path><circle cx="10" cy="44" r="4" fill="#FFFFFF" stroke="#17201B" stroke-width="1.5"></circle><circle cx="78" cy="42" r="4" fill="#17201B"></circle></svg>
+      <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; align-items: center; gap: 6px">
+          <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 6px; border: 1px solid #D8D4C8; border-radius: 6px; font: 700 12.5px 'Barlow Semi Condensed', Inter, sans-serif"><span style="display: inline-flex; flex-direction: column; width: 3.5px"><span style="height: 4.5px; background: #F2C200; display: block"></span><span style="height: 4.5px; background: #D32F2F; display: block"></span></span>PR 6.8</span>
+          <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; background: #E3F3EA; color: #1B7A44; font-size: 11.5px; font-weight: 600"><span style="width: 6px; height: 6px; border-radius: 3px; background: #2E9E5B; display: block"></span>Open</span>
+          <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; background: #E7EEF8; color: #1D4F91; font-size: 11.5px; font-weight: 600">Accessible</span>
+        </div>
+        <span style="font: 600 18px/1.15 'Barlow Semi Condensed', Inter, sans-serif">Levada do Paul II – Um Caminho Para Todos</span>
+        <span style="font-size: 12.5px; color: #4E5A53">Calheta · Rabaçal → Estrada do Rochão</span>
+      </div>
+    </a>
+
+    <a href="Trail.dc.html" style="display: flex; gap: 12px; padding: 12px; background: #FFFFFF; border: 1px solid #ECE9E1; border-radius: 16px; text-decoration: none; color: #17201B">
+      <svg width="86" height="86" viewBox="0 0 86 86" aria-hidden="true" style="flex: 0 0 auto; border-radius: 12px"><rect width="86" height="86" fill="#CFE3BE"></rect><path d="M0 26 C20 18 42 34 62 24 S82 20 86 22" fill="none" stroke="#B08A5E" stroke-opacity="0.5"></path><path d="M8 60 C24 52 40 60 56 50 S76 40 80 36" fill="none" stroke="#5B6B9A" stroke-width="3" stroke-dasharray="5 3" stroke-linecap="round"></path></svg>
+      <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; align-items: center; gap: 6px">
+          <span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 11px; background: #ECEEF5; color: #3C4A75; font-size: 11.5px; font-weight: 600">Community · OpenStreetMap</span>
+        </div>
+        <span style="font: 600 18px/1.15 'Barlow Semi Condensed', Inter, sans-serif">Levada Nova</span>
+        <span style="font-size: 12.5px; color: #4E5A53">Ponta do Sol · not officially maintained</span>
+      </div>
+    </a>
+  </main>
+
+  <nav aria-label="Main" style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; background: #FFFFFF; border-top: 1px solid #E3E0D6; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #4E5A53">
+      <span style="width: 60px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"></path><path d="M9 4v14M15 6v14"></path></svg></span>
+      <span style="font-size: 12px; font-weight: 500">Map</span></a>
+    <a href="Explore.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #1F5F3F">
+      <span style="width: 60px; height: 32px; border-radius: 16px; background: #E4EFE7; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F5F3F" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M15.5 8.5l-2 5-5 2 2-5 5-2z"></path></svg></span>
+      <span style="font-size: 12px; font-weight: 700">Explore</span></a>
+    <a href="Navigate.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #4E5A53">
+      <span style="width: 60px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4" fill="#C2410C" stroke="none"></circle></svg></span>
+      <span style="font-size: 12px; font-weight: 500">Record</span></a>
+    <a href="Me.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #4E5A53">
+      <span style="width: 60px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg></span>
+      <span style="font-size: 12px; font-weight: 500">Me</span></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

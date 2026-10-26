@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vereda</string>
+
+    <string name="tab_map">Map</string>
+    <string name="tab_explore">Explore</string>
+    <string name="tab_record">Record</string>
+    <string name="tab_me">Me</string>
+
+    <string name="map_dev_banner">Temporary online map. The offline Madeira topo map arrives with the data pipeline (Phase 0).</string>
+
+    <string name="explore_title">Explore</string>
+    <string name="explore_search_hint">Name, PR code or place</string>
+    <string name="explore_count">%1$d official trails · status not loaded yet</string>
+
+    <string name="status_open">Open</string>
+    <string name="status_partial">Partly open</string>
+    <string name="status_closed">Closed</string>
+    <string name="status_unknown">Status unknown</string>
+
+    <string name="record_title">Record</string>
+    <string name="record_placeholder">GPS recording and navigation arrive in Phase 3.</string>
+    <string name="me_title">Me</string>
+    <string name="me_placeholder">Your profile and the Done, To-do and Wishlist lists arrive in Phase 2. Everything stays on this phone.</string>
+</resources>

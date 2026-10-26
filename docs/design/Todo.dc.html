@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>To-do list</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F5F3F}a:hover{color:#174A31}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F6F4EE; font-family: Inter, system-ui, sans-serif; color: #17201B">
+  <header style="height: 64px; padding: 0 8px 0 4px; display: flex; align-items: center; gap: 4px">
+    <a href="Me.dc.html" aria-label="Back" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#17201B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <h1 style="flex: 1 1 auto; margin: 0; font: 700 28px 'Barlow Semi Condensed', Inter, sans-serif">To-do <span style="font-weight: 500; color: #4E5A53">· 4</span></h1>
+    <button style="height: 40px; padding: 0 12px; border: 1px solid #DDD8CC; border-radius: 20px; background: #FFFFFF; font: 600 13px Inter, system-ui, sans-serif; color: #17201B">By date</button>
+  </header>
+
+  <main style="padding: 0 16px; display: flex; flex-direction: column; gap: 10px">
+    <section role="status" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 16px; background: #FDF0D5">
+      <div style="display: flex; gap: 10px; align-items: flex-start">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A5300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: 0 0 auto"><path d="M6 16V11a6 6 0 1112 0v5l2 2H4z"></path><path d="M10 20a2 2 0 004 0"></path></svg>
+        <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14.5px; font-weight: 700; color: #5C3800">Tomorrow: PR 1 Vereda do Pico do Areeiro</span><span style="font-size: 13px; color: #6B4500">It's only partly open. Check the status, then book your time slot.</span></span>
+      </div>
+      <div style="display: flex; gap: 8px; padding-left: 32px">
+        <a href="Trail.dc.html" style="height: 38px; padding: 0 14px; border-radius: 19px; background: #FFFFFF; display: flex; align-items: center; font-size: 13.5px; font-weight: 600; color: #5C3800; text-decoration: none">Check status</a>
+        <a href="https://simplifica.madeira.gov.pt" style="height: 38px; padding: 0 14px; border-radius: 19px; background: #5C3800; display: flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: #FFFFFF; text-decoration: none">Book · €10.50 ↗</a>
+      </div>
+    </section>
+
+    <article style="display: flex; flex-direction: column; gap: 6px; padding: 14px; background: #FFFFFF; border: 1px solid #ECE9E1; border-radius: 16px">
+      <div style="display: flex; align-items: center; gap: 6px">
+        <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 6px; border: 1px solid #D8D4C8; border-radius: 6px; font: 700 12.5px 'Barlow Semi Condensed', Inter, sans-serif"><span style="display: inline-flex; flex-direction: column; width: 3.5px"><span style="height: 4.5px; background: #F2C200; display: block"></span><span style="height: 4.5px; background: #D32F2F; display: block"></span></span>PR 1</span>
+        <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; background: #FDF0D5; color: #8A5300; font-size: 11.5px; font-weight: 600"><span style="width: 6px; height: 6px; border-radius: 3px; background: #E3A008; display: block"></span>Partly open</span>
+        <span style="margin-left: auto; display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border-radius: 13px; background: #17201B; color: #FFFFFF; font-size: 12px; font-weight: 600"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg>Sat 31 Oct</span>
+      </div>
+      <span style="font: 600 19px/1.15 'Barlow Semi Condensed', Inter, sans-serif">Vereda do Pico do Areeiro</span>
+      <span style="font-size: 12.5px; color: #8A5300; font-weight: 600">Open only to Pedra Rija viewpoint (km 1.2)</span>
+    </article>
+
+    <article style="display: flex; flex-direction: column; gap: 6px; padding: 14px; background: #FFFFFF; border: 1px solid #ECE9E1; border-radius: 16px">
+      <div style="display: flex; align-items: center; gap: 6px">
+        <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 6px; border: 1px solid #D8D4C8; border-radius: 6px; font: 700 12.5px 'Barlow Semi Condensed', Inter, sans-serif"><span style="display: inline-flex; flex-direction: column; width: 3.5px"><span style="height: 4.5px; background: #F2C200; display: block"></span><span style="height: 4.5px; background: #D32F2F; display: block"></span></span>PR 9</span>
+        <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; background: #E3F3EA; color: #1B7A44; font-size: 11.5px; font-weight: 600"><span style="width: 6px; height: 6px; border-radius: 3px; background: #2E9E5B; display: block"></span>Open</span>
+        <button style="margin-left: auto; height: 32px; padding: 0 10px; border: 1px dashed #B8B2A4; border-radius: 16px; background: #FFFFFF; font: 600 12px Inter, system-ui, sans-serif; color: #3E4842">+ Add date</button>
+      </div>
+      <span style="font: 600 19px/1.15 'Barlow Semi Condensed', Inter, sans-serif">Levada do Caldeirão Verde</span>
+      <span style="font-size: 12.5px; color: #4E5A53">Santana · closed beyond Caldeirão Verde towards Caldeirão do Inferno</span>
+    </article>
+
+    <article style="display: flex; flex-direction: column; gap: 6px; padding: 14px; background: #FFFFFF; border: 1px solid #ECE9E1; border-radius: 16px">
+      <div style="display: flex; align-items: center; gap: 6px">
+        <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 6px; border: 1px solid #D8D4C8; border-radius: 6px; font: 700 12.5px 'Barlow Semi Condensed', Inter, sans-serif"><span style="display: inline-flex; flex-direction: column; width: 3.5px"><span style="height: 4.5px; background: #F2C200; display: block"></span><span style="height: 4.5px; background: #D32F2F; display: block"></span></span>PR 13</span>
+        <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; background: #E3F3EA; color: #1B7A44; font-size: 11.5px; font-weight: 600"><span style="width: 6px; height: 6px; border-radius: 3px; background: #2E9E5B; display: block"></span>Open</span>
+        <button style="margin-left: auto; height: 32px; padding: 0 10px; border: 1px dashed #B8B2A4; border-radius: 16px; background: #FFFFFF; font: 600 12px Inter, system-ui, sans-serif; color: #3E4842">+ Add date</button>
+      </div>
+      <span style="font: 600 19px/1.15 'Barlow Semi Condensed', Inter, sans-serif">Vereda do Fanal</span>
+      <span style="font-size: 12.5px; color: #4E5A53">Porto Moniz · Assobiadores → Paul da Serra → Fanal</span>
+    </article>
+
+    <article style="display: flex; flex-direction: column; gap: 6px; padding: 14px; background: #FFFFFF; border: 1px solid #ECE9E1; border-radius: 16px">
+      <div style="display: flex; align-items: center; gap: 6px">
+        <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 6px; border: 1px solid #D8D4C8; border-radius: 6px; font: 700 12.5px 'Barlow Semi Condensed', Inter, sans-serif"><span style="display: inline-flex; flex-direction: column; width: 3.5px"><span style="height: 4.5px; background: #F2C200; display: block"></span><span style="height: 4.5px; background: #D32F2F; display: block"></span></span>PS PR 2</span>
+        <span style="display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; background: #E3F3EA; color: #1B7A44; font-size: 11.5px; font-weight: 600"><span style="width: 6px; height: 6px; border-radius: 3px; background: #2E9E5B; display: block"></span>Open</span>
+        <button style="margin-left: auto; height: 32px; padding: 0 10px; border: 1px dashed #B8B2A4; border-radius: 16px; background: #FFFFFF; font: 600 12px Inter, system-ui, sans-serif; color: #3E4842">+ Add date</button>
+      </div>
+      <span style="font: 600 19px/1.15 'Barlow Semi Condensed', Inter, sans-serif">Vereda do Pico do Castelo</span>
+      <a href="Offline.dc.html" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: #8A5300"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8A5300" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg>Porto Santo map not downloaded</a>
+    </article>
+
+    <p style="margin: 4px 2px 0; font-size: 12px; color: #4E5A53">Marking a trail as done moves it to Done. Reminders fire the day before a planned date.</p>
+  </main>
+
+  <nav aria-label="Main" style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; background: #FFFFFF; border-top: 1px solid #E3E0D6; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #4E5A53">
+      <span style="width: 60px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"></path><path d="M9 4v14M15 6v14"></path></svg></span>
+      <span style="font-size: 12px; font-weight: 500">Map</span></a>
+    <a href="Explore.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #4E5A53">
+      <span style="width: 60px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M15.5 8.5l-2 5-5 2 2-5 5-2z"></path></svg></span>
+      <span style="font-size: 12px; font-weight: 500">Explore</span></a>
+    <a href="Navigate.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #4E5A53">
+      <span style="width: 60px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4" fill="#C2410C" stroke="none"></circle></svg></span>
+      <span style="font-size: 12px; font-weight: 500">Record</span></a>
+    <a href="Me.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #1F5F3F">
+      <span style="width: 60px; height: 32px; border-radius: 16px; background: #E4EFE7; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F5F3F" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg></span>
+      <span style="font-size: 12px; font-weight: 700">Me</span></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

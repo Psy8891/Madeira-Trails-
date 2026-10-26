@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_map">Mapa</string>
+    <string name="tab_explore">Explorar</string>
+    <string name="tab_record">Gravar</string>
+    <string name="tab_me">Eu</string>
+
+    <string name="map_dev_banner">Mapa online provisório. O mapa topográfico offline da Madeira chega com o pipeline de dados (Fase 0).</string>
+
+    <string name="explore_title">Explorar</string>
+    <string name="explore_search_hint">Nome, código PR ou local</string>
+    <string name="explore_count">%1$d percursos oficiais · estado ainda não carregado</string>
+
+    <string name="status_open">Aberto</string>
+    <string name="status_partial">Parcialmente aberto</string>
+    <string name="status_closed">Fechado</string>
+    <string name="status_unknown">Estado desconhecido</string>
+
+    <string name="record_title">Gravar</string>
+    <string name="record_placeholder">A gravação GPS e a navegação chegam na Fase 3.</string>
+    <string name="me_title">Eu</string>
+    <string name="me_placeholder">O teu perfil e as listas Feitos, A fazer e Desejos chegam na Fase 2. Tudo fica guardado neste telemóvel.</string>
+</resources>

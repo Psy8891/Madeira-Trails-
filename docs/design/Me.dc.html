@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Me — profile and lists</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F5F3F}a:hover{color:#174A31}
+</style>
+</helmet>
+<div style="width: 390px; height: 1240px; position: relative; overflow: hidden; background: #F6F4EE; font-family: Inter, system-ui, sans-serif; color: #17201B">
+  <header style="padding: 16px; display: flex; align-items: center; gap: 14px">
+    <button aria-label="Add a profile photo" style="width: 64px; height: 64px; flex: 0 0 auto; border: 0; border-radius: 32px; background: #1F5F3F; color: #FFFFFF; font: 700 24px 'Barlow Semi Condensed', Inter, sans-serif; display: flex; align-items: center; justify-content: center">YN</button>
+    <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px">
+      <span style="font: 700 26px/1.1 'Barlow Semi Condensed', Inter, sans-serif">[Your name]</span>
+      <span style="font-size: 13px; color: #4E5A53">Stored on this phone only · no account</span>
+    </div>
+    <button aria-label="Settings" style="width: 44px; height: 44px; border: 0; border-radius: 22px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(23,32,27,0.1)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#17201B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"></path></svg>
+    </button>
+  </header>
+
+  <main style="padding: 0 16px 100px; display: flex; flex-direction: column; gap: 16px">
+    <section aria-label="Resident" style="display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #ECE9E1">
+      <span style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">I'm a Madeira resident</span><span style="font-size: 12.5px; color: #4E5A53">Trail entry shows as free — booking is still required</span></span>
+      <button role="switch" aria-checked="true" aria-label="I'm a Madeira resident" style="width: 46px; height: 28px; flex: 0 0 auto; border: 0; border-radius: 14px; background: #1F5F3F; position: relative; padding: 0"><span style="position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; display: block"></span></button>
+    </section>
+
+    <section aria-label="Your progress" style="display: flex; flex-direction: column; gap: 14px; padding: 16px; border-radius: 18px; background: #1F5F3F; color: #FFFFFF">
+      <div style="display: flex; align-items: center; gap: 16px">
+        <svg width="92" height="92" viewBox="0 0 92 92" role="img" aria-label="17 of 42 official trails done">
+          <circle cx="46" cy="46" r="38" fill="none" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="10"></circle>
+          <circle cx="46" cy="46" r="38" fill="none" stroke="#F2C200" stroke-width="10" stroke-linecap="round" stroke-dasharray="96.6 238.8" transform="rotate(-90 46 46)"></circle>
+          <text x="46" y="50" text-anchor="middle" font-family="'Barlow Semi Condensed', Inter, sans-serif" font-size="26" font-weight="700" fill="#FFFFFF">17</text>
+          <text x="46" y="66" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#D5E5DA">of 42</text>
+        </svg>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font: 700 22px/1.1 'Barlow Semi Condensed', Inter, sans-serif">Official trails done</span>
+          <span style="font-size: 13px; color: #D5E5DA">Nearest one left: PR 6.2 Levada do Alecrim</span>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.18)">
+        <div style="display: flex; flex-direction: column"><span style="font: 700 22px 'Barlow Semi Condensed', Inter, sans-serif">126 km</span><span style="font-size: 11.5px; color: #D5E5DA">walked</span></div>
+        <div style="display: flex; flex-direction: column"><span style="font: 700 22px 'Barlow Semi Condensed', Inter, sans-serif">8,450 m</span><span style="font-size: 11.5px; color: #D5E5DA">climbed</span></div>
+        <div style="display: flex; flex-direction: column"><span style="font: 700 22px 'Barlow Semi Condensed', Inter, sans-serif">31</span><span style="font-size: 11.5px; color: #D5E5DA">hikes in 2026</span></div>
+      </div>
+    </section>
+
+    <section aria-label="Your lists" style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <h2 style="margin: 0; font: 600 21px 'Barlow Semi Condensed', Inter, sans-serif">Your lists</h2>
+        <button style="height: 36px; padding: 0 12px; border: 1px solid #DDD8CC; border-radius: 18px; background: #FFFFFF; font: 600 13px Inter, system-ui, sans-serif; color: #17201B; display: flex; align-items: center; gap: 4px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#17201B" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>New list</button>
+      </div>
+      <div style="display: flex; flex-direction: column; border-radius: 16px; background: #FFFFFF; border: 1px solid #ECE9E1; overflow: hidden">
+        <a href="Todo.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; text-decoration: none; color: #17201B">
+          <span style="width: 40px; height: 40px; border-radius: 12px; background: #E3F3EA; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B7A44" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></span>
+          <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600">Done</span><span style="font-size: 12.5px; color: #4E5A53">Last: PR 6, today</span></span>
+          <span style="font: 600 17px 'Barlow Semi Condensed', Inter, sans-serif; color: #4E5A53">17</span>
+        </a>
+        <a href="Todo.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid #ECE9E1; text-decoration: none; color: #17201B">
+          <span style="width: 40px; height: 40px; border-radius: 12px; background: #FDF0D5; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8A5300" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg></span>
+          <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600">To-do</span><span style="font-size: 12.5px; color: #4E5A53">Next: PR 1 on Sat 31 Oct</span></span>
+          <span style="font: 600 17px 'Barlow Semi Condensed', Inter, sans-serif; color: #4E5A53">4</span>
+        </a>
+        <a href="Todo.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid #ECE9E1; text-decoration: none; color: #17201B">
+          <span style="width: 40px; height: 40px; border-radius: 12px; background: #F3E8F7; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B2F86" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1 0.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-0.9z"></path></svg></span>
+          <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600">Wishlist</span><span style="font-size: 12.5px; color: #4E5A53">Someday trails</span></span>
+          <span style="font: 600 17px 'Barlow Semi Condensed', Inter, sans-serif; color: #4E5A53">9</span>
+        </a>
+        <a href="Todo.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid #ECE9E1; text-decoration: none; color: #17201B">
+          <span style="width: 40px; height: 40px; border-radius: 12px; background: #E7EEF8; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D4F91" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4V3z"></path></svg></span>
+          <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600">With kids</span><span style="font-size: 12.5px; color: #4E5A53">Custom list</span></span>
+          <span style="font: 600 17px 'Barlow Semi Condensed', Inter, sans-serif; color: #4E5A53">5</span>
+        </a>
+      </div>
+    </section>
+
+    <section aria-label="Saved" style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <h2 style="margin: 0; font: 600 21px 'Barlow Semi Condensed', Inter, sans-serif">Saved</h2>
+        <button style="height: 36px; padding: 0 12px; border: 1px solid #DDD8CC; border-radius: 18px; background: #FFFFFF; font: 600 13px Inter, system-ui, sans-serif; color: #17201B">Import GPX</button>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <button style="padding: 12px; border: 1px solid #ECE9E1; border-radius: 14px; background: #FFFFFF; display: flex; flex-direction: column; gap: 4px; text-align: left; font-family: Inter, system-ui, sans-serif">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E4572E" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 18 C7 8 12 16 16 8 S20 6 21 5"></path></svg>
+          <span style="font: 700 20px 'Barlow Semi Condensed', Inter, sans-serif; color: #17201B">31</span><span style="font-size: 12.5px; color: #4E5A53">Recordings</span></button>
+        <button style="padding: 12px; border: 1px solid #ECE9E1; border-radius: 14px; background: #FFFFFF; display: flex; flex-direction: column; gap: 4px; text-align: left; font-family: Inter, system-ui, sans-serif">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F5F3F" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 005 9.5C5 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>
+          <span style="font: 700 20px 'Barlow Semi Condensed', Inter, sans-serif; color: #17201B">12</span><span style="font-size: 12.5px; color: #4E5A53">Waypoints</span></button>
+        <button style="padding: 12px; border: 1px solid #ECE9E1; border-radius: 14px; background: #FFFFFF; display: flex; flex-direction: column; gap: 4px; text-align: left; font-family: Inter, system-ui, sans-serif">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B6B9A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6v18h12V7z"></path><path d="M14 3v4h4"></path></svg>
+          <span style="font: 700 20px 'Barlow Semi Condensed', Inter, sans-serif; color: #17201B">3</span><span style="font-size: 12.5px; color: #4E5A53">Imported</span></button>
+      </div>
+    </section>
+
+    <section aria-label="More" style="display: flex; flex-direction: column; border-radius: 16px; background: #FFFFFF; border: 1px solid #ECE9E1; overflow: hidden">
+      <a href="Offline.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 14px; text-decoration: none; color: #17201B">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F5F3F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg>
+        <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600">Offline maps</span><span style="font-size: 12.5px; color: #4E5A53">Madeira · version 2026.10</span></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+      </a>
+      <button style="display: flex; align-items: center; gap: 12px; padding: 14px; border: 0; border-top: 1px solid #ECE9E1; background: #FFFFFF; text-align: left; font-family: Inter, system-ui, sans-serif; color: #17201B">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F5F3F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="5" rx="1"></rect><path d="M5 9v10h14V9M10 13h4"></path></svg>
+        <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600">Backup and restore</span><span style="font-size: 12.5px; color: #4E5A53">Export everything to one .zip file</span></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+      </button>
+      <button style="display: flex; align-items: center; gap: 12px; padding: 14px; border: 0; border-top: 1px solid #ECE9E1; background: #FFFFFF; text-align: left; font-family: Inter, system-ui, sans-serif; color: #17201B">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F5F3F" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v0.5"></path></svg>
+        <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600">About and data sources</span><span style="font-size: 12.5px; color: #4E5A53">OpenStreetMap, DROTe, IFCN, IPMA</span></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+      </button>
+    </section>
+  </main>
+
+  <nav aria-label="Main" style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; background: #FFFFFF; border-top: 1px solid #E3E0D6; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #4E5A53">
+      <span style="width: 60px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"></path><path d="M9 4v14M15 6v14"></path></svg></span>
+      <span style="font-size: 12px; font-weight: 500">Map</span></a>
+    <a href="Explore.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #4E5A53">
+      <span style="width: 60px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M15.5 8.5l-2 5-5 2 2-5 5-2z"></path></svg></span>
+      <span style="font-size: 12px; font-weight: 500">Explore</span></a>
+    <a href="Navigate.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #4E5A53">
+      <span style="width: 60px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4" fill="#C2410C" stroke="none"></circle></svg></span>
+      <span style="font-size: 12px; font-weight: 500">Record</span></a>
+    <a href="Me.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #1F5F3F">
+      <span style="width: 60px; height: 32px; border-radius: 16px; background: #E4EFE7; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F5F3F" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg></span>
+      <span style="font-size: 12px; font-weight: 700">Me</span></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1240}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

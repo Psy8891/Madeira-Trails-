@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Map — home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F5F3F}a:hover{color:#174A31}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F3F0E6; font-family: Inter, system-ui, sans-serif; color: #17201B">
+  <div style="position: absolute; left: 0; top: 0">
+    <dc-import name="TopoMap" vb="0 0 390 844" w="390" h="844" mode="explore" me="{{yes}}" hint-size="390px,844px"></dc-import>
+  </div>
+
+  <div style="position: absolute; left: 16px; right: 16px; top: 16px; display: flex; gap: 8px; align-items: center">
+    <label style="flex: 1 1 auto; height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: #FFFFFF; border-radius: 14px; box-shadow: 0 2px 10px rgba(23,32,27,0.16)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+      <input type="search" placeholder="Search trails, places, coordinates" aria-label="Search trails, places, coordinates" style="border: 0; outline: none; flex: 1 1 auto; min-width: 0; font: 400 15px Inter, system-ui, sans-serif; color: #17201B; background: transparent">
+    </label>
+    <button aria-label="Emergency: call 112 and share location" style="width: 48px; height: 48px; flex: 0 0 auto; border: 0; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 10px rgba(23,32,27,0.16); display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-0.7-8-4.5-8-9V6l8-3z"></path><path d="M12 8v5M12 16v0.5"></path></svg>
+    </button>
+  </div>
+
+  <div style="position: absolute; left: 16px; right: 0; top: 74px; display: flex; gap: 8px; overflow: hidden">
+    <button style="flex: 0 0 auto; height: 34px; padding: 0 12px; border: 0; border-radius: 17px; background: #1F5F3F; color: #FFFFFF; font: 600 13px Inter, system-ui, sans-serif; display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 4px rgba(23,32,27,0.18)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>Open now</button>
+    <button style="flex: 0 0 auto; height: 34px; padding: 0 12px; border: 1px solid #DDD8CC; border-radius: 17px; background: #FFFFFF; color: #17201B; font: 500 13px Inter, system-ui, sans-serif; box-shadow: 0 1px 4px rgba(23,32,27,0.12)">Levadas</button>
+    <button style="flex: 0 0 auto; height: 34px; padding: 0 12px; border: 1px solid #DDD8CC; border-radius: 17px; background: #FFFFFF; color: #17201B; font: 500 13px Inter, system-ui, sans-serif; box-shadow: 0 1px 4px rgba(23,32,27,0.12)">Under 2 h</button>
+    <button style="flex: 0 0 auto; height: 34px; padding: 0 12px; border: 1px solid #DDD8CC; border-radius: 17px; background: #FFFFFF; color: #17201B; font: 500 13px Inter, system-ui, sans-serif; box-shadow: 0 1px 4px rgba(23,32,27,0.12)">Accessible</button>
+    <button style="flex: 0 0 auto; height: 34px; padding: 0 12px; border: 1px solid #DDD8CC; border-radius: 17px; background: #FFFFFF; color: #17201B; font: 500 13px Inter, system-ui, sans-serif; box-shadow: 0 1px 4px rgba(23,32,27,0.12)">Peaks</button>
+  </div>
+
+  <div style="position: absolute; right: 16px; top: 132px; display: flex; flex-direction: column; gap: 8px">
+    <a href="Layers.dc.html" aria-label="Map layers" style="width: 44px; height: 44px; border-radius: 12px; background: #FFFFFF; box-shadow: 0 2px 10px rgba(23,32,27,0.16); display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#17201B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"></path><path d="M3 13l9 5 9-5"></path></svg>
+    </a>
+    <button aria-label="Reset to north" style="width: 44px; height: 44px; border: 0; border-radius: 12px; background: #FFFFFF; box-shadow: 0 2px 10px rgba(23,32,27,0.16); display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l4 9h-8z" fill="#B42318"></path><path d="M12 21l-4-9h8z" fill="#9AA39D"></path></svg>
+    </button>
+  </div>
+
+  <div style="position: absolute; left: 16px; bottom: 362px; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: flex-end; gap: 6px">
+      <div style="width: 64px; height: 6px; border: 1.5px solid #17201B; border-top: 0"></div>
+      <span style="font-size: 11px; font-weight: 600; color: #17201B">200 m</span>
+    </div>
+    <span style="font-size: 9.5px; color: #4E5A53; background: rgba(255,255,255,0.75); padding: 1px 4px; border-radius: 3px">© OpenStreetMap contributors · © DROTe</span>
+  </div>
+
+  <button aria-label="Show my location" style="position: absolute; right: 16px; bottom: 430px; width: 44px; height: 44px; border: 0; border-radius: 12px; background: #FFFFFF; box-shadow: 0 2px 10px rgba(23,32,27,0.16); display: flex; align-items: center; justify-content: center">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1673B5" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="#1673B5"></circle><circle cx="12" cy="12" r="8"></circle><path d="M12 1v3M12 20v3M1 12h3M20 12h3"></path></svg>
+  </button>
+  <a href="Navigate.dc.html" aria-label="Start recording" style="position: absolute; right: 16px; bottom: 362px; width: 56px; height: 56px; border-radius: 28px; background: #C2410C; box-shadow: 0 4px 14px rgba(194,65,12,0.4); display: flex; align-items: center; justify-content: center">
+    <span style="width: 20px; height: 20px; border-radius: 10px; background: #FFFFFF; display: block"></span>
+  </a>
+
+  <section aria-label="Selected trail" style="position: absolute; left: 0; right: 0; bottom: 76px; background: #FFFFFF; border-radius: 22px 22px 0 0; box-shadow: 0 -6px 24px rgba(23,32,27,0.16); padding: 10px 16px 16px; display: flex; flex-direction: column; gap: 10px">
+    <div style="width: 36px; height: 4px; border-radius: 2px; background: #D5D1C6; align-self: center"></div>
+    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap">
+      <span style="display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 8px; border: 1px solid #D8D4C8; border-radius: 6px; font: 700 13px 'Barlow Semi Condensed', Inter, sans-serif">
+        <span style="display: inline-flex; flex-direction: column; width: 4px"><span style="height: 5px; background: #F2C200; display: block"></span><span style="height: 5px; background: #D32F2F; display: block"></span></span>PR 6</span>
+      <span style="display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px; border-radius: 12px; background: #E3F3EA; color: #1B7A44; font-size: 12px; font-weight: 600"><span style="width: 7px; height: 7px; border-radius: 4px; background: #2E9E5B; display: block"></span>Open</span>
+      <span style="display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 12px; background: #F1EFE8; color: #3E4842; font-size: 12px; font-weight: 600">€4.50 · booking required</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <h2 style="margin: 0; font: 600 25px/1.1 'Barlow Semi Condensed', Inter, sans-serif; letter-spacing: 0.1px">Levada das 25 Fontes</h2>
+      <p style="margin: 0; font-size: 13px; color: #4E5A53">Rabaçal → 25 Fontes · Calheta · Official trail</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 10px 0; border-top: 1px solid #ECE9E1; border-bottom: 1px solid #ECE9E1">
+      <div style="display: flex; flex-direction: column; gap: 1px"><span style="font: 600 21px 'Barlow Semi Condensed', Inter, sans-serif">4.3 km</span><span style="font-size: 11.5px; color: #4E5A53">Distance</span></div>
+      <div style="display: flex; flex-direction: column; gap: 1px"><span style="font: 600 21px 'Barlow Semi Condensed', Inter, sans-serif">3 h</span><span style="font-size: 11.5px; color: #4E5A53">Est. time</span></div>
+      <div style="display: flex; flex-direction: column; gap: 1px"><span style="font: 600 21px 'Barlow Semi Condensed', Inter, sans-serif">Moderate</span><span style="font-size: 11.5px; color: #4E5A53">Difficulty</span></div>
+    </div>
+    <p style="margin: 0; font-size: 12px; color: #4E5A53">Status checked 18 min ago · <a href="https://visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-6-levada-das-25-fontes/">Visit Madeira</a></p>
+    <div style="display: flex; gap: 10px">
+      <a href="Trail.dc.html" style="flex: 1 1 0; height: 48px; border: 1.5px solid #1F5F3F; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; color: #1F5F3F; text-decoration: none">Details</a>
+      <a href="Navigate.dc.html" style="flex: 1 1 0; height: 48px; border-radius: 12px; background: #1F5F3F; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 600; color: #FFFFFF; text-decoration: none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><path d="M3 11l18-8-8 18-2-8-8-2z"></path></svg>Navigate</a>
+    </div>
+  </section>
+
+  <nav aria-label="Main" style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; background: #FFFFFF; border-top: 1px solid #E3E0D6; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center">
+    <a href="Main.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #1F5F3F">
+      <span style="width: 60px; height: 32px; border-radius: 16px; background: #E4EFE7; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F5F3F" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"></path><path d="M9 4v14M15 6v14"></path></svg></span>
+      <span style="font-size: 12px; font-weight: 700">Map</span></a>
+    <a href="Explore.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #4E5A53">
+      <span style="width: 60px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M15.5 8.5l-2 5-5 2 2-5 5-2z"></path></svg></span>
+      <span style="font-size: 12px; font-weight: 500">Explore</span></a>
+    <a href="Navigate.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #4E5A53">
+      <span style="width: 60px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4" fill="#C2410C" stroke="none"></circle></svg></span>
+      <span style="font-size: 12px; font-weight: 500">Record</span></a>
+    <a href="Me.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #4E5A53">
+      <span style="width: 60px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4E5A53" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg></span>
+      <span style="font-size: 12px; font-weight: 500">Me</span></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { yes: true };
+  }
+}
+</script>
+</body>
+</html>
