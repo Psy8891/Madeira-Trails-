@@ -43,6 +43,19 @@ jobs:
           osmium extract -b -17.30,32.55,-16.25,33.15 portugal.osm.pbf -o madeira.osm.pbf --overwrite
           ls -lh madeira.osm.pbf
 
+      # The clipped extract (about 10 MB, ODbL) is kept on a release so the catalog can be rebuilt
+      # and debugged elsewhere with the same data.
+      - name: Publish the Madeira extract
+        if: steps.extract.outcome == 'success'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view osm-extract >/dev/null 2>&1 || gh release create osm-extract --prerelease \
+            --title "OpenStreetMap extract of Madeira" \
+            --notes "Geofabrik Portugal extract clipped to Madeira and Porto Santo with osmium. © OpenStreetMap contributors, ODbL 1.0. Rebuilt by the Update trail catalog workflow."
+          gh release upload osm-extract madeira.osm.pbf --clobber
+
       - name: Build catalog from OpenStreetMap
         run: |
           if [ -f madeira.osm.pbf ] && python data/scripts/build_catalog.py --pbf madeira.osm.pbf; then
