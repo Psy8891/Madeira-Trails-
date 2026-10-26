@@ -9,12 +9,26 @@ android {
     namespace = "pt.vereda.app"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
+    // CI run number makes every build an upgrade of the previous one on the phone.
+    val buildNumber = providers.environmentVariable("GITHUB_RUN_NUMBER").orNull?.toIntOrNull() ?: 1
+
     defaultConfig {
         applicationId = "pt.vereda.app"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = buildNumber
+        versionName = "0.1.$buildNumber"
+    }
+
+    signingConfigs {
+        // Shared debug key (not secret, same as Android Studio's default passwords) so every build,
+        // from CI or a laptop, installs over the previous one without uninstalling first.
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     buildTypes {

@@ -25,6 +25,19 @@ Phase 1 skeleton. The app opens on a map of Madeira (a temporary online base map
 Phase 0 offline packages exist), lists the 42 official trails with accent-insensitive search,
 and has placeholder Record and Me tabs. The core logic for later phases already has unit tests.
 
+## Install on your phone
+
+Every push to `main` that passes CI replaces the **Latest debug build** release with a fresh APK:
+
+1. On the phone, signed in to GitHub, open
+   <https://github.com/Psy8891/Madeira-Trails-/releases/download/latest-debug/vereda-debug.apk>
+   (or the repo's *Releases* page).
+2. Open the downloaded `vereda-debug.apk` and allow installs from your browser when Android asks.
+3. Later builds install over this one; your data stays.
+
+All builds are signed with the shared debug key in `app/debug.keystore`, so CI and local builds
+are interchangeable on the same phone.
+
 ## Build and test
 
 Requirements: JDK 21 (or 17+) and the Android SDK with platform 36. Android Studio handles both.

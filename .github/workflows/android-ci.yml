@@ -80,3 +80,38 @@ jobs:
             **/build/reports/tests/
             **/build/test-results/
           if-no-files-found: ignore
+
+  publish:
+    name: Publish APK to the latest-debug release
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download APK
+        uses: actions/download-artifact@v7
+        with:
+          name: vereda-debug-apk
+          path: apk
+
+      - name: Replace the latest-debug release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          cp apk/*.apk vereda-debug.apk
+          cat > notes.md <<EOF
+          Debug build #${GITHUB_RUN_NUMBER} from commit ${GITHUB_SHA::7}, built and tested by CI.
+
+          **Install on Android:** download \`vereda-debug.apk\` below on the phone, open it, and allow
+          installs from your browser when asked. Newer builds install over older ones.
+          EOF
+          gh release delete latest-debug --yes --cleanup-tag || true
+          gh release create latest-debug vereda-debug.apk \
+            --prerelease \
+            --target "${GITHUB_SHA}" \
+            --title "Latest debug build (#${GITHUB_RUN_NUMBER})" \
+            --notes-file notes.md

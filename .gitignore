@@ -11,9 +11,10 @@ captures/
 .externalNativeBuild/
 .cxx/
 
-# Signing
+# Signing (the shared debug key is the only one allowed in the repo)
 *.jks
 *.keystore
+!app/debug.keystore
 
 # OS
 .DS_Store
