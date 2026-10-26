@@ -42,20 +42,20 @@ BBOX = "32.55,-17.30,33.15,-16.25"  # Madeira + Porto Santo
 PORTO_SANTO_MIN_LAT = 32.95
 MIN_COMMUNITY_LENGTH_M = 400
 ENDPOINTS = [
-    "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
 ]
 USER_AGENT = "VeredaCatalog/1.0 (+https://github.com/Psy8891/Madeira-Trails-)"
 
-QUERY = f"""
-[out:json][timeout:240];
-relation["route"~"^(hiking|foot)$"]({BBOX});
-out geom;
-way["highway"~"^(path|footway|steps|track)$"]["name"]({BBOX});
-out geom;
-node["natural"="peak"]["name"]({BBOX});
-out;
-"""
+# Three small queries instead of one big one: public Overpass servers are often busy and
+# reject or time out large requests.
+QUERIES = {
+    "routes": f'[out:json][timeout:180];relation["route"~"^(hiking|foot)$"]({BBOX});out geom;',
+    "paths": f'[out:json][timeout:180];way["highway"~"^(path|footway|steps|track)$"]["name"]({BBOX});out geom;',
+    "peaks": f'[out:json][timeout:60];node["natural"="peak"]["name"]({BBOX});out;',
+}
 
 # Named footways that are streets or urban paths, not trails.
 URBAN_NAME = re.compile(
@@ -64,21 +64,38 @@ URBAN_NAME = re.compile(
 TRAIL_WORDS = re.compile(r"\b(levada|vereda|caminho|trilho|percurso|pico|ponta)\b")
 
 
-def fetch_overpass() -> dict:
+def check_overpass_answer(data: dict) -> dict:
+    """Overpass reports timeouts and overload inside a 200 answer; partial data must not be used."""
+    remark = data.get("remark", "")
+    if "error" in remark.lower():
+        raise ValueError(f"Overpass remark: {remark}")
+    if "elements" not in data:
+        raise ValueError("Overpass answer has no elements")
+    return data
+
+
+def fetch_query(name: str, query: str) -> dict:
     last_error: Exception | None = None
-    for attempt in range(3):
+    for attempt in range(4):
         for url in ENDPOINTS:
             try:
-                response = requests.post(
-                    url, data={"data": QUERY}, headers={"User-Agent": USER_AGENT}, timeout=300
-                )
+                response = requests.post(url, data={"data": query}, headers={"User-Agent": USER_AGENT}, timeout=240)
                 response.raise_for_status()
-                return response.json()
+                data = check_overpass_answer(response.json())
+                print(f"Overpass {name}: {len(data['elements'])} elements from {url}")
+                return data
             except Exception as error:  # noqa: BLE001 - try the next mirror
                 last_error = error
-                print(f"Overpass {url} failed: {error}", file=sys.stderr)
-        time.sleep(30 * (attempt + 1))
-    raise SystemExit(f"Overpass unavailable: {last_error}")
+                print(f"Overpass {name} via {url} failed: {str(error)[:200]}", file=sys.stderr)
+        time.sleep(45 * (attempt + 1))
+    raise SystemExit(f"Overpass unavailable for {name}: {last_error}")
+
+
+def fetch_overpass() -> dict:
+    elements: list[dict] = []
+    for name, query in QUERIES.items():
+        elements.extend(fetch_query(name, query)["elements"])
+    return {"elements": elements}
 
 
 def way_points(element: dict) -> list[tuple[float, float]]:
@@ -101,7 +118,7 @@ def island_of(lines) -> str:
 def build(data: dict) -> tuple[dict, str]:
     official_list = json.loads(OFFICIAL.read_text(encoding="utf-8"))
     official_by_code = {o["code"]: o for o in official_list}
-    official_names = {normalize(o["name"]) for o in official_list}
+    official_by_name = {normalize(o["name"]): o["code"] for o in official_list}
 
     official_lines: dict[str, list] = defaultdict(list)
     official_osm: dict[str, list[str]] = defaultdict(list)
@@ -121,13 +138,15 @@ def build(data: dict) -> tuple[dict, str]:
             route_way_ids.update(m["ref"] for m in members)
             porto_santo = centre_lat(lines) > PORTO_SANTO_MIN_LAT
             code = parse_pr_code(tags.get("ref"), porto_santo) or parse_pr_code(tags.get("name"), porto_santo)
+            if code is None and tags.get("name"):
+                code = official_by_name.get(normalize(tags["name"]))  # official trail mapped without its PR ref
             if code in official_by_code:
                 official_lines[code].extend(lines)
                 official_osm[code].append(f"r{el['id']}")
                 continue
             name = tags.get("name")
-            if not name or normalize(name) in official_names:
-                continue  # unnamed, or an official trail mapped without its PR ref
+            if not name:
+                continue
             chains = chain_lines(lines)
             total = sum(length_m(c) for c in chains)
             if total < MIN_COMMUNITY_LENGTH_M:

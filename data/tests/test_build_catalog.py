@@ -3,7 +3,9 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "scripts"))
 
-from build_catalog import build  # noqa: E402
+import pytest  # noqa: E402
+
+from build_catalog import build, check_overpass_answer  # noqa: E402
 from geo_utils import decode_polyline  # noqa: E402
 
 
@@ -85,6 +87,22 @@ def test_community_relation_is_included_and_official_duplicates_are_not():
     assert trails["osm-r555"]["name"] == "Boca da Corrida - Pico Grande"
     assert trails["osm-r555"]["source"] == "community"
     assert "osm-r556" not in trails
+
+
+def test_official_trail_mapped_without_ref_is_matched_by_name():
+    catalog, report = build(overpass_sample())
+    pr12 = by_id(catalog)["pr-1.2"]
+    assert pr12["osm"] == ["r556"]
+    assert len(pr12["lines"]) == 1
+    assert "PR 1.2," not in report
+
+
+def test_overpass_errors_inside_a_200_answer_are_rejected():
+    with pytest.raises(ValueError):
+        check_overpass_answer({"elements": [], "remark": "runtime error: Query timed out in \"query\""})
+    with pytest.raises(ValueError):
+        check_overpass_answer({"version": 0.6})
+    assert check_overpass_answer({"elements": [{"type": "node"}]})["elements"]
 
 
 def test_named_paths_are_chained_and_urban_or_short_ones_dropped():
