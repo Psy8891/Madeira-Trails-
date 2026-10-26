@@ -16,6 +16,7 @@ sealed interface TrailPosition {
 object TrailPositions {
     /** Same threshold as the off-route alert (spec: Tracking and navigation engine). */
     const val ON_TRAIL_M = 40.0
+    private const val SAME_POINT_M = 100.0
 
     fun of(entry: TrailEntry, position: GeoPoint): TrailPosition? {
         val lines = entry.lines.filter { it.size >= 2 }
@@ -37,8 +38,11 @@ object TrailPositions {
         if (bestDistance > ON_TRAIL_M) {
             return TrailPosition.OffTrail(bestDistance, start?.let { Geo.distanceM(position, it) })
         }
-        // The catalog's start can be either end of the stored line.
-        val reversed = start != null && Geo.distanceM(start, line.last()) < Geo.distanceM(start, line.first())
+        // The catalog's start can be either end of the stored line. On a trail made of several
+        // lines, the start may belong to another one; then this line keeps its own direction.
+        val reversed = start != null && Geo.distanceM(start, line.last()).let { toLast ->
+            toLast < Geo.distanceM(start, line.first()) && toLast < SAME_POINT_M
+        }
         val walked = if (reversed) route.lengthM - bestProgress else bestProgress
         return TrailPosition.OnTrail(walkedM = walked, toEndM = route.lengthM - walked, offM = bestDistance)
     }
