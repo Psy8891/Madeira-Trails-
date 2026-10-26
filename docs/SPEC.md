@@ -237,7 +237,7 @@ The data jobs live in this repo under `data/` (Python, tested with pytest in CI)
 flowchart LR
   A["OSM extract + DROTe 10 m DTM"] --> B["build-maps (monthly, later)"] --> C["PMTiles packages (GitHub Release)"] --> APP["Vereda app"]
   D["OSM extract (Geofabrik) + data/official.json"] --> E["update-catalog (weekly)"] --> F["app/src/main/assets/catalog.json (bundled, ODbL)"] --> APP
-  G["Visit Madeira hiking page"] --> H["update-status (every 30 min)"] --> I["status.json on the status branch"] --> APP
+  G["Visit Madeira hiking page"] --> H["update-status (09:00 and 14:00)"] --> I["status.json on the status branch"] --> APP
   J["IPMA API (weather warnings)"] -- "live, on demand" --> APP
 ```
 
@@ -247,7 +247,7 @@ Only the IPMA weather warnings and the trail status are fetched live; the catalo
 | --- | --- | --- | --- |
 | `build-maps` | Monthly + manual (Phase 1) | Clips the OSM extract with osmium; Planetiler builds base vector tiles (z0–15); GDAL `gdal_contour` (10 m interval, 50 m index) + tippecanoe builds contour tiles (z11–15); the DTM is encoded as Terrarium RGB WebP tiles (z8–14) for MapLibre hillshade | `madeira-base.pmtiles`, `madeira-contours.pmtiles`, `madeira-dem.pmtiles` and the same for Porto Santo, as a versioned GitHub Release (e.g. `maps-2026.11`) |
 | `update-catalog` (`data/scripts/build_catalog.py`) | Mondays + manual | Reads the Geofabrik Portugal extract clipped to Madeira with osmium (pyosmium); falls back to three small Overpass queries over four mirrors (the public Overpass servers ask automated jobs not to rely on them). Takes hiking/foot relations, named paths and named peaks; official trails matched by PR ref, then by official name; other named routes and named paths (≥ 400 m, not streets) become community trails; lines chained and simplified (Douglas-Peucker 3 m), stored as encoded polylines (precision 1e5) | `app/src/main/assets/catalog.json` + `data/catalog-report.md` (match count, missing codes, checklist of `data/wanted.json`), committed to `main`; then starts a new APK build. Community trails matching a `wanted.json` entry get its `searchAlias`, so "Boca da Corrida – Pico Grande" finds "Vereda do Pico Grande". Since Phase 0.6 it also cleans names, adds each trail's area and road access (`ends`), and collects points of interest; the clipped extract is kept on the `osm-extract` release |
-| `update-status` (`data/scripts/build_status.py`) | Every 30 min + manual | Reads the [Visit Madeira hiking page](https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/), which shows every listed trail as Open / Restricted / Closed; needs at least 30 trails or it counts as a failure | `status.json` + `rows.txt` on the `status` branch (one force-pushed commit), read by the app from `https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json` |
+| `update-status` (`data/scripts/build_status.py`) | 09:00 and 14:00 Madeira time + manual (owner's choice, 26 Oct 2026; was every 30 min) | Reads the [Visit Madeira hiking page](https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/), which shows every listed trail as Open / Restricted / Closed; needs at least 30 trails or it counts as a failure | `status.json` + `rows.txt` on the `status` branch (one force-pushed commit), read by the app from `https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json` |
 
 **`data/official.json` is the hand-kept list of the 42 official trails** (code, name, island). It grows into the curated record described below (official URL, fee, official distance and duration, difficulty, aliases, feature tags) and is the place to fix anything OSM gets wrong.
 
@@ -533,7 +533,7 @@ Goal: the map and catalog files exist and are trustworthy.
 - [ ] `build-maps` produces base, contours and DEM PMTiles for Madeira and Porto Santo; they open correctly in the PMTiles web viewer.
 - [ ] Contours at 10 m match the DTM (spot-check Pico Ruivo 1,862 m and Pico do Areeiro).
 - [ ] `update-catalog` matches 42 of 42 official codes, or the report lists the missing ones so they can be fixed in OSM.
-- [ ] `status.json` refreshes every 30 min with `checkedAt`; a broken source page yields `stale: true`, not a wrong state.
+- [ ] `status.json` refreshes at 09:00 and 14:00 Madeira time with `checkedAt`; a broken source page yields `stale: true`, not a wrong state.
 - [ ] `manifest.json` lists real file sizes and SHA-256 hashes.
 
 ### Phase 0.5 — Trails and status in the app (pulled forward, 26 Oct 2026)
