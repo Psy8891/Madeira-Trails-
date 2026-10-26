@@ -129,7 +129,7 @@ fun MapScreen(
         MapLayers.setGeoJson(
             target.style,
             MapLayers.PLACE_SOURCE,
-            selectedPlace?.let { TrailGeoJson.point(it.point, it.name) } ?: MapLayers.EMPTY,
+            selectedPlace?.let { TrailGeoJson.point(it.point, it.displayName) } ?: MapLayers.EMPTY,
         )
         if (selection?.moveCamera != true) return@LaunchedEffect
         val side = with(density) { 48.dp.roundToPx() }
@@ -232,6 +232,7 @@ private fun TrailPeekCard(
                 TrailSource.COMMUNITY -> add(stringResource(R.string.community_warning))
                 TrailSource.IMPORT -> add(stringResource(R.string.import_private))
             }
+            entry.note(java.util.Locale.getDefault().language)?.let(::add)
             if (!entry.hasLine) add(stringResource(R.string.trail_no_line))
         }
         notes.forEach { note ->
@@ -255,7 +256,7 @@ private fun TrailPeekCard(
 @Composable
 private fun PlacePeekCard(place: Place, onClose: () -> Unit, modifier: Modifier = Modifier) {
     PeekSurface(modifier) {
-        Text(place.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text(place.displayName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text(
             text = listOfNotNull(stringResource(R.string.place_peak), place.eleM?.let(::formatElevation)).joinToString(" · "),
             style = MaterialTheme.typography.bodyMedium,

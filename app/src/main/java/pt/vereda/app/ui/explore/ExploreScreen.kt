@@ -253,7 +253,7 @@ private fun PlaceCard(place: Place, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
-                Text(place.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(place.displayName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Text(
                     text = stringResource(R.string.place_peak),
                     style = MaterialTheme.typography.bodySmall,

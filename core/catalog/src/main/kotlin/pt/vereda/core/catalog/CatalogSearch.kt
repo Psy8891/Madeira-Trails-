@@ -14,7 +14,7 @@ object CatalogSearch {
         if (TrailSearch.normalize(query).isEmpty()) return SearchResult(foundTrails, emptyList())
 
         val foundPlaces = places
-            .mapNotNull { place -> TrailSearch.matchText(listOf(place.name), query)?.let { it to place } }
+            .mapNotNull { place -> TrailSearch.matchText(place.searchNames, query)?.let { it to place } }
             .sortedWith(
                 compareBy<Pair<Pair<Int, Int>, Place>>(
                     { it.first.first },

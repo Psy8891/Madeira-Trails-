@@ -24,10 +24,12 @@ class CatalogSearchTest {
         ),
     )
 
+    // Named as in OpenStreetMap, where Madeira's peaks often lack "Pico".
     private val places = listOf(
-        Place("Pico Grande", PlaceKind.PEAK, GeoPoint(32.7146, -16.993), 1654),
-        Place("Pico Ruivo", PlaceKind.PEAK, GeoPoint(32.7588, -16.9426), 1862),
+        Place("Grande", PlaceKind.PEAK, GeoPoint(32.737, -16.988), 1654),
+        Place("Ruivo", PlaceKind.PEAK, GeoPoint(32.7588, -16.9426), 1862),
         Place("Pico do Arieiro", PlaceKind.PEAK, GeoPoint(32.7355, -16.9289), 1818),
+        Place("Achada Grande", PlaceKind.PEAK, GeoPoint(32.782, -17.188), 1194),
     )
 
     @Test
@@ -43,13 +45,26 @@ class CatalogSearchTest {
         // Full match first, then PR 12 (starts at Boca da Corrida, ends at Ribeira Grande), then the
         // community trail that matches two words.
         assertEquals(listOf("imp-1", "pr-12", "osm-r4444478"), result.trails.map { it.id })
-        assertEquals(listOf("Pico Grande"), result.places.map { it.name })
+        assertEquals("Grande", result.places.first().name)
     }
 
     @Test
     fun `peaks are ordered by match then height`() {
         val result = CatalogSearch.search(trails, places, "pico")
-        assertEquals(listOf("Pico Ruivo", "Pico do Arieiro", "Pico Grande"), result.places.map { it.name })
+        assertEquals(listOf("Ruivo", "Pico do Arieiro", "Grande", "Achada Grande"), result.places.map { it.name })
+    }
+
+    @Test
+    fun `peaks named without Pico are found with it`() {
+        assertEquals(listOf("Grande", "Achada Grande"), CatalogSearch.search(trails, places, "pico grande").places.map { it.name })
+        assertEquals(listOf("Ruivo"), CatalogSearch.search(trails, places, "Pico Ruivo").places.map { it.name })
+    }
+
+    @Test
+    fun `a fuller recorded name is shown`() {
+        assertEquals("Pico Grande", Place("Grande", PlaceKind.PEAK, GeoPoint(32.7, -16.9), 1654, listOf("Pico Grande")).displayName)
+        assertEquals("Grande", Place("Grande", PlaceKind.PEAK, GeoPoint(32.7, -16.9), 1654, listOf("Big one")).displayName)
+        assertEquals("Ruivo", places[1].displayName)
     }
 
     @Test

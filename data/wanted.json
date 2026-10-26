@@ -7,7 +7,9 @@
         "pico grande"
       ],
       "source": "user request",
-      "searchAlias": "Boca da Corrida – Pico Grande"
+      "searchAlias": "Boca da Corrida – Pico Grande",
+      "noteEn": "The OpenStreetMap line covers only part of this walk. The usual start is Boca da Corrida, along PR 12 (Caminho Real da Encumeada).",
+      "notePt": "A linha do OpenStreetMap cobre só parte deste percurso. O início habitual é na Boca da Corrida, pelo PR 12 (Caminho Real da Encumeada)."
     },
     {
       "name": "Vereda do Larano (Machico / Caniçal – Porto da Cruz)",

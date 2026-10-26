@@ -21,12 +21,13 @@ class CatalogParserTest {
            "lengthM":null,"osm":[],"lines":[]},
           {"id":"osm-r4444478","source":"community","name":"Vereda do Pico Grande","from":null,"to":null,
            "island":"madeira","lengthM":5100,"sacScale":"demanding_mountain_hiking",
-           "aliases":["Boca da Corrida – Pico Grande"],"osm":["r4444478"],"lines":["iysfEvttfB}Vng@","not a line ~"]},
+           "aliases":["Boca da Corrida – Pico Grande"],"noteEn":"Only part of the walk.","notePt":"Só parte do percurso.",
+           "osm":["r4444478"],"lines":["iysfEvttfB}Vng@","not a line ~"]},
           {"id":"osm-w5","source":"community","name":"Broken","island":"madeira","lengthM":900,"osm":["w5"],"lines":["_p~iF"]},
           {"id":"osm-r9","source":"community","name":"Porto Santo walk","island":"porto_santo","lengthM":800,
            "osm":["r9"],"lines":["iysfEvttfB}Vng@"],"someFutureField":{"x":1}}
          ],
-         "places":[{"name":"Pico Grande","kind":"peak","lat":32.7146,"lon":-16.993,"ele":1654},
+         "places":[{"name":"Pico Grande","kind":"peak","lat":32.7146,"lon":-16.993,"ele":1654,"aliases":["Grande"]},
                    {"name":"Pico sem altitude","kind":"peak","lat":32.7,"lon":-16.9,"ele":null}]}
     """.trimIndent()
 
@@ -58,6 +59,9 @@ class CatalogParserTest {
         assertEquals(listOf("Boca da Corrida – Pico Grande"), pico.trail.aliases)
         assertEquals(1, pico.lines.size) // the broken second line was skipped
         assertEquals("demanding_mountain_hiking", pico.sacScale)
+        assertEquals("Só parte do percurso.", pico.note("pt"))
+        assertEquals("Only part of the walk.", pico.note("en"))
+        assertNull(catalog.trail("osm-r9")!!.note("en"))
         assertTrue(catalog.trails.indexOf(pico) >= 42)
     }
 
@@ -75,6 +79,7 @@ class CatalogParserTest {
     fun `peaks become places`() {
         assertEquals(listOf("Pico Grande", "Pico sem altitude"), catalog.places.map { it.name })
         assertEquals(1654, catalog.places[0].eleM)
+        assertEquals(listOf("Grande"), catalog.places[0].aliases)
         assertNull(catalog.places[1].eleM)
         assertEquals(Instant.parse("2026-10-26T14:00:00Z"), catalog.generatedAt)
     }

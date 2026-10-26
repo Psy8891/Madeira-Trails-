@@ -129,6 +129,38 @@ def island_of(lines) -> str:
     return "porto_santo" if centre_lat(lines) > PORTO_SANTO_MIN_LAT else "madeira"
 
 
+def community_relation(el: dict, lines: list) -> dict | None:
+    """A named route relation as a community trail, or None when it is too short."""
+    tags = el.get("tags", {})
+    chains = chain_lines(lines)
+    total = sum(length_m(c) for c in chains)
+    if total < MIN_COMMUNITY_LENGTH_M:
+        return None
+    return {
+        "id": f"osm-r{el['id']}",
+        "source": "community",
+        "name": tags["name"],
+        "from": tags.get("from"),
+        "to": tags.get("to"),
+        "island": island_of(chains),
+        "lengthM": round(total),
+        "sacScale": tags.get("sac_scale"),
+        "osm": [f"r{el['id']}"],
+        "lines": encode_lines(chains),
+    }
+
+
+def place_aliases(tags: dict) -> list[str]:
+    """Other names OSM records for a place (Madeira peaks are often named without "Pico")."""
+    names: list[str] = []
+    for key in ("official_name", "alt_name", "name:pt", "loc_name", "old_name"):
+        for value in str(tags.get(key, "")).split(";"):
+            value = value.strip()
+            if value and value != tags.get("name") and value not in names:
+                names.append(value)
+    return names
+
+
 def build(data: dict) -> tuple[dict, str]:
     official_list = json.loads(OFFICIAL.read_text(encoding="utf-8"))
     official_by_code = {o["code"]: o for o in official_list}
@@ -140,6 +172,7 @@ def build(data: dict) -> tuple[dict, str]:
     route_way_ids: set[int] = set()
     places: list[dict] = []
     path_ways: list[dict] = []
+    name_matches: dict[str, list] = defaultdict(list)
 
     for el in data.get("elements", []):
         tags = el.get("tags", {})
@@ -152,8 +185,6 @@ def build(data: dict) -> tuple[dict, str]:
             route_way_ids.update(m["ref"] for m in members)
             porto_santo = centre_lat(lines) > PORTO_SANTO_MIN_LAT
             code = parse_pr_code(tags.get("ref"), porto_santo) or parse_pr_code(tags.get("name"), porto_santo)
-            if code is None and tags.get("name"):
-                code = official_by_name.get(normalize(tags["name"]))  # official trail mapped without its PR ref
             if code in official_by_code:
                 official_lines[code].extend(lines)
                 official_osm[code].append(f"r{el['id']}")
@@ -161,24 +192,15 @@ def build(data: dict) -> tuple[dict, str]:
             name = tags.get("name")
             if not name:
                 continue
-            chains = chain_lines(lines)
-            total = sum(length_m(c) for c in chains)
-            if total < MIN_COMMUNITY_LENGTH_M:
+            name_code = official_by_name.get(normalize(name))
+            if name_code:
+                # Same name as an official trail but no PR ref: decided after the loop, because
+                # names repeat (there is a Levada do Moinho in Porto Moniz and one in Ponta do Sol).
+                name_matches[name_code].append((el, lines))
                 continue
-            community.append(
-                {
-                    "id": f"osm-r{el['id']}",
-                    "source": "community",
-                    "name": name,
-                    "from": tags.get("from"),
-                    "to": tags.get("to"),
-                    "island": island_of(chains),
-                    "lengthM": round(total),
-                    "sacScale": None,
-                    "osm": [f"r{el['id']}"],
-                    "lines": encode_lines(chains),
-                }
-            )
+            entry = community_relation(el, lines)
+            if entry:
+                community.append(entry)
         elif el["type"] == "way":
             path_ways.append(el)
         elif el["type"] == "node" and tags.get("name"):
@@ -187,9 +209,24 @@ def build(data: dict) -> tuple[dict, str]:
                 ele_m = round(float(str(ele).replace(",", ".").split()[0])) if ele else None
             except ValueError:
                 ele_m = None
-            places.append(
-                {"name": tags["name"], "kind": "peak", "lat": round(el["lat"], 6), "lon": round(el["lon"], 6), "ele": ele_m}
-            )
+            place = {"name": tags["name"], "kind": "peak", "lat": round(el["lat"], 6), "lon": round(el["lon"], 6), "ele": ele_m}
+            aliases = place_aliases(tags)
+            if aliases:
+                place["aliases"] = aliases
+            places.append(place)
+
+    # An official trail mapped without its PR ref is used only when no relation carries that ref;
+    # otherwise the namesake is a different walk and stays a community trail.
+    matched_by_ref = {code for code, lines in official_lines.items() if lines}
+    for code, matches in name_matches.items():
+        for el, lines in matches:
+            if code in matched_by_ref:
+                entry = community_relation(el, lines)
+                if entry:
+                    community.append(entry)
+            else:
+                official_lines[code].extend(lines)
+                official_osm[code].append(f"r{el['id']}")
 
     # Named paths that are not already part of a route relation, grouped by name.
     by_name: dict[str, list[dict]] = defaultdict(list)
@@ -246,16 +283,19 @@ def build(data: dict) -> tuple[dict, str]:
         )
 
     # Names people search for that OSM doesn't use ("Boca da Corrida – Pico Grande").
+    # Also a short note where the OSM line needs context (e.g. only part of the walk is mapped).
     wanted = json.loads(WANTED.read_text(encoding="utf-8"))["trails"]
     for t in community:
         key = normalize(t["name"])
-        aliases = [
-            w["searchAlias"]
-            for w in wanted
-            if w.get("searchAlias") and any(normalize(m) in key for m in w["match"])
-        ]
+        matches = [w for w in wanted if any(normalize(m) in key for m in w["match"])]
+        aliases = [w["searchAlias"] for w in matches if w.get("searchAlias")]
         if aliases:
             t["aliases"] = aliases
+        for w in matches:
+            if w.get("noteEn"):
+                t["noteEn"] = w["noteEn"]
+                t["notePt"] = w.get("notePt", w["noteEn"])
+                break
 
     community.sort(key=lambda t: normalize(t["name"]))
     trails.extend(community)
@@ -275,7 +315,8 @@ def report(catalog: dict, missing: list[str]) -> str:
     trails = catalog["trails"]
     official = [t for t in trails if t["source"] == "official"]
     community = [t for t in trails if t["source"] == "community"]
-    names = " | ".join(normalize(t["name"]) for t in trails)
+    # Only community trails count: an official trail can share a name with a different walk.
+    names = " | ".join(normalize(t["name"]) for t in community)
     place_names = " | ".join(normalize(p["name"]) for p in catalog["places"])
 
     lines = [

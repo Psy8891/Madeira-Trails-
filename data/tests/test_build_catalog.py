@@ -134,4 +134,51 @@ def test_wanted_search_alias_is_added_to_matching_community_trails():
     catalog, _ = build(overpass_sample())
     trails = by_id(catalog)
     assert trails["osm-r555"]["aliases"] == ["Boca da Corrida – Pico Grande"]
+    assert "PR 12" in trails["osm-r555"]["noteEn"]
+    assert "PR 12" in trails["osm-r555"]["notePt"]
     assert "aliases" not in trails["osm-w10"]  # Levada Nova has no search alias
+    assert "noteEn" not in trails["osm-w10"]
+
+
+def test_namesake_of_an_official_trail_with_its_own_pr_relation_stays_community():
+    data = overpass_sample()
+    data["elements"] += [
+        {
+            "type": "relation",
+            "id": 700,
+            "tags": {"route": "hiking", "ref": "PR7", "name": "PR7 - Levada do Moinho"},
+            "members": [{"type": "way", "ref": 70, "role": "", "geometry": geom(line(32.85, -17.15, 8))}],
+        },
+        {
+            "type": "relation",
+            "id": 701,
+            "tags": {"route": "hiking", "name": "Levada do Moinho"},  # the Ponta do Sol one
+            "members": [{"type": "way", "ref": 71, "role": "", "geometry": geom(line(32.68, -17.10, 8))}],
+        },
+    ]
+    catalog, report = build(data)
+    trails = by_id(catalog)
+    assert trails["pr-7"]["osm"] == ["r700"]
+    assert trails["osm-r701"]["source"] == "community"
+    assert trails["osm-r701"]["name"] == "Levada do Moinho"
+    assert "| Levada do Moinho (Ponta do Sol) | yes |" in report
+
+
+def test_wanted_check_ignores_official_names():
+    _, report = build(overpass_sample())
+    # PR 7 is called Levada do Moinho, but that is not the Ponta do Sol walk.
+    assert "| Levada do Moinho (Ponta do Sol) | no |" in report
+
+
+def test_peaks_keep_other_osm_names_as_aliases():
+    data = {
+        "elements": [
+            {"type": "node", "id": 1, "lat": 32.737, "lon": -16.988,
+             "tags": {"natural": "peak", "name": "Grande", "alt_name": "Pico Grande", "ele": "1654"}},
+            {"type": "node", "id": 2, "lat": 32.758, "lon": -16.942, "tags": {"natural": "peak", "name": "Ruivo"}},
+        ]
+    }
+    catalog, _ = build(data)
+    places = {p["name"]: p for p in catalog["places"]}
+    assert places["Grande"]["aliases"] == ["Pico Grande"]
+    assert "aliases" not in places["Ruivo"]

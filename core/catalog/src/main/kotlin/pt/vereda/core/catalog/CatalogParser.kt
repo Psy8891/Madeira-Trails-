@@ -56,13 +56,15 @@ object CatalogParser {
                     sacScale = t.sacScale,
                     lines = decodeLines(t.lines),
                     osmIds = t.osm,
+                    noteEn = t.noteEn,
+                    notePt = t.notePt,
                 )
             }
             .filter { it.hasLine }
 
         val places = doc.places.mapNotNull { p ->
             if (p.kind != "peak" || p.name.isBlank()) return@mapNotNull null
-            Place(p.name, PlaceKind.PEAK, GeoPoint(p.lat, p.lon), p.ele)
+            Place(p.name, PlaceKind.PEAK, GeoPoint(p.lat, p.lon), p.ele, p.aliases)
         }
 
         return Catalog(
@@ -103,6 +105,8 @@ internal data class CatalogTrailJson(
     val aliases: List<String> = emptyList(),
     val osm: List<String> = emptyList(),
     val lines: List<String> = emptyList(),
+    val noteEn: String? = null,
+    val notePt: String? = null,
 )
 
 @Serializable
@@ -112,4 +116,5 @@ internal data class CatalogPlaceJson(
     val lat: Double,
     val lon: Double,
     val ele: Int? = null,
+    val aliases: List<String> = emptyList(),
 )

@@ -358,7 +358,7 @@ Trails and status arrive from the catalog and are replaced on each sync; everyth
 }
 ```
 
-`lines` holds one or more encoded polylines (Google format, precision 1e5). All 42 official trails are always listed; one without an OSM line has `"lines": []` and the app says the line is missing instead of hiding the trail. Later schema versions add the curated fields (municipality, fee, official URL, duration, difficulty, route type, elevation profile, feature tags, aliases).
+`lines` holds one or more encoded polylines (Google format, precision 1e5). Community trails can carry `aliases` and a `noteEn`/`notePt` from `data/wanted.json` (e.g. that OSM maps only the summit part of Pico Grande); places carry other OSM names as `aliases`, because OSM names many Madeira peaks without "Pico" ("Grande", "Ruivo"), and search also tries "Pico <name>". An official trail is matched by its PR ref first; a relation that only shares an official trail's name is used for it only when no relation carries that ref (there is a Levada do Moinho in Porto Moniz, PR 7, and another in Ponta do Sol). All 42 official trails are always listed; one without an OSM line has `"lines": []` and the app says the line is missing instead of hiding the trail. Later schema versions add the curated fields (municipality, fee, official URL, duration, difficulty, route type, elevation profile, feature tags, aliases).
 
 **status.json:**
 
