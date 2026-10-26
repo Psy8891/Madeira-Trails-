@@ -206,6 +206,7 @@ Version 1 ships nine feature areas; items tagged **(later)** wait for version 1.
 - Trail-specific checklist before starting (torch for tunnels, water, layers, booking done).
 - Low-battery warning at 20% while recording.
 - First-launch disclaimer: conditions change; official closures always win over the app.
+- **Fall alert (later, noted 26 Oct 2026):** while a hike is being recorded, the accelerometer and gyroscope watch for a fall (free fall, a hard impact, then no movement). A loud alarm with a 30–60 s countdown lets you cancel; if nobody cancels, the app sends an SMS with your position and a map link to the emergency contacts set in *Me*, and can ring one of them. Android does not let apps place a 112 call on their own (`ACTION_CALL` refuses emergency numbers), so 112 is one tap on the alarm screen, not automatic. Needs the Phase 3 recording service (sensors keep running with the screen off), the `SEND_SMS` and `CALL_PHONE` permissions (fine for a sideloaded app, restricted on Google Play), and a field test for false alarms (phone dropped, thrown in a bag). Tracked in GitHub issue "Fall alert".
 
 ## Data sources and licensing
 
@@ -237,7 +238,7 @@ The data jobs live in this repo under `data/` (Python, tested with pytest in CI)
 flowchart LR
   A["OSM extract + DROTe 10 m DTM"] --> B["build-maps (monthly, later)"] --> C["PMTiles packages (GitHub Release)"] --> APP["Vereda app"]
   D["OSM extract (Geofabrik) + data/official.json"] --> E["update-catalog (weekly)"] --> F["app/src/main/assets/catalog.json (bundled, ODbL)"] --> APP
-  G["Visit Madeira hiking page"] --> H["update-status (every 30 min)"] --> I["status.json on the status branch"] --> APP
+  G["Visit Madeira hiking page"] --> H["update-status (09:00 and 14:00)"] --> I["status.json on the status branch"] --> APP
   J["IPMA API (weather warnings)"] -- "live, on demand" --> APP
 ```
 
@@ -247,7 +248,7 @@ Only the IPMA weather warnings and the trail status are fetched live; the catalo
 | --- | --- | --- | --- |
 | `build-maps` | Monthly + manual (Phase 1) | Clips the OSM extract with osmium; Planetiler builds base vector tiles (z0–15); GDAL `gdal_contour` (10 m interval, 50 m index) + tippecanoe builds contour tiles (z11–15); the DTM is encoded as Terrarium RGB WebP tiles (z8–14) for MapLibre hillshade | `madeira-base.pmtiles`, `madeira-contours.pmtiles`, `madeira-dem.pmtiles` and the same for Porto Santo, as a versioned GitHub Release (e.g. `maps-2026.11`) |
 | `update-catalog` (`data/scripts/build_catalog.py`) | Mondays + manual | Reads the Geofabrik Portugal extract clipped to Madeira with osmium (pyosmium); falls back to three small Overpass queries over four mirrors (the public Overpass servers ask automated jobs not to rely on them). Takes hiking/foot relations, named paths and named peaks; official trails matched by PR ref, then by official name; other named routes and named paths (≥ 400 m, not streets) become community trails; lines chained and simplified (Douglas-Peucker 3 m), stored as encoded polylines (precision 1e5) | `app/src/main/assets/catalog.json` + `data/catalog-report.md` (match count, missing codes, checklist of `data/wanted.json`), committed to `main`; then starts a new APK build. Community trails matching a `wanted.json` entry get its `searchAlias`, so "Boca da Corrida – Pico Grande" finds "Vereda do Pico Grande". Since Phase 0.6 it also cleans names, adds each trail's area and road access (`ends`), and collects points of interest; the clipped extract is kept on the `osm-extract` release |
-| `update-status` (`data/scripts/build_status.py`) | Every 30 min + manual | Reads the [Visit Madeira hiking page](https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/), which shows every listed trail as Open / Restricted / Closed; needs at least 30 trails or it counts as a failure | `status.json` + `rows.txt` on the `status` branch (one force-pushed commit), read by the app from `https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json` |
+| `update-status` (`data/scripts/build_status.py`) | 09:00 and 14:00 Madeira time + manual (owner's choice, 26 Oct 2026; was every 30 min) | Reads the [Visit Madeira hiking page](https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/), which shows every listed trail as Open / Restricted / Closed; needs at least 30 trails or it counts as a failure | `status.json` + `rows.txt` on the `status` branch (one force-pushed commit), read by the app from `https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json` |
 
 **`data/official.json` is the hand-kept list of the 42 official trails** (code, name, island). It grows into the curated record described below (official URL, fee, official distance and duration, difficulty, aliases, feature tags) and is the place to fix anything OSM gets wrong.
 
@@ -533,7 +534,7 @@ Goal: the map and catalog files exist and are trustworthy.
 - [ ] `build-maps` produces base, contours and DEM PMTiles for Madeira and Porto Santo; they open correctly in the PMTiles web viewer.
 - [ ] Contours at 10 m match the DTM (spot-check Pico Ruivo 1,862 m and Pico do Areeiro).
 - [ ] `update-catalog` matches 42 of 42 official codes, or the report lists the missing ones so they can be fixed in OSM.
-- [ ] `status.json` refreshes every 30 min with `checkedAt`; a broken source page yields `stale: true`, not a wrong state.
+- [ ] `status.json` refreshes at 09:00 and 14:00 Madeira time with `checkedAt`; a broken source page yields `stale: true`, not a wrong state.
 - [ ] `manifest.json` lists real file sizes and SHA-256 hashes.
 
 ### Phase 0.5 — Trails and status in the app (pulled forward, 26 Oct 2026)
@@ -602,6 +603,13 @@ Goal: see the whole hike in Vereda instead of leaving for Google Maps. The owner
 - [ ] The toggle shows on trail and peak cards, remembers its side after the app restarts, and *Directions* follows it.
 - [ ] In Vereda, Pico Grande via Boca da Corrida shows the full walk on the map with the route card; a trail card shows the approach plus the whole trail, end included.
 - [ ] Saving the route uses the trail or peak name.
+
+**Follow-ups (asked for 26 Oct 2026, evening)**
+- A **Plan a route** button next to the locate button opens the planner card, which explains it and offers *Start on map*, *Add stop* and *End on map*: tap one, then tap the map (a banner says what the tap will set, with *Cancel*). Long-press on the map still works and the card says so.
+- Only the latest pick is shown (GitHub issue #2): picking a trail or peak replaces a route opened from *Directions*, and hides a route the user built until the card is closed.
+
+- [ ] The Plan a route button and the long-press both set points; the banner shows while picking.
+- [ ] After *Directions*, tapping another trail shows only that trail.
 
 ### Phase 0.9 — Language switch (asked for 26 Oct 2026)
 

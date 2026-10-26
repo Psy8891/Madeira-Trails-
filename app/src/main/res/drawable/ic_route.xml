@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- "Plan a route": a start dot, a winding path and a flag (Phase 0.8 follow-up). -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M6,18c4,0 4,-6 8,-6s4,-5 4,-7"
+        android:strokeWidth="2"
+        android:strokeColor="#FF2E6B3F"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#FF2E9E5B"
+        android:pathData="M6,15.5a2.5,2.5 0,1 1,0 5a2.5,2.5 0,1 1,0 -5z" />
+    <path
+        android:fillColor="#FF2E6B3F"
+        android:pathData="M17,2h1.6v5h-1.6zM18.6,2h4l-1.2,1.5l1.2,1.5h-4z" />
+</vector>

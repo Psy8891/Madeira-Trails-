@@ -114,6 +114,9 @@ private const val LOCATION_BLUE = 0xFF1673B5.toInt()
 
 private class LoadedMap(val map: MapLibreMap, val style: Style)
 
+/** Which planner point the next tap on the map sets (the *Plan a route* button). */
+private enum class PickRole { START, STOP, END }
+
 /** The locate button cycles through these (spec: Map, Controls). */
 private enum class LocateMode { FREE, FOLLOW, COMPASS }
 
@@ -150,11 +153,27 @@ fun MapScreen(
     // Which way in is shown for the picked trail or peak (0 = recommended).
     var startChoice by remember(selection?.target) { mutableIntStateOf(0) }
     var locateMode by remember { mutableStateOf(LocateMode.FREE) }
+    // The planner card is open (from the Plan a route button), and which point a tap sets.
+    var planning by remember { mutableStateOf(false) }
+    var pickRole by remember { mutableStateOf<PickRole?>(null) }
     var hasPermission by remember { mutableStateOf(tracker.hasPermission()) }
     val currentOnSelect by rememberUpdatedState(onSelect)
     val currentPlaces by rememberUpdatedState(places)
     val currentPressed by rememberUpdatedState(pressed)
     val currentOnLongPress by rememberUpdatedState<(GeoPoint?) -> Unit>({ pressed = it })
+    val currentPickRole by rememberUpdatedState(pickRole)
+    val currentOnPick by rememberUpdatedState<(GeoPoint) -> Unit>({ p ->
+        when (pickRole) {
+            PickRole.START -> planner.setStart(p)
+            PickRole.STOP -> planner.addStop(p)
+            PickRole.END -> {
+                planner.setEnd(p)
+                if (planPoints.start == null && here != null) planner.setStart(here)
+            }
+            null -> Unit
+        }
+        pickRole = null
+    })
 
     val mapView = rememberMapViewWithLifecycle(
         onReady = { map, style ->
@@ -164,6 +183,10 @@ fun MapScreen(
                 true
             }
             map.addOnMapClickListener { point ->
+                if (currentPickRole != null) {
+                    currentOnPick(GeoPoint(point.latitude, point.longitude))
+                    return@addOnMapClickListener true
+                }
                 if (currentPressed != null) {
                     currentOnLongPress(null)
                     return@addOnMapClickListener true
@@ -308,11 +331,25 @@ fun MapScreen(
         }
     }
 
+    // Only the latest pick is shown (issue #2): picking a trail or peak replaces a route opened
+    // from Directions, and hides a route the user built until the card is closed.
+    LaunchedEffect(selection?.target) {
+        if (selection == null) return@LaunchedEffect
+        pickRole = null
+        if (planner.points.value.title != null) planner.clear()
+    }
+
     // The route being planned: its line and its start, stops and end. Zoom out to it when it
     // doesn't fit on screen.
     val savedMessage = stringResource(R.string.plan_saved)
-    LaunchedEffect(loaded, planPoints, planResult) {
+    val planHidden = selection != null
+    LaunchedEffect(loaded, planPoints, planResult, planHidden) {
         val target = loaded ?: return@LaunchedEffect
+        if (planHidden) {
+            MapLayers.setGeoJson(target.style, MapLayers.ROUTE_SOURCE, MapLayers.EMPTY)
+            MapLayers.setGeoJson(target.style, MapLayers.PLAN_SOURCE, MapLayers.EMPTY)
+            return@LaunchedEffect
+        }
         val route = ((planResult as? PlanResult.Done)?.outcome as? RouteOutcome.Found)?.route
         MapLayers.setGeoJson(target.style, MapLayers.ROUTE_SOURCE, route?.let { TrailGeoJson.line(it.points) } ?: MapLayers.EMPTY)
         MapLayers.setGeoJson(target.style, MapLayers.PLAN_SOURCE, TrailGeoJson.planPoints(planPoints.start, planPoints.stops, planPoints.end))
@@ -340,12 +377,34 @@ fun MapScreen(
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
             shadowElevation = 2.dp,
         ) {
-            Text(
-                text = stringResource(R.string.map_dev_banner),
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            val role = pickRole
+            if (role == null) {
+                Text(
+                    text = stringResource(R.string.map_dev_banner),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                Row(
+                    modifier = Modifier.padding(start = 12.dp, end = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        text = stringResource(
+                            when (role) {
+                                PickRole.START -> R.string.plan_pick_start
+                                PickRole.STOP -> R.string.plan_pick_stop
+                                PickRole.END -> R.string.plan_pick_end
+                            },
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    TextButton(onClick = { pickRole = null }) { Text(stringResource(R.string.cancel)) }
+                }
+            }
         }
 
         Column(
@@ -353,6 +412,9 @@ fun MapScreen(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            val nothingOpen = pressed == null && selection == null && !planning && planPoints.isEmpty
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (nothingOpen) PlanButton(onClick = { planning = true })
             LocateButton(
                 mode = locateMode,
                 onClick = {
@@ -369,6 +431,7 @@ fun MapScreen(
                     }
                 },
             )
+            }
             val cardModifier = Modifier.fillMaxWidth()
             val exportFailed = stringResource(R.string.export_failed)
             fun export(name: String, lines: List<List<GeoPoint>>, osm: Boolean) {
@@ -472,7 +535,7 @@ fun MapScreen(
                     onClose = { onSelect(null) },
                     modifier = cardModifier,
                 )
-                !planPoints.isEmpty -> PlannerCard(
+                planning || !planPoints.isEmpty -> PlannerCard(
                     points = planPoints,
                     result = planResult,
                     snapshot = snapshot,
@@ -480,12 +543,18 @@ fun MapScreen(
                     onFromHere = { here?.let(planner::setStart) },
                     onRemoveStop = planner::removeStop,
                     onReverse = planner::reverse,
-                    onClear = planner::clear,
+                    onClear = {
+                        planner.clear()
+                        planning = false
+                        pickRole = null
+                    },
+                    onPick = { pickRole = it },
                     onSave = { name, points ->
                         scope.launch {
                             repository.saveRoute(name, points)?.let {
                                 Toast.makeText(context, savedMessage, Toast.LENGTH_LONG).show()
                                 planner.clear()
+                                planning = false
                                 onSelect(MapSelection(MapTarget.TrailTarget(it.id), moveCamera = false))
                             }
                         }
@@ -552,6 +621,27 @@ private fun LocateButton(mode: LocateMode, onClick: () -> Unit) {
                 ),
                 tint = androidx.compose.ui.graphics.Color.Unspecified,
             )
+        }
+    }
+}
+
+/** Opens the route planner; long-press on the map does the same without it. */
+@Composable
+private fun PlanButton(onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 4.dp,
+        modifier = Modifier.heightIn(min = 48.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(painterResource(R.drawable.ic_route), contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified)
+            Text(stringResource(R.string.plan_button), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
         }
     }
 }
@@ -775,6 +865,7 @@ private fun PlannerCard(
     onRemoveStop: (Int) -> Unit,
     onReverse: () -> Unit,
     onClear: () -> Unit,
+    onPick: (PickRole) -> Unit,
     onSave: (String, List<GeoPoint>) -> Unit,
     onExport: (String, List<GeoPoint>) -> Unit,
     modifier: Modifier = Modifier,
@@ -784,7 +875,15 @@ private fun PlannerCard(
         if (route == null || here == null) null else TrailPositions.of(routeEntry(route.points), here)
     }
     PeekSurface(modifier) {
-        Text(stringResource(R.string.plan_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text(points.title ?: stringResource(R.string.plan_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        if (points.isEmpty) {
+            Text(stringResource(R.string.plan_intro), style = MaterialTheme.typography.bodyMedium)
+            Text(
+                stringResource(R.string.plan_long_press_tip),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         val message = when {
             points.start == null -> stringResource(R.string.plan_need_start)
             points.end == null -> stringResource(R.string.plan_need_end)
@@ -875,7 +974,16 @@ private fun PlannerCard(
             if (points.start != null && points.end != null) {
                 OutlinedButton(onClick = onReverse) { Text(stringResource(R.string.plan_reverse)) }
             }
-            TextButton(onClick = onClear) { Text(stringResource(R.string.plan_clear)) }
+            OutlinedButton(onClick = { onPick(PickRole.START) }) {
+                Text(stringResource(if (points.start == null) R.string.plan_pick_start_button else R.string.plan_move_start_button))
+            }
+            if (points.start != null && points.end != null) {
+                OutlinedButton(onClick = { onPick(PickRole.STOP) }) { Text(stringResource(R.string.plan_pick_stop_button)) }
+            }
+            OutlinedButton(onClick = { onPick(PickRole.END) }) {
+                Text(stringResource(if (points.end == null) R.string.plan_pick_end_button else R.string.plan_move_end_button))
+            }
+            TextButton(onClick = onClear) { Text(stringResource(if (points.isEmpty) R.string.close else R.string.plan_clear)) }
         }
     }
 }

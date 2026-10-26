@@ -127,8 +127,8 @@
     <string name="plan_stop_here">Adicionar paragem</string>
     <string name="plan_end_here">Terminar aqui</string>
     <string name="plan_title">Rota planeada</string>
-    <string name="plan_need_start">Carrega sem soltar no mapa onde queres começar, ou usa a tua localização.</string>
-    <string name="plan_need_end">Carrega sem soltar no mapa onde queres terminar.</string>
+    <string name="plan_need_start">Toca em “Início no mapa” e depois no mapa, ou usa a tua localização. Carregar sem soltar no mapa também funciona.</string>
+    <string name="plan_need_end">Toca em “Fim no mapa” e depois no mapa onde queres terminar, ou carrega sem soltar aí.</string>
     <string name="plan_working">A procurar o melhor caminho…</string>
     <string name="plan_too_far_start">O início está a mais de 500 m de qualquer caminho ou estrada. Aproxima-o de um.</string>
     <string name="plan_too_far_end">O fim está a mais de 500 m de qualquer caminho ou estrada. Aproxima-o de um.</string>
@@ -162,4 +162,16 @@
         <item quantity="one">%1$d túnel: leva lanterna.</item>
         <item quantity="other">%1$d túneis: leva lanterna.</item>
     </plurals>
+    <string name="cancel">Cancelar</string>
+    <string name="plan_button">Planear rota</string>
+    <string name="plan_intro">Marca um início e um fim, e o Vereda encontra o melhor caminho nos trilhos mapeados: primeiro percursos marcados e levadas, estradas só quando é preciso. Toca num botão abaixo e depois no mapa.</string>
+    <string name="plan_long_press_tip">Dica: também podes carregar sem soltar em qualquer ponto do mapa para começar, acrescentar uma paragem ou terminar aí.</string>
+    <string name="plan_pick_start">Toca no mapa onde queres começar</string>
+    <string name="plan_pick_stop">Toca no mapa para acrescentar uma paragem</string>
+    <string name="plan_pick_end">Toca no mapa onde queres terminar</string>
+    <string name="plan_pick_start_button">Início no mapa</string>
+    <string name="plan_move_start_button">Mudar início</string>
+    <string name="plan_pick_stop_button">Acrescentar paragem</string>
+    <string name="plan_pick_end_button">Fim no mapa</string>
+    <string name="plan_move_end_button">Mudar fim</string>
 </resources>
