@@ -1,0 +1,40 @@
+name: Probe fonts and tools (temporary)
+on:
+  push:
+    branches: [probe-fonts]
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Probe
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          mkdir -p probe
+          exec > >(tee probe/out.txt) 2>&1
+          echo "== fonts releases"
+          gh release list --repo openmaptiles/fonts --limit 5
+          gh release view --repo openmaptiles/fonts --json assets --jq '.assets[]|[.name,.size]|@tsv'
+          mkdir fonts && gh release download --repo openmaptiles/fonts --pattern '*.zip' -D fonts
+          ls -la fonts
+          for z in fonts/*.zip; do unzip -q "$z" -d fonts/x; done
+          find fonts/x -maxdepth 3 -type d -iname "noto sans*" | head -20
+          ls "fonts/x/Noto Sans Regular" 2>/dev/null | head -5 || find fonts/x -maxdepth 4 -name "0-255.pbf" | head -5
+          echo "== tippecanoe build"
+          time (git clone -q --depth 1 https://github.com/felt/tippecanoe.git && cd tippecanoe && make -j4 >/dev/null 2>&1 && ./tippecanoe --version)
+          echo "== planetiler"
+          java -version 2>&1 | head -1
+          ls /usr/lib/jvm
+          echo "== osm extract"
+          gh release download osm-extract --repo ${{ github.repository }} -p madeira.osm.pbf && ls -la madeira.osm.pbf
+      - name: Save
+        if: always()
+        run: |
+          git config user.name probe; git config user.email probe@example.invalid
+          git add probe && git commit -qm "probe output" && git push -q origin HEAD:probe-fonts
