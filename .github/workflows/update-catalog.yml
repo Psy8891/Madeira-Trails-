@@ -73,7 +73,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/src/main/assets/catalog.json data/catalog-report.md
+          git add app/src/main/assets/catalog.json app/src/main/assets/network.bin data/catalog-report.md
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "Catalog unchanged."

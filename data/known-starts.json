@@ -1,0 +1,8 @@
+{
+  "_comment": "Hand-checked trailheads people use (docs/SPEC.md, Phase 0.7). 'for' matches a peak or trail by name or trail id. Points are on the road, taken from the catalog (PR 12, PR 1.2 and PR 1 starts).",
+  "starts": [
+    {"name": "Boca da Corrida", "lat": 32.710971, "lon": -16.986848, "for": ["Pico Grande", "Vereda do Pico Grande"]},
+    {"name": "Achada do Teixeira", "lat": 32.764879, "lon": -16.921084, "for": ["Pico Ruivo"]},
+    {"name": "Pico do Areeiro", "lat": 32.734869, "lon": -16.928645, "for": ["Pico Ruivo", "Pico das Torres"]}
+  ]
+}

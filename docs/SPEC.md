@@ -378,6 +378,10 @@ Added in Phase 0.6:
 - **`ends`**: up to two entries, start first. For each end of the main line, the job walks the OSM path network (paths, footways, steps, tracks and the other trails) to the nearest point a car can reach (a public road, not a track), up to 5 km. `approachM` is that walk (0 when the end is on a road, null when no road is found within 5 km), `line` its encoded line, `access` the road point, `road` the road's ref or name, `parking` the nearest parking within 300 m of `access`, `via` the names of the paths used. The end with the shorter approach is the start. This is what makes a trail like Pico Alto, which starts in the middle of other trails, possible to find from the road.
 - **`places`** now holds points of interest as well as peaks, from OSM: `peak`, `viewpoint`, `waterfall`, `spring`, `water` (drinking water), `shelter`, `hut`, `picnic`, `camp`, `cave`, `toilets`, `parking`, `bus_stop` and `tunnel` (each end of a tunnel on a footpath or levada). `name` is optional except for peaks. Parking, toilets and bus stops are kept only within 400 m of a trail or an access point, so towns don't fill the map.
 
+Added in Phase 0.7:
+
+- **`starts`** on trails and on places with `access`: up to 3 ways in, recommended first, each in the same form as `access` plus optional `name` and `known`. Entries from `data/known-starts.json` (hand-checked trailheads such as Boca da Corrida for Pico Grande, Achada do Teixeira and Pico do Areeiro for Pico Ruivo) come first and carry `"known": true`; the others are the nearest road points found by the path-network search, at most 1.6 × the shortest walk + 1 km and 6 km in all, each on a different road and at least 300 m from the others. For a trail they lead to its start (`ends[0]`); `ends[0]` keeps the shortest one as before.
+
 Later schema versions add the curated fields (municipality, fee, official URL, duration, difficulty, route type, elevation profile, feature tags, aliases).
 
 **status.json:**
@@ -554,6 +558,31 @@ Goal: after using Phase 0.5, the owner asked for complete names, a way to reach 
 - [ ] With a trail picked and a position known, the card shows where you are: "On the trail · 2.3 km walked · 3.1 km to the end", or "450 m from the trail" (off it by more than 40 m, using `:core:geo` `Route.snap`), or the distance to the start.
 - [ ] Points of interest from the catalog are drawn with icons (peaks with name and height from zoom 10; viewpoints, waterfalls, huts, campsites and trailheads from 12; springs, shelters, picnic sites, caves and tunnels from 13; water and parking from 13.5; toilets and bus stops from 14; other names from 14) and can be tapped; the base map's own peak labels are hidden so names aren't doubled. Community trails that mostly repeat an official trail's line are left out of the catalog.
 - [ ] Search finds named viewpoints, waterfalls, shelters and other named points as well as peaks.
+
+### Phase 0.7 — Start options and route planner (asked for 26 Oct 2026)
+
+Goal: several ways to reach a trail or peak, and planning your own walk by marking points on the map. Answers from the owner: routing on the phone, prefer trails and use roads only where needed, avoid difficult paths, stops in between, save, follow and export.
+
+**Walking network** — `update-catalog` also writes `app/src/main/assets/network.bin`: every walkable OSM way on both islands (paths, footways, steps, tracks, pedestrian streets and roads; not motorways/expressways, not `access=private|no` or `foot=no`), cut at junctions. Little-endian, unsigned LEB128 varints, coordinates at 1e-5° as zig-zag varint deltas:
+
+```
+"VRN1"  u16 version = 1
+names:  varint count, then per name: varint byte length + UTF-8
+nodes:  varint count, then per node: zigzag Δlat, zigzag Δlon (from the previous node)
+edges:  varint count, then per edge: varint from, varint to, varint length in dm,
+        u8 kind (0 path, 1 footway, 2 steps, 3 track, 4 pedestrian, 5 minor road, 6 major road),
+        u8 flags (1 named, 2 on a hiking route, 4 difficult sac_scale, 8 tunnel, 16 levada, 32 car road),
+        varint name index + 1 (0 = none), varint official trail index + 1 (index into the names table, 0 = none),
+        varint inner point count, then zigzag Δlat, Δlon per inner point (from the previous point, starting at `from`)
+```
+
+**Router** (`:core:route`, pure Kotlin, unit-tested): A* with a straight-line heuristic over the network. A point is snapped to the nearest way within 500 m (else "too far from any path"). Cost per metre: on a hiking route or levada 1.0; other named path or track 1.1; unnamed path, footway or track 1.4; steps 1.5; pedestrian street 1.3; minor road 1.6; major road 3.0; difficult sections × 4 when "avoid difficult paths" is on (default; × 1.2 when off), so they are used only when there is no reasonable alternative. Stops are routed leg by leg. The summary gives distance, time on the flat at 4 km/h (climb comes with the terrain model in Phase 1, and the card says so), metres on roads and on difficult sections, tunnels, and the official trails the route uses with their fresh status; a Closed or Partly open one is shown as a warning.
+
+- [ ] Trail and peak cards list the start options; picking one draws its walk from the road and points Directions at it. Pico Grande offers Boca da Corrida.
+- [ ] Long-press on the map offers *Start here*, *Add stop* and *End here*; *From my location* uses the GPS fix. The route appears as soon as there is a start and an end, and is recomputed when a point changes.
+- [ ] The route card shows distance, flat time, roads and difficult metres, tunnels and official trails used with their status, with *Reverse*, *Clear*, *Save* and *Export GPX*.
+- [ ] Saved routes are kept on the phone with imports (the filter is now *Mine*), drawn on the map and followed with the same "on the trail" card.
+- [ ] Any trail or route can be exported as GPX 1.1 through the Android share sheet, with the OpenStreetMap attribution in the metadata.
 
 ### Phase 1 — Map that works offline
 

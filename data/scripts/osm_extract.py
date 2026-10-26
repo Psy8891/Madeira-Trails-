@@ -173,6 +173,8 @@ class _WaysAndNodes(osmium.SimpleHandler):
                     "access": tags.get("access") or tags.get("motor_vehicle"),
                     "tracktype": tags.get("tracktype"),
                     "sac": tags.get("sac_scale"),
+                    "foot": tags.get("foot"),
+                    "tunnel": tags.get("tunnel") in TUNNEL_VALUES,
                 }
             )
             for ref, lat, lon in nodes:

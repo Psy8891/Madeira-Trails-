@@ -41,8 +41,10 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 OFFICIAL = ROOT / "data" / "official.json"
 WANTED = ROOT / "data" / "wanted.json"
 NAME_FIXES = ROOT / "data" / "name-fixes.json"
+KNOWN_STARTS = ROOT / "data" / "known-starts.json"
 OUT_CATALOG = ROOT / "app" / "src" / "main" / "assets" / "catalog.json"
 OUT_REPORT = ROOT / "data" / "catalog-report.md"
+OUT_NETWORK = ROOT / "app" / "src" / "main" / "assets" / "network.bin"
 
 BBOX = "32.55,-17.30,33.15,-16.25"  # Madeira + Porto Santo (south, west, north, east)
 MIN_ROUTES_IN_EXTRACT = 15  # fewer means the extract doesn't cover Madeira
@@ -177,6 +179,7 @@ def build(data: dict) -> tuple[dict, str]:
     community: list[dict] = []
     route_way_ids: set[int] = set()
     route_way_names: dict[int, str | None] = {}
+    official_ways: dict[int, str] = {}
     places: list[dict] = []
     path_ways: list[dict] = []
     name_matches: dict[str, list] = defaultdict(list)
@@ -197,6 +200,8 @@ def build(data: dict) -> tuple[dict, str]:
             if code in official_by_code:
                 official_lines[code].extend(lines)
                 official_osm[code].append(f"r{el['id']}")
+                for m in members:
+                    official_ways[m["ref"]] = code
                 continue
             name = tags.get("name")
             if not name:
@@ -236,6 +241,9 @@ def build(data: dict) -> tuple[dict, str]:
             else:
                 official_lines[code].extend(lines)
                 official_osm[code].append(f"r{el['id']}")
+                for m in el.get("members", []):
+                    if m.get("type") == "way":
+                        official_ways[m["ref"]] = code
 
     # Named paths that are not already part of a route relation, grouped by name.
     by_name: dict[str, list[dict]] = defaultdict(list)
@@ -350,6 +358,9 @@ def build(data: dict) -> tuple[dict, str]:
         "places": places,
     }
     extra["duplicates"] = duplicates
+    # For the walking network (build_network.py): which ways belong to which route.
+    data["routeWayNames"] = route_way_names
+    data["officialWays"] = official_ways
     return catalog, report(catalog, missing, renamed, extra)
 
 
@@ -395,11 +406,43 @@ def enrich_trails(trails: list[dict], data: dict, route_way_names: dict[int, str
             ends.append(end)
         ends.sort(key=lambda e: (e["approachM"] is None, e["approachM"] or 0))
         t["ends"] = ends
+        if ends:
+            own = {t["name"], *t.get("aliases", [])}
+            starts = start_options(access, parking, (ends[0]["lat"], ends[0]["lon"]), own, [t["id"], *own], enrich.SNAP_M)
+            if starts:
+                t["starts"] = starts
         start = ends[0]["approachM"] if ends else None
         stats["on a road" if start == 0 else "walk to a road" if start is not None else "no road within 5 km"] += 1
 
     pois = enrich.select_pois(data.get("pois", []), trail_points, end_points)
     return {"pois": pois, "access": stats, "hasExtract": access is not None, "roads": access, "parking": parking}
+
+
+def known_starts() -> list[dict]:
+    if not KNOWN_STARTS.exists():
+        return []
+    return json.loads(KNOWN_STARTS.read_text(encoding="utf-8"))["starts"]
+
+
+def start_options(roads, parking, point, own_names: set[str], keys: list[str], snap_m: float) -> list[dict]:
+    """Up to 3 ways in (spec: Phase 0.7): hand-checked trailheads first, then the nearest roads."""
+    wanted = {normalize(k) for k in keys if k}
+    options: list[dict] = []
+    for known in known_starts():
+        if not wanted & {normalize(f) for f in known["for"]}:
+            continue
+        found = roads.find_to(point, (known["lat"], known["lon"]), own_names, snap_m)
+        if found:
+            options.append({**access_entry(found, parking), "name": known["name"], "known": True})
+    for found in roads.find_all(point, own_names, snap_m):
+        road_point = found["access"]
+        if any(
+            o.get("access") and enrich.haversine_m(road_point, tuple(o["access"])) < enrich.OPTION_SPACING_M
+            for o in options
+        ):
+            continue
+        options.append(access_entry(found, parking))
+    return options[: enrich.OPTION_LIMIT]
 
 
 def access_entry(found: dict, parking: "enrich.Grid") -> dict:
@@ -432,9 +475,16 @@ def add_place_access(places: list[dict], roads, parking) -> None:
     for place in places:
         if place["kind"] not in PLACE_ACCESS_KINDS:
             continue
-        found = roads.find((place["lat"], place["lon"]), {place.get("name", "")}, snap_m=PLACE_SNAP_M)
+        point = (place["lat"], place["lon"])
+        name = place.get("name", "")
+        found = roads.find(point, {name}, snap_m=PLACE_SNAP_M)
         if found["approachM"] is not None:
             place["access"] = access_entry(found, parking)
+        # Several ways in only matter for places off the road (peaks, waterfalls in valleys).
+        if place["kind"] in ("peak", "waterfall", "cave") and (found["approachM"] or 0) > 0:
+            starts = start_options(roads, parking, point, {name}, [name, *place.get("aliases", [])], PLACE_SNAP_M)
+            if len(starts) > 1 or (starts and starts[0].get("known")):
+                place["starts"] = starts
 
 
 def report(catalog: dict, missing: list[str], renamed: list | None = None, extra: dict | None = None) -> str:
@@ -533,6 +583,18 @@ def main() -> None:
     catalog, report_md = build(data)
     OUT_CATALOG.parent.mkdir(parents=True, exist_ok=True)
     OUT_CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    if data.get("network"):
+        import build_network
+
+        graph = build_network.build(data["network"], data["routeWayNames"], data["officialWays"])
+        OUT_NETWORK.write_bytes(build_network.encode(graph))
+        report_md += (
+            f"\nWalking network: {len(graph['nodes'])} junctions, {len(graph['edges'])} ways, "
+            f"{sum(e['lengthDm'] for e in graph['edges']) / 10_000:.0f} km "
+            f"({OUT_NETWORK.stat().st_size / 1024 / 1024:.1f} MB).\n"
+        )
+    else:
+        print("::warning title=Network::No extract, so network.bin was not rebuilt")
     OUT_REPORT.write_text(report_md, encoding="utf-8")
     print(report_md)
     print(f"catalog.json: {OUT_CATALOG.stat().st_size / 1024:.0f} KiB")

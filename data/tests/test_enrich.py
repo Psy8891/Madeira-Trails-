@@ -195,3 +195,67 @@ def test_community_copies_of_an_official_trail_are_found():
     branch = [(32.70, -16.99), (32.72, -16.99)]  # shares one point, then leaves
     found = enrich.official_duplicates(official, [("osm-r1", [copy]), ("osm-r2", [branch])])
     assert found == {"osm-r1": "PR 28"}
+
+
+# --- start options (Phase 0.7) ------------------------------------------------------------------
+
+# A peak (node 1) with three ways down: north to road A (1.1 km), south to road B (1.3 km) and
+# east to road A again further along (1.0 km, but on the same road as the north one... it wins).
+OPT_COORDS = {
+    1: (32.7000, -17.0000),
+    2: (32.7100, -17.0000),   # road A, north
+    3: (32.6883, -17.0000),   # road B, south
+    4: (32.7000, -16.9893),   # road A, east
+    5: (32.7000, -16.9600),   # far road C, east (3.9 km)
+}
+OPT_WAYS = [
+    {"id": 1, "nodes": [1, 2], "highway": "path", "name": "Vereda Norte"},
+    {"id": 2, "nodes": [1, 3], "highway": "path", "name": "Vereda Sul"},
+    {"id": 3, "nodes": [1, 4], "highway": "path", "name": "Vereda Leste"},
+    {"id": 4, "nodes": [2, 4], "highway": "tertiary", "ref": "ER A"},
+    {"id": 5, "nodes": [3, 30], "highway": "tertiary", "ref": "ER B"},
+    {"id": 6, "nodes": [4, 5], "highway": "path", "name": "Vereda Longa"},
+    {"id": 7, "nodes": [5, 50], "highway": "tertiary", "ref": "ER C"},
+]
+OPT_COORDS[30] = (32.6880, -17.0010)
+OPT_COORDS[50] = (32.7010, -16.9600)
+
+
+def opt_roads():
+    return enrich.RoadAccess({"ways": OPT_WAYS, "coords": OPT_COORDS})
+
+
+def test_start_options_are_on_different_roads_and_not_much_longer():
+    options = opt_roads().find_all(OPT_COORDS[1])
+    roads = [o["road"] for o in options]
+    assert roads == ["ER A", "ER B"]  # east (shortest) on ER A; north is the same road; C is too far
+    assert options[0]["access"] == OPT_COORDS[4]
+    assert options[0]["approachM"] < options[1]["approachM"]
+
+
+def test_a_known_trailhead_is_reached_even_when_not_nearest():
+    found = opt_roads().find_to(OPT_COORDS[1], OPT_COORDS[2])
+    assert found["access"] == OPT_COORDS[2]
+    assert found["via"] == ["Vereda Norte"]
+    assert opt_roads().find_to(OPT_COORDS[1], (33.0, -16.5)) is None
+
+
+def test_an_end_on_a_road_has_one_option():
+    options = opt_roads().find_all(OPT_COORDS[2])
+    assert [o["approachM"] for o in options] == [0]
+
+
+def test_known_starts_come_first_and_others_follow(monkeypatch):
+    import build_catalog
+
+    monkeypatch.setattr(
+        build_catalog,
+        "known_starts",
+        lambda: [{"name": "Norte", "lat": OPT_COORDS[2][0], "lon": OPT_COORDS[2][1], "for": ["Pico Teste"]}],
+    )
+    options = build_catalog.start_options(opt_roads(), enrich.Grid(), OPT_COORDS[1], set(), ["pico teste"], 150)
+    assert [o.get("name") for o in options] == ["Norte", None, None]
+    assert options[0]["known"] is True
+    assert [o.get("road") for o in options] == ["ER A", "ER A", "ER B"]  # the east way is 1 km from Norte
+    other = build_catalog.start_options(opt_roads(), enrich.Grid(), OPT_COORDS[1], set(), ["Another peak"], 150)
+    assert all("name" not in o for o in other)

@@ -182,6 +182,15 @@ def walk_cost(way: dict, on_route: bool) -> float:
     return factor
 SNAP_M = 30
 MAX_APPROACH_M = 5000
+# Start options (Phase 0.7): up to 3, none longer than 1.6 × the best + 1 km, 6 km at most,
+# each at least 300 m from the others and on another road.
+OPTION_LIMIT = 3
+OPTION_FACTOR = 1.6
+OPTION_EXTRA_M = 1000
+OPTION_MAX_M = 6000
+OPTION_SPACING_M = 300
+KNOWN_START_MAX_M = 10000
+KNOWN_START_SNAP_M = 80
 
 
 class RoadAccess:
@@ -228,12 +237,63 @@ class RoadAccess:
     def find(self, end: Point, own_names: set[str] | None = None, snap_m: float = SNAP_M) -> dict:
         """{"approachM": metres or None, "access": point, "road", "via", "line"} for one trail end
         (or a peak, with a wider snap_m since summits are often a little off the path)."""
+        found = self.find_all(end, own_names, snap_m, limit=1)
+        return found[0] if found else {"approachM": None}
+
+    def find_all(
+        self, end: Point, own_names: set[str] | None = None, snap_m: float = SNAP_M, limit: int = OPTION_LIMIT
+    ) -> list[dict]:
+        """Up to `limit` different ways in from a road, shortest first (spec: Phase 0.7): each on
+        another road and at least OPTION_SPACING_M from the others, none much longer than the best."""
         own = {normalize(n) for n in (own_names or set())}
         hit = self.grid.nearest(end, snap_m)
         if not hit:
-            return {"approachM": None}
+            return []
         gap, _, start = hit
-        result = self._walk(start, own)
+        found: list[dict] = []
+        best: float | None = None
+        for node, metres, previous in self._explore(start, OPTION_MAX_M):
+            if best is not None and metres > min(OPTION_MAX_M, OPTION_FACTOR * best + OPTION_EXTRA_M):
+                break
+            if best is None and metres > MAX_APPROACH_M:
+                break
+            label = self._road_label(node, own)
+            point = self.coords[node]
+            if any(
+                haversine_m(point, f["access"]) < OPTION_SPACING_M or (label and label == f.get("road")) for f in found
+            ):
+                continue
+            result = self._result(node, metres, previous, own)
+            found.append(self._with_gap(result, start, end, gap))
+            best = metres if best is None else best
+            if len(found) >= limit or metres == 0:
+                break
+        return found
+
+    def find_to(
+        self, end: Point, target: Point, own_names: set[str] | None = None, snap_m: float = SNAP_M,
+        max_m: float = KNOWN_START_MAX_M,
+    ) -> dict | None:
+        """The walk from a known trailhead (`target`) to a trail end or peak, or None if the
+        network doesn't join them within max_m."""
+        own = {normalize(n) for n in (own_names or set())}
+        hit = self.grid.nearest(end, snap_m)
+        goal = self.grid.nearest(target, KNOWN_START_SNAP_M)
+        if not hit or not goal:
+            return None
+        gap, _, start = hit
+        goal_node = goal[2]
+        if goal_node == start:
+            return self._with_gap(
+                {"approachM": 0, "access": self.coords[start], "road": self._road_label(start, own), "via": [], "line": []},
+                start, end, gap,
+            )
+        for node, metres, previous in self._explore(start, max_m, goal=goal_node):
+            if node == goal_node:
+                return self._with_gap(self._result(node, metres, previous, own), start, end, gap)
+        return None
+
+    def _with_gap(self, result: dict, start: int, end: Point, gap: float) -> dict:
         if result["approachM"] is not None and gap > 1:
             result["approachM"] = round(result["approachM"] + gap)
             result["line"] = [*result["line"], end] if result["line"] else [self.coords[start], end]
@@ -243,12 +303,10 @@ class RoadAccess:
         label = self.road_at.get(node)
         return None if label and normalize(label) in own else label
 
-    def _walk(self, start: int, own: set[str]) -> dict:
-        if start in self.car_nodes:
-            return {"approachM": 0, "access": self.coords[start], "road": self._road_label(start, own), "via": [], "line": []}
-
-        # Dijkstra on cost; metres walked are tracked alongside for the 5 km limit and the answer.
-        # The adjacency holds only walkable ways, so a road is reached at a node it shares with one.
+    def _explore(self, start: int, max_m: float, goal: int | None = None):
+        """Dijkstra on walking cost from `start`, yielding (node, metres, previous) cheapest first:
+        every road node reached (the walk stops there), or only `goal` (walking across roads).
+        The adjacency holds only walkable ways, so a road is reached at a node it shares with one."""
         cost = {start: 0.0}
         metres = {start: 0.0}
         previous: dict[int, tuple[int, int]] = {}
@@ -257,11 +315,16 @@ class RoadAccess:
             c, node = heapq.heappop(queue)
             if c > cost.get(node, math.inf):
                 continue
-            if node in self.car_nodes:
-                return self._result(node, metres[node], previous, own)
+            if goal is not None:
+                if node == goal:
+                    yield node, metres[node], previous
+                    return
+            elif node in self.car_nodes:
+                yield node, metres[node], previous
+                continue
             for nxt, step, factor, way in self.adjacent.get(node, ()):
                 walked = metres[node] + step
-                if walked > MAX_APPROACH_M:
+                if walked > max_m:
                     continue
                 nc = c + step * factor
                 if nc < cost.get(nxt, math.inf):
@@ -269,7 +332,6 @@ class RoadAccess:
                     metres[nxt] = walked
                     previous[nxt] = (node, way)
                     heapq.heappush(queue, (nc, nxt))
-        return {"approachM": None}
 
     def _result(self, target: int, distance: float, previous: dict, own: set[str]) -> dict:
         nodes = [target]
