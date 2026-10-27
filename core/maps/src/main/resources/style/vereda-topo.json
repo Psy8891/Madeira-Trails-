@@ -260,12 +260,17 @@
      [
       "any",
       [
-       "==",
+       "match",
        [
         "get",
         "class"
        ],
-       "canal"
+       [
+        "canal",
+        "drain"
+       ],
+       true,
+       false
       ],
       [
        "==",
@@ -324,12 +329,17 @@
     [
      "any",
      [
-      "==",
+      "match",
       [
        "get",
        "class"
       ],
-      "canal"
+      [
+       "canal",
+       "drain"
+      ],
+      true,
+      false
      ],
      [
       "==",
@@ -379,12 +389,17 @@
     [
      "any",
      [
-      "==",
+      "match",
       [
        "get",
        "class"
       ],
-      "canal"
+      [
+       "canal",
+       "drain"
+      ],
+      true,
+      false
      ],
      [
       "==",
@@ -432,12 +447,17 @@
     [
      "any",
      [
-      "==",
+      "match",
       [
        "get",
        "class"
       ],
-      "canal"
+      [
+       "canal",
+       "drain"
+      ],
+      true,
+      false
      ],
      [
       "==",
