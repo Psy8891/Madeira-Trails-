@@ -182,6 +182,6 @@ class NavigationTest {
         assertEquals(180.0, trip.climbLeftM(0.0), 10.0)
         assertEquals(90.0, trip.climbLeftM(1000.0), 10.0)
         val nav = Navigator(trip)
-        assertEquals(30 + 18, nav.state.minutesLeft, 5) // 2 km at 4 km/h + 180 m at 600 m/h
+        assertEquals(48.0, nav.state.minutesLeft.toDouble(), 5.0) // 2 km at 4 km/h + 180 m at 600 m/h
     }
 }
