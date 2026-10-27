@@ -21,6 +21,7 @@ on:
 
 permissions:
   contents: write
+  actions: write # to start the APK build after committing
 
 concurrency:
   group: build-maps
