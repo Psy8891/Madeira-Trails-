@@ -17,7 +17,10 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -25,6 +28,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import pt.vereda.app.R
 import pt.vereda.app.data.Language
+import pt.vereda.app.ui.maps.OfflineMapCard
+import pt.vereda.app.ui.maps.rememberOfflineMapState
 import pt.vereda.core.model.AppLanguage
 
 /** Me tab: lists arrive in Phase 2; the language switch is here now (spec: Phase 0.9). */
@@ -46,6 +51,9 @@ fun MeScreen(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(8.dp))
+        val app = context.applicationContext as pt.vereda.app.VeredaApplication
+        OfflineMapCard(rememberOfflineMapState(), onWifiOnly = app.settings::setWifiOnly)
+        Spacer(Modifier.height(8.dp))
         Text(stringResource(R.string.language_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         val options = listOf(
             AppLanguage.SYSTEM to R.string.language_system,
@@ -63,6 +71,15 @@ fun MeScreen(modifier: Modifier = Modifier) {
         }
         Text(
             stringResource(R.string.language_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(8.dp))
+        var showNotice by remember { mutableStateOf(false) }
+        androidx.compose.material3.OutlinedButton(onClick = { showNotice = true }) { Text(stringResource(R.string.disclaimer_show)) }
+        if (showNotice) SafetyNotice(onAccept = { showNotice = false }, dismissible = true)
+        Text(
+            stringResource(R.string.about_data, pt.vereda.app.BuildConfig.VERSION_NAME),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

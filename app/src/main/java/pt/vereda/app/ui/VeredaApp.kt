@@ -3,6 +3,7 @@ package pt.vereda.app.ui
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -20,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -47,7 +49,10 @@ fun VeredaApp() {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
-    val repository = (LocalContext.current.applicationContext as VeredaApplication).repository
+    val app = LocalContext.current.applicationContext as VeredaApplication
+    val repository = app.repository
+    val disclaimerAccepted by app.settings.disclaimerAccepted.collectAsStateWithLifecycle()
+    if (!disclaimerAccepted) SafetyNotice(onAccept = app.settings::acceptDisclaimer)
     val scope = rememberCoroutineScope()
 
     // Shared between Explore (pick a trail) and Map (show it).
@@ -104,4 +109,26 @@ private fun NavHostController.navigateToTab(tab: Tab) {
         launchSingleTop = true
         restoreState = true
     }
+}
+
+/** First-launch safety notice (spec: Safety); also shown again from Me. */
+@Composable
+fun SafetyNotice(onAccept: () -> Unit, dismissible: Boolean = false) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = { if (dismissible) onAccept() },
+        properties = androidx.compose.ui.window.DialogProperties(
+            dismissOnBackPress = dismissible,
+            dismissOnClickOutside = dismissible,
+        ),
+        title = { Text(stringResource(R.string.disclaimer_title)) },
+        text = {
+            Text(
+                stringResource(R.string.disclaimer_text),
+                modifier = Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState()),
+            )
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = onAccept) { Text(stringResource(R.string.disclaimer_accept)) }
+        },
+    )
 }

@@ -13,8 +13,10 @@ on:
     # skips the pair that doesn't match today's offset. Best effort: GitHub may delay or drop
     # scheduled runs; the app treats status older than 24 h as unknown, so a missed run never
     # shows a wrong "open".
-    - cron: "0 9,14 * * *"   # winter (WET, UTC+0)
-    - cron: "0 8,13 * * *"   # summer (WEST, UTC+1)
+    # GitHub often drops or delays runs at the top of the hour, so each slot has a second try
+    # half an hour later; it is skipped when the first one already published.
+    - cron: "3,33 9,14 * * *"   # winter (WET, UTC+0)
+    - cron: "3,33 8,13 * * *"   # summer (WEST, UTC+1)
 
 permissions:
   contents: write
@@ -30,16 +32,23 @@ jobs:
     outputs:
       run: ${{ steps.slot.outputs.run }}
     steps:
-      - name: Only at 09:00 and 14:00 Madeira time
+      - name: Only at 09:00 and 14:00 Madeira time, once per slot
         id: slot
         env:
           SCHEDULE: ${{ github.event.schedule }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           offset=$(TZ=Atlantic/Madeira date +%z)
           run=yes
           if [ -n "$SCHEDULE" ]; then
-            if [ "$offset" = "+0000" ] && [ "$SCHEDULE" != "0 9,14 * * *" ]; then run=no; fi
-            if [ "$offset" = "+0100" ] && [ "$SCHEDULE" != "0 8,13 * * *" ]; then run=no; fi
+            if [ "$offset" = "+0000" ] && [ "$SCHEDULE" != "3,33 9,14 * * *" ]; then run=no; fi
+            if [ "$offset" = "+0100" ] && [ "$SCHEDULE" != "3,33 8,13 * * *" ]; then run=no; fi
+            # The half-past try only runs when the first one didn't publish in the last 2 hours.
+            last=$(gh api "repos/${{ github.repository }}/commits/status" --jq .commit.committer.date 2>/dev/null || echo "")
+            if [ "$run" = yes ] && [ -n "$last" ]; then
+              age=$(( $(date -u +%s) - $(date -u -d "$last" +%s) ))
+              if [ "$age" -lt 7200 ]; then run=no; echo "Status published ${age}s ago."; fi
+            fi
           fi
           echo "Madeira offset $offset, schedule '${SCHEDULE:-manual}', run=$run"
           echo "run=$run" >> "$GITHUB_OUTPUT"
