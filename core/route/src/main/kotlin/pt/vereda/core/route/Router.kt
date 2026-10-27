@@ -31,7 +31,16 @@ data class RouteSummary(
     }
 }
 
-data class PlannedRoute(val points: List<GeoPoint>, val summary: RouteSummary, val pieces: List<RoutePiece>)
+/** A network node the route passes through, between [inEdge] and [outEdge], [alongM] from the start. */
+data class RouteJunction(val node: Int, val inEdge: Int, val outEdge: Int, val alongM: Double)
+
+data class PlannedRoute(
+    val points: List<GeoPoint>,
+    val summary: RouteSummary,
+    val pieces: List<RoutePiece>,
+    /** Every junction node passed, in order (spec: Phase 1.5, junction cues). */
+    val junctions: List<RouteJunction> = emptyList(),
+)
 
 sealed interface RouteOutcome {
     data class Found(val route: PlannedRoute) : RouteOutcome
@@ -72,6 +81,8 @@ class Router(private val network: WalkingNetwork) {
         val snaps = points.mapIndexed { i, p -> network.snap(p) ?: return RouteOutcome.TooFar(i) }
         val shape = ArrayList<GeoPoint>()
         val pieces = ArrayList<RoutePiece>()
+        val junctions = ArrayList<RouteJunction>()
+        var before = 0.0
         for (i in 0 until snaps.size - 1) {
             val leg = leg(snaps[i], snaps[i + 1], options) ?: return RouteOutcome.NoRoute(i)
             if (shape.isNotEmpty() && leg.points.isNotEmpty() && shape.last() == leg.points.first()) {
@@ -80,11 +91,13 @@ class Router(private val network: WalkingNetwork) {
                 shape.addAll(leg.points)
             }
             pieces.addAll(leg.pieces)
+            leg.junctions.forEach { junctions += it.copy(alongM = it.alongM + before) }
+            before += leg.pieces.sumOf { it.metres }
         }
-        return RouteOutcome.Found(PlannedRoute(shape, summarize(pieces), pieces))
+        return RouteOutcome.Found(PlannedRoute(shape, summarize(pieces), pieces, junctions))
     }
 
-    private class Leg(val points: List<GeoPoint>, val pieces: List<RoutePiece>)
+    private class Leg(val points: List<GeoPoint>, val pieces: List<RoutePiece>, val junctions: List<RouteJunction> = emptyList())
 
     private fun leg(a: Snap, b: Snap, options: RouteOptions): Leg? {
         val n = network
@@ -154,20 +167,27 @@ class Router(private val network: WalkingNetwork) {
 
         val points = ArrayList<GeoPoint>()
         val pieces = ArrayList<RoutePiece>()
+        val junctions = ArrayList<RouteJunction>()
         // From the start point to the end of its way.
         val startTowardsFrom = startNode == n.from(a.edge)
         appendPart(points, pieces, a.edge, a, if (startTowardsFrom) 0.0 else 1.0)
+        var walked = pieces.sumOf { it.metres }
         var at = startNode
+        var inEdge = a.edge
         for (e in edges) {
+            junctions += RouteJunction(at, inEdge, e, walked)
             val forward = n.from(e) == at
             val shape = n.geometry(e).let { if (forward) it else it.reversed() }
             appendPoints(points, shape)
             pieces.add(RoutePiece(e, n.lengthM(e)))
+            walked += n.lengthM(e)
             at = n.other(e, at)
+            inEdge = e
         }
+        if (goalEdge != inEdge) junctions += RouteJunction(at, inEdge, goalEdge, walked)
         // From the end of the goal's way to the goal point.
         appendPartFrom(points, pieces, goalEdge, if (at == goalFrom) 0.0 else 1.0, b)
-        return Leg(points, pieces.filter { it.metres > 0.01 })
+        return Leg(points, pieces.filter { it.metres > 0.01 }, junctions)
     }
 
     private fun straightAlong(a: Snap, b: Snap): Leg {

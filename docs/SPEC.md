@@ -663,6 +663,35 @@ Heights are bilinear between cell centres. A profile samples every 10 m, smooths
 - [ ] Layers card toggles every overlay; *Me → Offline map* can update and delete the package.
 - [ ] Trail and route cards show climb, descent and the height graph; spot heights match the terrain model (Pico Ruivo about 1,860 m, Pico do Areeiro about 1,815 m).
 
+### Phase 1.5 — Navigate (pulled forward from Phase 3, asked for 27 Oct 2026)
+
+Goal: press *Start* and be guided along a trail or a planned route, offline, with the phone in the pocket and the app in the background, using as little battery as possible. Owner's answers: Garmin-style guidance with cues at junctions; a choice before starting between **one way** and **there and back** (start and finish at the same point); vibration plus a short spoken line; adaptive GPS.
+
+**Route to follow.** Always a route from the on-phone router (`:core:route`), so it knows the junctions: *Start* on a trail card plans the walk like *Directions in Vereda* (approach + the trail's own line, Phase 0.8); *Start* on the route card uses the planned route. Before starting, the card asks **One way** or **There and back**: there and back walks the route to its end and returns the same way, with a *Turn around* cue at the far end. A loop (start and end within 60 m) is shown as "Loop: you finish where you start" without the choice.
+
+**Junction cues** (`:core:route` `Cues`): the router records every junction the route passes. A cue is made where the path really splits (three or more ways meet) and the way on isn't obvious: the turn is sharper than 35°, or the path name changes, or another branch leaves within 40° of the way on. Turns are worded *keep left/right* (under 60°), *turn left/right* (under 135°), *sharp left/right*, *turn around*. Each cue names the way on when it has a name ("keep left on Levada do Furado"). The end gets *You have arrived*.
+
+**Navigator** (`:core:route` `Navigator`, pure Kotlin, unit-tested):
+- Snapping follows progress: a fix is matched to the part of the route from 60 m behind to 800 m ahead of the last position first, so the return leg of a there-and-back is never confused with the way out. Only when nothing is within 40 m there does it search the whole route.
+- Off route after more than 40 m for 20 s; back on route below 25 m; fixes older than 15 s or worse than 30 m accuracy never change the state (tunnels, deep valleys).
+- Wrong way: progress keeps dropping for 50 m.
+- Cue alerts: once at 80 m before the junction and once at it (within 20 m). Arrival within 30 m of the end after 90% of the route.
+- Shows distance walked and left, time left (4 km/h + 1 h per 600 m of the climb still ahead, from the elevation grid) and arrival time.
+
+**Adaptive GPS** (`GpsPolicy`): every 5 s while walking on the route with the next cue more than 200 m away; every 2 s within 200 m of a cue, when off route or the wrong way; every 15 s after 2 minutes standing still (under 0.4 m/s), back to 5 s as soon as you move. Minimum distance between fixes 3 m. The map's own location requests stop while navigating; the screen can be off.
+
+**Background.** A foreground service (type `location`, while-in-use permission; no background-location permission) runs the navigator. Its ongoing, silent notification shows the walk name, distance left and time left, and the next cue or "Off route, 45 m from the path"; it updates at most every 10 s or when the cue changes, with *Stop* and a tap back to the map. Android 13+ asks for notification permission at the first Start. A one-time low-battery warning at 20%.
+
+**Voice and vibration.** Cues use Android's text-to-speech in the app's language (offline voices are on the Pixel by default); if no voice is available, vibration only. Patterns: one short buzz for a cue ahead, two at the junction, three long for off route, one long for arrival.
+
+**On screen.** The map follows you with the route drawn in the navigation colour and the walked part greyed. A banner at the top shows the next cue with an arrow and the distance to it. The bottom panel can be folded with **▼** to one line ("2.3 km done · 4.1 km left · about 1 h 35 · arrive 16:40") and opened with **▲** (height graph with your position, daylight, warnings, *Stop*). It opens folded once navigation starts.
+
+- [ ] *Start* on a trail and on a planned route offers One way / There and back (or says it's a loop) and starts guidance.
+- [ ] Junction cues are spoken and vibrated in English and Portuguese, offline; off route and arrival alerts work with the screen off and the app in the background.
+- [ ] The notification shows distance and time left and the next cue, and *Stop* ends navigation.
+- [ ] The bottom panel folds and unfolds with ▼/▲.
+- [ ] Battery: a 4-hour walk with the screen mostly off uses under 25% on the Pixel 8 Pro (field test).
+
 ### Phase 2 — Find and plan
 
 Goal: pick a trail, check it, save it.
