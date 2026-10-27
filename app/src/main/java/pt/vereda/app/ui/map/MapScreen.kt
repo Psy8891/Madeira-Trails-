@@ -21,6 +21,8 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import pt.vereda.core.catalog.DirectionsTarget
 import pt.vereda.core.catalog.HikePlans
 import pt.vereda.core.maps.TopoStyle
+import pt.vereda.core.route.NavRoute
+import pt.vereda.core.route.TripKind
 import pt.vereda.core.geo.ScaleBar
 import pt.vereda.core.geo.ElevationGrid
 import pt.vereda.core.geo.ElevationProfiles
@@ -151,7 +153,11 @@ fun MapScreen(
     val places = catalog?.places.orEmpty()
     val selectedEntry = (selection?.target as? MapTarget.TrailTarget)?.let { t -> entries.firstOrNull { it.id == t.id } }
     val selectedPlace = (selection?.target as? MapTarget.PlaceTarget)?.place
-    val here = location?.let { GeoPoint(it.latitude, it.longitude) }
+    val navigation by app.navigation.active.collectAsStateWithLifecycle()
+    val navigating = navigation != null
+    // While navigating, the service's fixes are the position (the map's own GPS requests stop).
+    val navFix = navigation?.state?.lastFix
+    val here = if (navFix != null) GeoPoint(navFix.lat, navFix.lon) else location?.let { GeoPoint(it.latitude, it.longitude) }
     val planner = app.planner
     val planPoints by planner.points.collectAsStateWithLifecycle()
     val planResult by planner.result.collectAsStateWithLifecycle()
@@ -167,12 +173,17 @@ fun MapScreen(
     // The planner card is open (from the Plan a route button), and which point a tap sets.
     var planning by remember { mutableStateOf(false) }
     var pickRole by remember { mutableStateOf<PickRole?>(null) }
+    // Before Start (Phase 1.5): the card asking one way or there and back, and the choice.
+    var startSheet by remember { mutableStateOf(false) }
+    var startKind by remember { mutableStateOf(TripKind.ONE_WAY) }
+    var navExpanded by remember { mutableStateOf(false) }
     var hasPermission by remember { mutableStateOf(tracker.hasPermission()) }
     val currentOnSelect by rememberUpdatedState(onSelect)
     val currentPlaces by rememberUpdatedState(places)
     val currentPressed by rememberUpdatedState(pressed)
     val currentOnLongPress by rememberUpdatedState<(GeoPoint?) -> Unit>({ pressed = it })
     val currentPickRole by rememberUpdatedState(pickRole)
+    val currentNavigating by rememberUpdatedState(navigating)
     val currentOnPick by rememberUpdatedState<(GeoPoint) -> Unit>({ p ->
         when (pickRole) {
             PickRole.START -> planner.setStart(p)
@@ -197,10 +208,11 @@ fun MapScreen(
             map.addOnCameraMoveListener { track() }
             map.addOnCameraIdleListener { track() }
             map.addOnMapLongClickListener { point ->
-                currentOnLongPress(GeoPoint(point.latitude, point.longitude))
+                if (!currentNavigating) currentOnLongPress(GeoPoint(point.latitude, point.longitude))
                 true
             }
             map.addOnMapClickListener { point ->
+                if (currentNavigating) return@addOnMapClickListener true
                 if (currentPickRole != null) {
                     currentOnPick(GeoPoint(point.latitude, point.longitude))
                     return@addOnMapClickListener true
@@ -265,16 +277,17 @@ fun MapScreen(
 
     // GPS only while the map is on screen; never in the background (spec: Permissions).
     val lifecycle = LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(lifecycle, hasPermission) {
+    DisposableEffect(lifecycle, hasPermission, navigating) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_RESUME -> if (hasPermission) tracker.start()
+                Lifecycle.Event.ON_RESUME -> if (hasPermission && !navigating) tracker.start()
                 Lifecycle.Event.ON_PAUSE -> tracker.stop()
                 else -> Unit
             }
         }
         lifecycle.addObserver(observer)
-        if (hasPermission && lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) tracker.start()
+        if (navigating) tracker.stop()
+        else if (hasPermission && lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) tracker.start()
         onDispose {
             lifecycle.removeObserver(observer)
             tracker.stop()
@@ -282,6 +295,10 @@ fun MapScreen(
     }
 
     val messageLocationOff = stringResource(R.string.location_off)
+    val needLocation = stringResource(R.string.nav_need_location)
+    val noLineMessage = stringResource(R.string.trail_no_line)
+    // Android 13+: the navigation notification needs permission; guidance works without it.
+    val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     val messageDenied = stringResource(R.string.location_denied)
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
         hasPermission = granted.values.any { it } || tracker.hasPermission()
@@ -299,11 +316,44 @@ fun MapScreen(
         val target = loaded ?: return@LaunchedEffect
         if (hasPermission) enableLocationComponent(context, target) { locateMode = LocateMode.FREE }
     }
-    LaunchedEffect(loaded, location) {
+    LaunchedEffect(loaded, location, navFix) {
         val target = loaded ?: return@LaunchedEffect
-        val fix: Location = location ?: return@LaunchedEffect
+        val fix: Location = navFix?.let {
+            Location("vereda").apply {
+                latitude = it.lat
+                longitude = it.lon
+                accuracy = it.accuracyM.toFloat()
+                time = it.timeMs
+            }
+        } ?: location ?: return@LaunchedEffect
         val component = target.map.locationComponent
         if (component.isLocationComponentActivated) component.forceLocationUpdate(fix)
+    }
+
+    // The walk being followed: the way ahead in the navigation colour, the walked part grey.
+    var drawnProgress by remember { mutableStateOf(-1.0) }
+    LaunchedEffect(loaded, navigation) {
+        val target = loaded ?: return@LaunchedEffect
+        val nav = navigation
+        if (nav == null) {
+            drawnProgress = -1.0
+            MapLayers.setGeoJson(target.style, MapLayers.NAV_SOURCE, MapLayers.EMPTY)
+            MapLayers.setGeoJson(target.style, MapLayers.NAV_DONE_SOURCE, MapLayers.EMPTY)
+            return@LaunchedEffect
+        }
+        // Redraw only every 10 m of progress: cheap on the battery with the screen on.
+        if (drawnProgress >= 0 && kotlin.math.abs(nav.state.progressM - drawnProgress) < 10 && nav.walked.size > 1) return@LaunchedEffect
+        drawnProgress = nav.state.progressM
+        val ahead = withContext(Dispatchers.Default) { aheadOf(nav.route, nav.state.progressM) }
+        MapLayers.setGeoJson(target.style, MapLayers.NAV_SOURCE, TrailGeoJson.line(ahead))
+        MapLayers.setGeoJson(target.style, MapLayers.NAV_DONE_SOURCE, if (nav.walked.size >= 2) TrailGeoJson.line(nav.walked) else MapLayers.EMPTY)
+    }
+    // Follow with the compass when a walk starts.
+    LaunchedEffect(navigating) {
+        if (navigating) {
+            locateMode = LocateMode.COMPASS
+            navExpanded = false
+        }
     }
     LaunchedEffect(loaded, locateMode, hasPermission) {
         val target = loaded ?: return@LaunchedEffect
@@ -395,7 +445,7 @@ fun MapScreen(
     // The route being planned: its line and its start, stops and end. Zoom out to it when it
     // doesn't fit on screen.
     val savedMessage = stringResource(R.string.plan_saved)
-    val planHidden = selection != null
+    val planHidden = selection != null || navigating
     LaunchedEffect(loaded, planPoints, planResult, planHidden) {
         val target = loaded ?: return@LaunchedEffect
         if (planHidden) {
@@ -426,7 +476,7 @@ fun MapScreen(
     Box(modifier.fillMaxSize()) {
         AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
         Column(
-            modifier = Modifier.align(Alignment.TopEnd).padding(top = 72.dp, end = 12.dp),
+            modifier = Modifier.align(Alignment.TopEnd).padding(top = if (navigating) 108.dp else 72.dp, end = 12.dp),
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -435,9 +485,11 @@ fun MapScreen(
         }
         ScaleBarView(
             bar = remember(camera) { ScaleBar.pick(camera.second, camera.first, 96f) },
-            modifier = Modifier.align(Alignment.TopStart).padding(top = 76.dp, start = 14.dp),
+            modifier = Modifier.align(Alignment.TopStart).padding(top = if (navigating) 112.dp else 76.dp, start = 14.dp),
         )
-        Surface(
+        if (navigation != null) {
+            CueBanner(navigation!!, Modifier.align(Alignment.TopCenter).padding(12.dp))
+        } else Surface(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(12.dp),
@@ -475,7 +527,7 @@ fun MapScreen(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            val nothingOpen = pressed == null && selection == null && !planning && planPoints.isEmpty && !showLayers && !showEmergency
+            val nothingOpen = pressed == null && selection == null && !planning && planPoints.isEmpty && !showLayers && !showEmergency && !navigating
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             if (nothingOpen) PlanButton(onClick = { planning = true })
             LocateButton(
@@ -506,7 +558,57 @@ fun MapScreen(
             }
             val pressedPoint = pressed
             when {
-                showEmergency -> EmergencyCard(location = location, onClose = { showEmergency = false }, modifier = cardModifier)
+                showEmergency -> EmergencyCard(location = navFix?.let { f -> Location("vereda").apply { latitude = f.lat; longitude = f.lon; accuracy = f.accuracyM.toFloat(); time = f.timeMs } } ?: location, onClose = { showEmergency = false }, modifier = cardModifier)
+                navigation != null -> NavPanel(
+                    nav = navigation!!,
+                    elevation = elevation,
+                    expanded = navExpanded,
+                    onToggle = { navExpanded = !navExpanded },
+                    onRecenter = { locateMode = LocateMode.COMPASS },
+                    onStop = { app.navigation.stop(context) },
+                    modifier = cardModifier,
+                )
+                startSheet -> {
+                    val route = ((planResult as? PlanResult.Done)?.outcome as? RouteOutcome.Found)?.route
+                    val problem = when (val r = planResult) {
+                        is PlanResult.Failed -> r.message
+                        is PlanResult.Done -> if (r.outcome is RouteOutcome.Found) null else stringResource(R.string.plan_no_route)
+                        else -> null
+                    }
+                    val title = planPoints.title ?: stringResource(R.string.plan_title)
+                    StartCard(
+                        title = title,
+                        route = route,
+                        problem = problem,
+                        elevation = elevation,
+                        kind = startKind,
+                        onKind = { startKind = it },
+                        onStart = {
+                            if (!hasPermission) {
+                                Toast.makeText(context, needLocation, Toast.LENGTH_LONG).show()
+                                permissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+                            } else if (route != null) {
+                                if (android.os.Build.VERSION.SDK_INT >= 33 &&
+                                    androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED
+                                ) {
+                                    notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                }
+                                scope.launch {
+                                    val trip = withContext(Dispatchers.Default) {
+                                        NavRoute.of(title, route, planner.network(), startKind, elevation)
+                                    }
+                                    app.navigation.start(context, trip)
+                                    startSheet = false
+                                    planning = false
+                                    pickRole = null
+                                    planner.clear()
+                                }
+                            }
+                        },
+                        onCancel = { startSheet = false },
+                        modifier = cardModifier,
+                    )
+                }
                 showLayers -> LayersCard(
                     settings = layerSettings,
                     offline = offline,
@@ -546,6 +648,18 @@ fun MapScreen(
                     onStartChoice = { startChoice = it },
                     directionsTarget = directionsTarget,
                     onDirectionsTarget = app.settings::setDirections,
+                    onStart = {
+                        val chosen = selectedEntry.starts.getOrNull(startChoice) ?: selectedEntry.starts.firstOrNull()
+                        val plan = HikePlans.forTrail(selectedEntry, chosen, here)
+                        if (plan == null) {
+                            Toast.makeText(context, noLineMessage, Toast.LENGTH_LONG).show()
+                        } else {
+                            planner.showHike(plan, listOfNotNull(selectedEntry.trail.code, selectedEntry.trail.name).joinToString(" "))
+                            startKind = TripKind.ONE_WAY
+                            startSheet = true
+                            onSelect(null)
+                        }
+                    },
                     onDirections = run {
                         val chosen = selectedEntry.starts.getOrNull(startChoice) ?: selectedEntry.starts.firstOrNull()
                         val plan = HikePlans.forTrail(selectedEntry, chosen, here)
@@ -634,6 +748,10 @@ fun MapScreen(
                         }
                     },
                     onExport = { name, points -> export(name, listOf(points), osm = true) },
+                    onStart = {
+                        startKind = TripKind.ONE_WAY
+                        startSheet = true
+                    },
                     modifier = cardModifier,
                 )
             }
@@ -731,6 +849,7 @@ private fun TrailPeekCard(
     directionsTarget: DirectionsTarget,
     onDirectionsTarget: (DirectionsTarget) -> Unit,
     onDirections: (() -> Unit)?,
+    onStart: () -> Unit,
     onExport: () -> Unit,
     onClose: () -> Unit,
     onDeleteImport: () -> Unit,
@@ -808,7 +927,8 @@ private fun TrailPeekCard(
         }
         if (onDirections != null) DirectionsToggle(directionsTarget, onDirectionsTarget)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            onDirections?.let { Button(onClick = it) { Text(stringResource(R.string.directions)) } }
+            if (entry.hasLine) Button(onClick = onStart) { Text(stringResource(R.string.nav_start)) }
+            onDirections?.let { OutlinedButton(onClick = it) { Text(stringResource(R.string.directions)) } }
             when (trail.source) {
                 TrailSource.OFFICIAL -> OutlinedButton(
                     onClick = { uriHandler.openUri(status?.sourceUrl ?: TrailRepository.OFFICIAL_LIST_URL) },
@@ -975,6 +1095,7 @@ private fun PlannerCard(
     onPick: (PickRole) -> Unit,
     onSave: (String, List<GeoPoint>) -> Unit,
     onExport: (String, List<GeoPoint>) -> Unit,
+    onStart: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val route = ((result as? PlanResult.Done)?.outcome as? RouteOutcome.Found)?.route
@@ -1089,7 +1210,8 @@ private fun PlannerCard(
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (route != null && name != null) {
-                Button(onClick = { onSave(name, route.points) }) { Text(stringResource(R.string.plan_save)) }
+                Button(onClick = onStart) { Text(stringResource(R.string.nav_start)) }
+                OutlinedButton(onClick = { onSave(name, route.points) }) { Text(stringResource(R.string.plan_save)) }
                 OutlinedButton(onClick = { onExport(name, route.points) }) { Text(stringResource(R.string.export_gpx)) }
             }
             if (here != null && points.start != here) {
@@ -1226,4 +1348,12 @@ private fun rememberMapViewWithLifecycle(onReady: (MapLibreMap) -> Unit): MapVie
         }
     }
     return mapView
+}
+
+/** The part of the route still ahead of [progressM], for the navigation line. */
+private fun aheadOf(route: NavRoute, progressM: Double): List<GeoPoint> {
+    val line = route.line
+    if (progressM <= 0.0) return line.points
+    val i = line.segmentAt(progressM)
+    return listOf(line.pointAt(progressM)) + line.points.drop(i + 1)
 }

@@ -89,6 +89,13 @@ fun positionText(position: TrailPosition?): String? = when (position) {
     }
 }
 
+/** The same outside Compose (the navigation notification). */
+fun durationMinutesText(context: android.content.Context, minutes: Int): String = when {
+    minutes < 60 -> context.getString(R.string.duration_minutes, minutes.coerceAtLeast(1))
+    minutes % 60 == 0 -> context.getString(R.string.duration_hours, minutes / 60)
+    else -> context.getString(R.string.duration_hours_minutes, minutes / 60, minutes % 60)
+}
+
 /** "45 min", "2 h 10 min". */
 @Composable
 fun durationText(minutes: Int): String = when {

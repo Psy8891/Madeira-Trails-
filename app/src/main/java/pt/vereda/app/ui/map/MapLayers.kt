@@ -21,6 +21,9 @@ object MapLayers {
     const val MARKERS_SOURCE = "vereda-markers"
     const val ROUTE_SOURCE = "vereda-route"
     const val PLAN_SOURCE = "vereda-plan"
+    /** Navigation (Phase 1.5): the way still ahead, and the part already walked. */
+    const val NAV_SOURCE = "vereda-nav"
+    const val NAV_DONE_SOURCE = "vereda-nav-done"
 
     private const val TRAILS_SOLID = "vereda-trails-solid"
     private const val TRAILS_DASHED = "vereda-trails-dashed"
@@ -199,6 +202,7 @@ object MapLayers {
                 ),
         )
         installRoute(style, fonts)
+        installNavigation(style)
     }
 
     /** The planned route (Phase 0.7) and its start, stops and end, above everything else. */
@@ -237,6 +241,36 @@ object MapLayers {
                 PropertyFactory.textColor("#17201B"),
                 PropertyFactory.textAllowOverlap(true),
                 PropertyFactory.textIgnorePlacement(true),
+            ),
+        )
+    }
+
+    private fun installNavigation(style: Style) {
+        style.addSource(GeoJsonSource(NAV_DONE_SOURCE, EMPTY))
+        style.addSource(GeoJsonSource(NAV_SOURCE, EMPTY))
+        style.addLayer(
+            LineLayer("vereda-nav-done", NAV_DONE_SOURCE).withProperties(
+                PropertyFactory.lineColor("#8A8A8A"),
+                PropertyFactory.lineWidth(5f),
+                PropertyFactory.lineOpacity(0.8f),
+                PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
+                PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
+            ),
+        )
+        style.addLayer(
+            LineLayer("vereda-nav-casing", NAV_SOURCE).withProperties(
+                PropertyFactory.lineColor("#FFFFFF"),
+                PropertyFactory.lineWidth(10f),
+                PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
+                PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
+            ),
+        )
+        style.addLayer(
+            LineLayer("vereda-nav-line", NAV_SOURCE).withProperties(
+                PropertyFactory.lineColor("#D81B60"), // "active navigation route" in Map style
+                PropertyFactory.lineWidth(7f),
+                PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
+                PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
             ),
         )
     }
