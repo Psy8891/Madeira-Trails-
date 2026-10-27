@@ -44,7 +44,7 @@ import pt.vereda.core.maps.Resume
 
 /** Top of the map: the attribution offline, or the offline map download while online. */
 @Composable
-fun MapBanner(offline: Boolean, state: OfflineMapState) {
+fun MapBanner(offline: Boolean, overview: Boolean, state: OfflineMapState) {
     if (offline) {
         Text(
             text = stringResource(R.string.map_offline_attribution),
@@ -68,6 +68,7 @@ fun MapBanner(offline: Boolean, state: OfflineMapState) {
                 download is DownloadState.Paused -> stringResource(R.string.maps_paused, Resume.percent(download.doneBytes, download.totalBytes))
                 download is DownloadState.WaitingForWifi -> stringResource(R.string.maps_waiting_wifi)
                 download is DownloadState.Failed -> stringResource(R.string.maps_failed, download.message)
+                overview -> stringResource(R.string.map_overview_banner)
                 pkg != null -> stringResource(R.string.map_online_get_offline)
                 else -> stringResource(R.string.map_dev_banner)
             },

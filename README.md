@@ -16,29 +16,29 @@ offline maps, and a local profile with Done / To-do / Wishlist lists. No account
 | [`docs/design/`](docs/design/) | Screen designs and design tokens |
 | `app/` | The Android app (Kotlin, Jetpack Compose, MapLibre) |
 | `core/model/` | Plain Kotlin models: trails, status, the official trail list, search |
-| `core/geo/` | Plain Kotlin geo logic: distances, track stats, off-route detection, UTM, GPX |
+| `core/geo/` | Plain Kotlin geo logic: distances, track stats, off-route detection, UTM, GPX, elevation grid and height profiles, sunrise and sunset, scale bar |
 | `core/route/` | Plain Kotlin: reads the walking network and plans routes (A*) |
-| `core/catalog/` | Plain Kotlin: reads the trail catalog and live status, search over trails and places, where you are on a trail, GPX import, map GeoJSON |
-| `data/` | Python data jobs (with pytest tests): trail catalog from OpenStreetMap (names, road access, points of interest), official status from Visit Madeira |
+| `core/catalog/` | Plain Kotlin: reads the trail catalog and live status, search over trails and places, where you are on a trail, GPX import, map GeoJSON, IPMA weather warnings, the pre-hike checklist |
+| `core/maps/` | Plain Kotlin: the offline map package (manifest, status, resume, SHA-256) and the Vereda Topo style |
+| `data/` | Python data jobs (with pytest tests): trail catalog from OpenStreetMap (names, road access, points of interest), official status from Visit Madeira, offline map building (terrain, contours, elevation grid, manifest) |
 | `.github/workflows/android-ci.yml` | CI: runs the unit and data tests, builds a debug APK and publishes it on every push |
 | `.github/workflows/update-catalog.yml` | Weekly: rebuilds `app/src/main/assets/catalog.json` and `data/catalog-report.md` |
 | `.github/workflows/update-status.yml` | 09:00 and 14:00 Madeira time: publishes `status.json` on the `status` branch |
+| `.github/workflows/build-maps.yml` | Monthly + manual: builds the offline map package (release `maps-YYYY.MM.DD`, manifest on `maps-latest`) and the elevation grid, fonts and overview map in the app |
 
 ## Status
 
-Phase 0.7 (see the spec). The app opens on a map of Madeira (a temporary online base map until
-the offline packages exist) with every trail drawn: official trails coloured by their live
-official status, community trails from OpenStreetMap dashed, and peaks, viewpoints, waterfalls,
-water, shelters, parking and tunnels as icons. The locate button shows where you are (follow, then
-follow with compass). Explore searches trails, peaks and named places (accent-insensitive, partial
-names work), filters by source, and opens a trail on the map with its start, end and the walk from
-the nearest road, plus a card with its status age, how to get to the start and where you are on
-it, with up to three ways in (well-known trailheads first, such as Boca da Corrida for Pico
-Grande). Long-press the map to plan your own route: start, stops and end are routed on the
-phone, offline, over the OpenStreetMap path network (marked trails first, difficult paths
-avoided), and the route can be saved, followed with the blue dot or exported as GPX.
-**Import GPX** adds your own files (from a guide, Wikiloc or a friend); they stay on the phone.
-Record and Me are still placeholders.
+Phases 0.5–0.9 done, Phase 1 (offline map) and the first part of Phase 4 (safety) built; see the
+spec. The app opens on a map of Madeira with every trail drawn: official trails coloured by their
+live official status, community trails from OpenStreetMap dashed, and peaks, viewpoints,
+waterfalls, water, shelters, parking and tunnels as icons. Download the offline topo map (contours,
+terrain shading, levadas and paths) in *Me → Offline map* or from the map banner; without it the
+map is online, or a small overview map when there is no connection. Trail and route cards show the
+climb with a small height graph, time including the climb, sunset and daylight left, IPMA weather
+warnings and a *Before you go* checklist. *Plan a route* (or a long-press on the map) plans your
+own walk on the phone, offline; *Directions* shows the whole hike in the app or opens Google Maps.
+The red *SOS* button opens the emergency card (call 112, your coordinates, send them by SMS).
+**Import GPX** adds your own files; they stay on the phone. Record is still a placeholder.
 
 Live status: <https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json>
 (what the app reads), parsed rows in

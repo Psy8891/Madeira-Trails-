@@ -171,7 +171,7 @@ Version 1 ships nine feature areas; items tagged **(later)** wait for version 1.
 
 ### 5. Offline maps
 
-- **One-tap packages:** *Madeira* and *Porto Santo*, each holding base map, contours and hillshade. Size shown before download, Wi-Fi-only switch, progress, pause and resume, checksum check, "update available" badge.
+- **One-tap package:** *Madeira and Porto Santo* (one package since Phase 1, see there), holding base map, contours and hillshade. Size shown before download, Wi-Fi-only switch, progress, pause and resume, checksum check, "update available".
 - A small overview map (zoom 0–11) ships inside the app so the map is never blank.
 - The trail catalog and status are small and refresh in the background.
 - **Storage screen:** packages with size, version date, update and delete.
@@ -236,7 +236,7 @@ The data jobs live in this repo under `data/` (Python, tested with pytest in CI)
 
 ```mermaid
 flowchart LR
-  A["OSM extract + DROTe 10 m DTM"] --> B["build-maps (monthly, later)"] --> C["PMTiles packages (GitHub Release)"] --> APP["Vereda app"]
+  A["OSM extract + DROTe 10 m DTM"] --> B["build-maps (monthly)"] --> C["PMTiles packages (GitHub Release)"] --> APP["Vereda app"]
   D["OSM extract (Geofabrik) + data/official.json"] --> E["update-catalog (weekly)"] --> F["app/src/main/assets/catalog.json (bundled, ODbL)"] --> APP
   G["Visit Madeira hiking page"] --> H["update-status (09:00 and 14:00)"] --> I["status.json on the status branch"] --> APP
   J["IPMA API (weather warnings)"] -- "live, on demand" --> APP
@@ -246,7 +246,7 @@ Only the IPMA weather warnings and the trail status are fetched live; the catalo
 
 | Job | Runs | Does | Publishes |
 | --- | --- | --- | --- |
-| `build-maps` | Monthly + manual (Phase 1) | Clips the OSM extract with osmium; Planetiler builds base vector tiles (z0–15); GDAL `gdal_contour` (10 m interval, 50 m index) + tippecanoe builds contour tiles (z11–15); the DTM is encoded as Terrarium RGB WebP tiles (z8–14) for MapLibre hillshade | `madeira-base.pmtiles`, `madeira-contours.pmtiles`, `madeira-dem.pmtiles` and the same for Porto Santo, as a versioned GitHub Release (e.g. `maps-2026.11`) |
+| `build-maps` (`.github/workflows/build-maps.yml`) | Monthly (3rd, 04:17 UTC) + manual; push to `maps-build` = test build | Downloads the DROTe terrain models (WCS) and cleans them; Planetiler builds the OpenMapTiles base map (z0–14) from the `osm-extract` release; GDAL `gdal_contour` (10 m interval, 50 m index) + tippecanoe builds contour tiles (z11–14); `build_dem_tiles.py` encodes the terrain as Terrarium lossless WebP tiles (z8–14, sea tiles left out); `build_elevation.py` writes the app's elevation grid | `madeira-base.pmtiles`, `madeira-contours.pmtiles`, `madeira-dem.pmtiles` on the release `maps-YYYY.MM.DD`; `manifest.json` on `maps-latest`; `elevation.bin`, `overview.pmtiles` and `glyphs/` committed to `main`, then an APK build |
 | `update-catalog` (`data/scripts/build_catalog.py`) | Mondays + manual | Reads the Geofabrik Portugal extract clipped to Madeira with osmium (pyosmium); falls back to three small Overpass queries over four mirrors (the public Overpass servers ask automated jobs not to rely on them). Takes hiking/foot relations, named paths and named peaks; official trails matched by PR ref, then by official name; other named routes and named paths (≥ 400 m, not streets) become community trails; lines chained and simplified (Douglas-Peucker 3 m), stored as encoded polylines (precision 1e5) | `app/src/main/assets/catalog.json` + `data/catalog-report.md` (match count, missing codes, checklist of `data/wanted.json`), committed to `main`; then starts a new APK build. Community trails matching a `wanted.json` entry get its `searchAlias`, so "Boca da Corrida – Pico Grande" finds "Vereda do Pico Grande". Since Phase 0.6 it also cleans names, adds each trail's area and road access (`ends`), and collects points of interest; the clipped extract is kept on the `osm-extract` release |
 | `update-status` (`data/scripts/build_status.py`) | 09:00 and 14:00 Madeira time + manual (owner's choice, 26 Oct 2026; was every 30 min) | Reads the [Visit Madeira hiking page](https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/), which shows every listed trail as Open / Restricted / Closed; needs at least 30 trails or it counts as a failure | `status.json` + `rows.txt` on the `status` branch (one force-pushed commit), read by the app from `https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json` |
 
@@ -273,19 +273,19 @@ Only the IPMA weather warnings and the trail status are fetched live; the catalo
   "schema": 1,
   "packages": [{
     "id": "madeira",
-    "version": "2026.11",
+    "name": "Madeira and Porto Santo",
+    "version": "2026.10.27",
     "minApp": 1,
     "files": [
-      {"role": "base", "url": "https://github.com/Psy8891/Madeira-Trails-/releases/download/maps-2026.11/madeira-base.pmtiles", "bytes": 0, "sha256": "…"},
+      {"role": "base", "url": "https://github.com/Psy8891/Madeira-Trails-/releases/download/maps-2026.10.27/madeira-base.pmtiles", "bytes": 0, "sha256": "…"},
       {"role": "contours", "url": "…/madeira-contours.pmtiles", "bytes": 0, "sha256": "…"},
       {"role": "dem", "url": "…/madeira-dem.pmtiles", "bytes": 0, "sha256": "…"}
     ]
-  }],
-  "status": {"url": "https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json"}
+  }]
 }
 ```
 
-Package sizes are unknown until the first build; Madeira is about 800 km², so expect tens of MB per file. Phase 0 measures them and writes the real numbers into the manifest.
+Written by `data/scripts/build_manifest.py`; parsed and checked (https only, SHA-256 present, size above 0, schema not newer than the app) by `:core:maps` `MapManifest`. The app reads it from the `maps-latest` release. Real sizes are in the release notes of each build.
 
 ## App architecture
 
@@ -432,7 +432,7 @@ Four bottom tabs — **Map · Explore · Record · Me** — with search on top o
 
 ## Map style
 
-The style is one MapLibre style JSON in `:core:map/assets/style/vereda-topo.json`, layered so the trail you care about always sits on top of terrain, and levadas read as water, not as paths.
+The style is one MapLibre style JSON in `:core:maps` (`src/main/resources/style/vereda-topo.json`, filled in by `TopoStyle`), layered so the trail you care about always sits on top of terrain, and levadas read as water, not as paths.
 
 **Layer order (bottom to top)**
 
@@ -624,14 +624,44 @@ Goal: change the app's language without changing the phone's. The *Me* tab gets 
 
 ### Phase 1 — Map that works offline
 
-Goal: open the app in airplane mode and see Madeira in detail.
+Goal: open the app in airplane mode and see Madeira in detail. Started 27 Oct 2026 (owner: "complete the offline mode", with heights and a small height graph).
 
-- [ ] Project skeleton with the modules from *App architecture*, CI building a debug APK on every push.
-- [ ] Onboarding downloads the Madeira package with progress, pause/resume and checksum.
-- [ ] Vereda Topo style renders contours, hillshade, levadas, paths and POIs as in *Map style*.
+**Decisions taken while building it**
+- **One package** for the whole archipelago, *Madeira and Porto Santo* (three files: `base`, `contours`, `dem`), instead of one per island: a MapLibre source takes one file, and Porto Santo adds little.
+- **Terrain source:** the DROTe 10 m terrain models from the regional WCS (`geoservices.madeira.gov.pt`, workspaces `EL_modelodigitalterreno_madeira10m` and `EL_mdt_portosanto10m`). The Madeira coverage spans the sea around the archipelago, so `data/scripts/fetch_dtm.sh` asks only for the island (E 284000–349500, N 3608000–3643500 in PTRA08 / UTM 28N). `clean_dtm.py` turns anything that isn't a plausible height (not finite, below −50 m, above 2,000 m) into no data. Attribution: "Terrain © DROTe".
+- **Elevation grid in the APK** (`app/src/main/assets/elevation.bin`, about 2–3 MB) so climb and the height graph work without the package. Format below.
+- **Contours** come from a 20 m cubic-smoothed copy of the terrain (smoother lines, less data), 10 m interval; index contours every 50 m reach zoom 11–12, the rest zoom 13–14.
+- **Base map:** Planetiler with the OpenMapTiles schema. That schema has no `sac_scale`, so footpaths are drawn alike in the base map; difficulty stays on Vereda's own trail layers. Levadas are `waterway=canal` or a waterway named "Levada …".
+- **Fonts:** Noto Sans Regular, Bold and Italic glyphs (ranges 0–255, 256–511, 8192–8447 from openmaptiles/fonts) ship in the APK as `glyphs/NotoSans-*`, names without spaces so the `asset://` URLs need no escaping.
+- **Overview map:** the same base map at zoom 0–10 ships in the APK (`overview.pmtiles`). Without the package the app uses the online map when connected and the overview map when not, so the map is never blank.
+- **Manifest** at `https://github.com/Psy8891/Madeira-Trails-/releases/download/maps-latest/manifest.json`; files on the release `maps-YYYY.MM.DD`. Versions are dates, so they sort. A push to the `maps-build` branch makes a test build on the release `maps-test`.
+
+**Elevation grid (`elevation.bin`)**, written by `data/scripts/build_elevation.py`, read by `:core:geo` `ElevationReader`:
+
+```
+"VRE1"  u16 version = 1
+varint grid count, then per grid (Madeira, Porto Santo):
+    zigzag varint lat, lon of the south-west cell centre in microdegrees
+    varint step in microdegrees (250 = 0.00025°, about 25 m), varint rows, varint cols
+    rows × cols heights in whole metres, south row first, west to east,
+    as zig-zag varint deltas from the previous cell (sea and no data are 0 m)
+```
+
+Heights are bilinear between cell centres. A profile samples every 10 m, smooths with a 3-point median and counts climb in steps of 3 m or more (spec: *Elevation stats*). Time is 4 km/h plus 1 h per 600 m of climb, rounded to 5 min under an hour and to 15 min above.
+
+**In the app**
+- Trail cards and the route card show "↑ climb · ↓ descent · highest point" and a small filled height graph (highest and lowest marked), and the time includes the climb.
+- *Me → Offline map*: size, version, *Download* / *Pause* / *Resume* / *Update* / *Delete*, progress, checksum check, "Download on Wi-Fi only" (default on). The map's top banner offers the same download while the package is missing. Downloads resume with HTTP Range requests; a file is used only after its SHA-256 matches the manifest; an update replaces the old version only once it is complete.
+- A *Layers* button opens a card with terrain shading (with a strength slider), contour lines, community trails and points of interest. Terrain and contours need the package.
+- A scale bar (1–2–5 steps) sits under the top banner. Long-press shows decimal degrees, UTM 28N and the height.
+
+- [x] Project skeleton with the modules from *App architecture*, CI building a debug APK on every push.
+- [ ] The map package downloads from Me or the map banner with progress, pause/resume and checksum, and the map then works in airplane mode.
+- [ ] Vereda Topo style renders contours, hillshade, levadas, paths and POIs as in *Map style* (with the OpenMapTiles limits above).
 - [ ] Official and community trails drawn by status; tap opens the peek sheet.
 - [ ] Locate-me, compass, scale bar, long-press coordinates (decimal + UTM 28N + elevation).
-- [ ] Layers sheet toggles every overlay; Offline maps screen can update and delete packages.
+- [ ] Layers card toggles every overlay; *Me → Offline map* can update and delete the package.
+- [ ] Trail and route cards show climb, descent and the height graph; spot heights match the terrain model (Pico Ruivo about 1,860 m, Pico do Areeiro about 1,815 m).
 
 ### Phase 2 — Find and plan
 
@@ -657,9 +687,19 @@ Goal: record and navigate a real hike with the screen off.
 
 Goal: a finished release build on your own phone. Google Play is not planned for now.
 
+Started 27 Oct 2026, before Phases 2 and 3 (owner's choice). What is in so far:
+- **Safety notice** on first launch (must be accepted; shown again from *Me*).
+- **Emergency card** from the red *SOS* button on the map: *Call 112* (opens the dialer; Android doesn't let apps call 112 by themselves), the position in large type (decimal and UTM 28N, accuracy and age), *Send my position by SMS* with a Google Maps link (works with no data) and *Share another way*.
+- **IPMA warnings** (`warnings_www.json`, areas MCN north coast, MCS south coast, MRM mountains, MPS Porto Santo): yellow and worse, not yet over, worst first, on trail and route cards; "couldn't be checked" when offline. Pure parsing and filtering in `:core:catalog` `WeatherWarnings`.
+- **Sunset and daylight left** (`:core:geo` `Sun`, NOAA method, within a minute of the astral library) on trail and route cards, with a warning when the estimated time plus an hour doesn't fit before sunset. During recording it moves to the recording screen in Phase 3.
+- **Before you go** checklist on the cards, built from the walk (`:core:catalog` `Checklists`): status and booking for official trails, weather, torch for levadas, tunnels or a late finish, water, layers above 1,200 m or with warnings, footwear, phone, telling someone, the offline map.
+- **Language** switch in *Me* (Phase 0.9); all strings in EN and PT-PT.
+- **Accessibility:** labelled buttons (SOS, locate, layers), switches and checkboxes with 48 dp rows, the height graph and scale bar read out as text.
+- The low-battery warning waits for the Phase 3 recording service; the fall alert is noted in *Safety* (GitHub issue #4).
+
 - [ ] Emergency card, IPMA warnings, sunset and daylight-left, pre-hike checklist, disclaimer.
-- [ ] All strings in PT-PT and EN; app follows the phone language.
-- [ ] Accessibility pass.
+- [ ] All strings in PT-PT and EN; app follows the phone language or the choice in *Me*.
+- [ ] Accessibility pass (TalkBack walk-through of Map, Explore and Me).
 - [ ] Signed release APK installed and used on your Pixel for a full hike.
 
 **Later (v1.x):** satellite layer, photos on waypoints, badges and heatmap, German and French, night map style, barometer climb, home-screen widget, Wear OS.

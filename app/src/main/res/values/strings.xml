@@ -259,4 +259,5 @@
     <string name="disclaimer_accept">I understand</string>
     <string name="disclaimer_show">Safety notice</string>
     <string name="about_data">Vereda %1$s. Map and trail data © OpenStreetMap contributors (ODbL). Terrain © DROTe, Região Autónoma da Madeira. Trail status from Visit Madeira. Weather warnings from IPMA.</string>
+    <string name="map_overview_banner">No connection: showing the small overview map. Download the offline map (Me → Offline map) for paths and contours.</string>
 </resources>

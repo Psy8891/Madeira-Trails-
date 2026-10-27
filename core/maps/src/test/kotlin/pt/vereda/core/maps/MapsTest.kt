@@ -101,4 +101,14 @@ class MapsTest {
         assertTrue(ids.indexOf("contour-index") < ids.indexOf("road-regional"))
         assertFailsWith<IllegalArgumentException> { TopoStyle.json("relative", "/a", "/b") }
     }
+
+    @Test
+    fun `the overview style has only the base map`() {
+        val style = Json.parseToJsonElement(TopoStyle.json("/data/files/maps/overview.pmtiles", null, null)).jsonObject
+        assertEquals(setOf("base"), style["sources"]!!.jsonObject.keys)
+        val layers = style["layers"]!!.jsonArray.map { it as JsonObject }
+        assertTrue(layers.none { it["source"]?.jsonPrimitive?.content in setOf("contours", "dem") })
+        assertTrue(layers.any { it["id"]!!.jsonPrimitive.content == "background" })
+        assertTrue(layers.any { it["id"]!!.jsonPrimitive.content == "road-regional" })
+    }
 }

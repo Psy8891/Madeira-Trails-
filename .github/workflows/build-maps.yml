@@ -5,7 +5,8 @@ name: Build offline maps
 #   - madeira-base.pmtiles      OpenMapTiles vector tiles from the OSM extract (Planetiler)
 #   - madeira-contours.pmtiles  10 m contours from the DROTe terrain model (GDAL + tippecanoe)
 #   - madeira-dem.pmtiles       Terrarium terrain tiles for hillshade (data/scripts/build_dem_tiles.py)
-#   - app/src/main/assets/elevation.bin and glyphs/ (committed to main, then an APK build starts)
+#   - app/src/main/assets/elevation.bin, overview.pmtiles (z0–10) and glyphs/ (committed to main,
+#     then an APK build starts)
 # The files go to the release maps-YYYY.MM.DD; manifest.json goes to the release maps-latest,
 # which the app reads.
 
@@ -36,6 +37,10 @@ jobs:
   maps:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    defaults:
+      run:
+        # Every step's output also goes to build.log, shown as an annotation if the job fails.
+        shell: bash -eo pipefail {0}
     steps:
       - uses: actions/checkout@v6
 
@@ -50,6 +55,7 @@ jobs:
 
       - name: Install tools
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/build.log") 2>&1
           sudo apt-get -qq update
           sudo apt-get -qq install -y gdal-bin python3-gdal python3-numpy build-essential libsqlite3-dev zlib1g-dev >/dev/null
           pip install -q -r data/requirements-maps.txt
@@ -62,29 +68,36 @@ jobs:
       - name: Version
         id: version
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/build.log") 2>&1
           echo "version=$(date -u +%Y.%m.%d)" >> "$GITHUB_OUTPUT"
           if [ "$GITHUB_EVENT_NAME" = push ]; then echo "test=true" >> "$GITHUB_OUTPUT"; else echo "test=false" >> "$GITHUB_OUTPUT"; fi
 
       - name: Download the terrain models (DROTe, WCS)
-        run: bash data/scripts/fetch_dtm.sh work
+        run: |
+          exec > >(tee -a "$RUNNER_TEMP/build.log") 2>&1
+          bash data/scripts/fetch_dtm.sh work
 
       - name: Elevation grid for the app
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/build.log") 2>&1
           mkdir -p out
           gdalwarp -q -overwrite -t_srs EPSG:4326 -tr 0.00025 0.00025 -te -17.28 32.62 -16.62 32.89 \
             -r average -ot Int16 -dstnodata -32768 -of ENVI work/madeira.tif work/madeira-grid.bil
           gdalwarp -q -overwrite -t_srs EPSG:4326 -tr 0.00025 0.00025 -te -16.43 32.99 -16.26 33.13 \
             -r average -ot Int16 -dstnodata -32768 -of ENVI work/portosanto.tif work/portosanto-grid.bil
           python data/scripts/build_elevation.py work/madeira-grid.bil work/portosanto-grid.bil \
-            --out app/src/main/assets/elevation.bin
+            --out app/src/main/assets/elevation.bin | tee work/elevation.txt
+          echo "::notice title=Elevation grid::$(tr '\n' ' ' < work/elevation.txt)"
 
       - name: Terrain tiles
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/build.log") 2>&1
           python data/scripts/build_dem_tiles.py work/madeira.tif work/portosanto.tif \
-            --bbox "$BBOX" --minzoom 8 --maxzoom 14 --out out/madeira-dem.pmtiles
+            --bbox="$BBOX" --minzoom 8 --maxzoom 14 --out out/madeira-dem.pmtiles
 
       - name: Contours
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/build.log") 2>&1
           mkdir -p out
           for island in madeira portosanto; do
             # Contours from a lightly smoothed 20 m copy: smoother lines, a third of the data.
@@ -106,16 +119,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/build.log") 2>&1
           gh release download osm-extract -p madeira.osm.pbf -D work --clobber
           curl -sSL -o work/planetiler.jar https://github.com/onthegomap/planetiler/releases/latest/download/planetiler.jar
           (cd work && java -Xmx6g -jar planetiler.jar --osm-path=madeira.osm.pbf --download \
             --bounds="$BBOX" --maxzoom=14 --output=../out/madeira-base.pmtiles --force)
-          ls -la out
+          # The small overview map shipped in the app (spec: Offline maps), never blank offline.
+          (cd work && java -Xmx6g -jar planetiler.jar --osm-path=madeira.osm.pbf \
+            --bounds="$BBOX" --maxzoom=10 --output=../app/src/main/assets/overview.pmtiles --force)
+          ls -la out app/src/main/assets/overview.pmtiles
 
       - name: Fonts for the offline style
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/build.log") 2>&1
           gh release download v2.0 --repo openmaptiles/fonts -p noto-sans.zip -D work --clobber
           unzip -q -o work/noto-sans.zip -d work/fonts
           for style in Regular Bold Italic; do
@@ -129,7 +147,9 @@ jobs:
 
       - name: Manifest
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/build.log") 2>&1
           v=${{ steps.version.outputs.version }}
+          echo "::notice title=Sizes::$(ls -la out app/src/main/assets/overview.pmtiles | awk '{print $5, $9}' | tr '\n' ' ')"
           python data/scripts/build_manifest.py --version "$v" \
             --base-url "https://github.com/${{ github.repository }}/releases/download/maps-$v" \
             --out out/manifest.json \
@@ -141,8 +161,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/build.log") 2>&1
           gh release view maps-test >/dev/null 2>&1 || gh release create maps-test --prerelease --title "Offline maps: test build" --notes "Built from the maps-build branch for checking; the app doesn't read it."
-          gh release upload maps-test out/madeira-base.pmtiles out/madeira-contours.pmtiles out/madeira-dem.pmtiles out/manifest.json app/src/main/assets/elevation.bin --clobber
+          gh release upload maps-test out/madeira-base.pmtiles out/madeira-contours.pmtiles out/madeira-dem.pmtiles out/manifest.json app/src/main/assets/elevation.bin app/src/main/assets/overview.pmtiles --clobber
           tar -czf out/glyphs.tgz -C app/src/main/assets glyphs
           gh release upload maps-test out/glyphs.tgz --clobber
 
@@ -151,6 +172,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/build.log") 2>&1
           v=${{ steps.version.outputs.version }}
           notes="Offline map package for Madeira and Porto Santo. Map data © OpenStreetMap contributors (ODbL), tiles built with Planetiler (OpenMapTiles schema). Terrain © DROTe, Região Autónoma da Madeira."
           gh release view "maps-$v" >/dev/null 2>&1 || gh release create "maps-$v" --prerelease --title "Offline maps $v" --notes "$notes"
@@ -162,9 +184,10 @@ jobs:
         id: commit
         if: steps.version.outputs.test == 'false'
         run: |
+          exec > >(tee -a "$RUNNER_TEMP/build.log") 2>&1
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/src/main/assets/elevation.bin app/src/main/assets/glyphs
+          git add app/src/main/assets/elevation.bin app/src/main/assets/overview.pmtiles app/src/main/assets/glyphs
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
@@ -179,3 +202,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run android-ci.yml --ref main
+
+      - name: Show the end of the log
+        if: failure()
+        run: |
+          tail -n 30 "$RUNNER_TEMP/build.log" | sed 's/%/%25/g' | awk 'BEGIN{ORS="%0A"} {print}' > "$RUNNER_TEMP/tail.txt" || true
+          echo "::error title=build-maps log::$(cat "$RUNNER_TEMP/tail.txt")"

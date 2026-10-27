@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.maplibre.android.MapLibre
 import pt.vereda.app.data.MapPackages
+import pt.vereda.app.data.NetworkMonitor
 import pt.vereda.app.data.RoutePlanner
 import pt.vereda.app.data.Settings
 import pt.vereda.app.data.Terrain
@@ -33,6 +34,10 @@ class VeredaApplication : Application() {
     lateinit var maps: MapPackages
         private set
 
+    /** Online or not, to choose the online or the bundled overview map. */
+    lateinit var network: NetworkMonitor
+        private set
+
     /** IPMA weather warnings (Phase 4). */
     lateinit var weather: Weather
         private set
@@ -56,5 +61,6 @@ class VeredaApplication : Application() {
         terrain = Terrain(this, appScope)
         maps = MapPackages(this, appScope, settings).also { it.start() }
         weather = Weather(appScope)
+        network = NetworkMonitor(this)
     }
 }

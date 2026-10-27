@@ -31,5 +31,7 @@ done
 # Spot checks (spec: Phase 0): Pico Ruivo 1,862 m, Pico do Areeiro 1,818 m.
 for p in "-16.9431 32.7587 Pico_Ruivo" "-16.9284 32.7357 Pico_do_Areeiro"; do
   set -- $p
-  echo "$3: $(gdallocationinfo -valonly -wgs84 "$dir/madeira.tif" "$1" "$2") m"
+  h=$(gdallocationinfo -valonly -wgs84 "$dir/madeira.tif" "$1" "$2")
+  echo "$3: $h m"
+  echo "::notice title=Spot height::$3 $h m"
 done

@@ -69,8 +69,31 @@ class MapPackages(
 
     private var job: Job? = null
 
+    private val _overview = MutableStateFlow<String?>(null)
+    /** The small overview map shipped in the APK (assets/overview.pmtiles), copied out to a file. */
+    val overview: StateFlow<String?> = _overview.asStateFlow()
+
+    private fun copyOverview() {
+        val dir = File(context.filesDir, "overview").apply { mkdirs() }
+        val target = File(dir, OVERVIEW_ASSET)
+        val marker = File(dir, "version")
+        val version = BuildConfig.VERSION_CODE.toString()
+        try {
+            if (!target.exists() || marker.takeIf { it.exists() }?.readText() != version) {
+                val tmp = File(dir, "$OVERVIEW_ASSET.tmp")
+                context.assets.open(OVERVIEW_ASSET).use { input -> tmp.outputStream().use { input.copyTo(it) } }
+                if (!tmp.renameTo(target)) throw IOException("rename failed")
+                marker.writeText(version)
+            }
+            _overview.value = target.absolutePath
+        } catch (e: Exception) {
+            Log.i(TAG, "No overview map: ${e.message}")
+        }
+    }
+
     /** Reads the small install record right away (so the map opens on the right style), then the manifest. */
     fun start() {
+        scope.launch(Dispatchers.IO) { copyOverview() }
         _installed.value = runCatching {
             Packages.parseInstalled(record.takeIf { it.exists() }?.readText())
                 ?.takeIf { p -> p.files.values.all { File(versionDir(p.version), it).exists() } }
@@ -233,6 +256,7 @@ class MapPackages(
         const val MANIFEST_URL = "https://github.com/Psy8891/Madeira-Trails-/releases/download/maps-latest/manifest.json"
         /** Bumped when the app can no longer read an older package format (manifest minApp). */
         const val APP_MAPS_VERSION = 1
+        private const val OVERVIEW_ASSET = "overview.pmtiles"
         private const val TAG = "MapPackages"
     }
 }

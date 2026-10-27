@@ -255,4 +255,5 @@
     <string name="disclaimer_accept">Compreendo</string>
     <string name="disclaimer_show">Aviso de segurança</string>
     <string name="about_data">Vereda %1$s. Dados do mapa e dos trilhos © contribuidores do OpenStreetMap (ODbL). Relevo © DROTe, Região Autónoma da Madeira. Estado dos percursos da Visit Madeira. Avisos meteorológicos do IPMA.</string>
+    <string name="map_overview_banner">Sem ligação: a mostrar o mapa geral simples. Descarrega o mapa offline (Eu → Mapa offline) para ver trilhos e curvas de nível.</string>
 </resources>

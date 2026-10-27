@@ -234,16 +234,23 @@ fun MapScreen(
     val installedMaps by app.maps.installed.collectAsStateWithLifecycle()
     val mapPaths = remember(installedMaps) { app.maps.installedPaths(installedMaps) }
     val offline = mapPaths != null
-    LaunchedEffect(mapRef, mapPaths) {
+    val online by app.network.online.collectAsStateWithLifecycle()
+    val overviewPath by app.maps.overview.collectAsStateWithLifecycle()
+    // Without the package: the online map when connected, else the small overview map in the app.
+    val useOverview = mapPaths == null && !online && overviewPath != null
+    LaunchedEffect(mapRef, mapPaths, useOverview) {
         val map = mapRef ?: return@LaunchedEffect
         loaded = null
-        val (builder, fonts) = if (mapPaths != null) {
-            val json = withContext(Dispatchers.IO) {
-                TopoStyle.json(mapPaths.getValue("base"), mapPaths.getValue("contours"), mapPaths.getValue("dem"))
+        val topoFonts = MapLayers.Fonts(TopoStyle.FONT_REGULAR, TopoStyle.FONT_BOLD)
+        val (builder, fonts) = when {
+            mapPaths != null -> {
+                val json = withContext(Dispatchers.IO) {
+                    TopoStyle.json(mapPaths.getValue("base"), mapPaths.getValue("contours"), mapPaths.getValue("dem"))
+                }
+                Style.Builder().fromJson(json) to topoFonts
             }
-            Style.Builder().fromJson(json) to MapLayers.Fonts(TopoStyle.FONT_REGULAR, TopoStyle.FONT_BOLD)
-        } else {
-            Style.Builder().fromUri(DEV_STYLE_URL) to MapLayers.Fonts.ONLINE
+            useOverview -> Style.Builder().fromJson(TopoStyle.json(overviewPath!!, null, null)) to topoFonts
+            else -> Style.Builder().fromUri(DEV_STYLE_URL) to MapLayers.Fonts.ONLINE
         }
         map.setStyle(builder) { style ->
             MapLayers.install(context, style, fonts)
@@ -440,7 +447,7 @@ fun MapScreen(
         ) {
             val role = pickRole
             if (role == null) {
-                MapBanner(offline = offline, state = offlineState)
+                MapBanner(offline = offline, overview = useOverview, state = offlineState)
             } else {
                 Row(
                     modifier = Modifier.padding(start = 12.dp, end = 4.dp),

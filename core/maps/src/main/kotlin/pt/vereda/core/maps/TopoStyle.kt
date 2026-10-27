@@ -1,5 +1,11 @@
 package pt.vereda.core.maps
 
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+
 /**
  * The Vereda Topo style (spec: *Map style*) over the offline package: OpenMapTiles base,
  * contours and Terrarium terrain from local PMTiles files, fonts from the APK.
@@ -20,17 +26,31 @@ object TopoStyle {
     }
 
     /**
-     * The style JSON with the three package files, given as absolute paths on the phone.
-     * MapLibre reads them as `pmtiles://file:///…`.
+     * The style JSON with the package files, given as absolute paths on the phone. MapLibre reads
+     * them as `pmtiles://file:///…`. Without contours or terrain (the small overview map that
+     * ships in the app), their sources and layers are left out.
      */
-    fun json(basePath: String, contoursPath: String, demPath: String): String {
+    fun json(basePath: String, contoursPath: String?, demPath: String?): String {
         fun url(path: String): String {
             require(path.startsWith("/")) { "Expected an absolute path: $path" }
             return "file://" + path.replace("\\", "/").replace("\"", "%22")
         }
-        return template
+        val filled = template
             .replace("{{BASE}}", url(basePath))
-            .replace("{{CONTOURS}}", url(contoursPath))
-            .replace("{{DEM}}", url(demPath))
+            .replace("{{CONTOURS}}", contoursPath?.let(::url) ?: "missing")
+            .replace("{{DEM}}", demPath?.let(::url) ?: "missing")
+        if (contoursPath != null && demPath != null) return filled
+        val drop = buildSet {
+            if (contoursPath == null) add("contours")
+            if (demPath == null) add("dem")
+        }
+        val style = Json.parseToJsonElement(filled).jsonObject
+        val sources = JsonObject(style.getValue("sources").jsonObject.filterKeys { it !in drop })
+        val layers = JsonArray(
+            (style.getValue("layers") as JsonArray).filter { layer ->
+                layer.jsonObject["source"]?.jsonPrimitive?.content !in drop
+            },
+        )
+        return JsonObject(style + mapOf("sources" to sources, "layers" to layers)).toString()
     }
 }
