@@ -29,11 +29,22 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        // The release key (spec: Phase 4) comes only from CI secrets, never from the repo.
+        val releaseStore = providers.environmentVariable("VEREDA_RELEASE_STORE").orNull
+        if (releaseStore != null) {
+            create("release") {
+                storeFile = file(releaseStore)
+                storePassword = providers.environmentVariable("VEREDA_RELEASE_STORE_PASSWORD").get()
+                keyAlias = providers.environmentVariable("VEREDA_RELEASE_KEY_ALIAS").get()
+                keyPassword = providers.environmentVariable("VEREDA_RELEASE_KEY_PASSWORD").get()
+            }
+        }
     }
 
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 

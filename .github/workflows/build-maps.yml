@@ -54,8 +54,8 @@ jobs:
           java-version: 21
 
       - name: Install tools
+        # No log capture here: apt can leave background processes holding the pipe open.
         run: |
-          exec > >(tee -a "$RUNNER_TEMP/build.log") 2>&1
           sudo apt-get -qq update
           sudo apt-get -qq install -y gdal-bin python3-gdal python3-numpy build-essential libsqlite3-dev zlib1g-dev >/dev/null
           pip install -q -r data/requirements-maps.txt

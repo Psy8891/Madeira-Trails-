@@ -75,3 +75,19 @@ the test reports as downloadable artifacts.
 
 Map data © OpenStreetMap contributors (ODbL). Terrain © DROTe – Direção Regional do Ordenamento
 do Território (CC BY 4.0). Trail status and fees from IFCN and Visit Madeira. See `docs/SPEC.md`.
+
+## Signed release (Phase 4)
+
+CI also builds a signed release APK on the `latest-release` release once a release key is in the
+repository secrets (it is never stored in the repo). One-time setup, on a computer with Java:
+
+```sh
+keytool -genkeypair -v -keystore vereda-release.jks -alias vereda -keyalg RSA -keysize 4096 -validity 10000
+base64 -w0 vereda-release.jks > vereda-release.b64   # macOS: base64 -i vereda-release.jks -o vereda-release.b64
+```
+
+Then in GitHub → Settings → Secrets and variables → Actions add `VEREDA_RELEASE_KEYSTORE` (the
+contents of `vereda-release.b64`), `VEREDA_RELEASE_STORE_PASSWORD`, `VEREDA_RELEASE_KEY_ALIAS`
+(`vereda`) and `VEREDA_RELEASE_KEY_PASSWORD`. Keep the `.jks` file and passwords safe: later
+releases must be signed with the same key to install over each other. The release APK has a
+different key from the debug build, so remove the debug build before installing it the first time.
