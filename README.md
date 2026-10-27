@@ -38,7 +38,7 @@ climb with a small height graph, time including the climb, sunset and daylight l
 warnings and a *Before you go* checklist. *Plan a route* (or a long-press on the map) plans your
 own walk on the phone, offline; *Directions* shows the whole hike in the app or opens Google Maps.
 The red *SOS* button opens the emergency card (call 112, your coordinates, send them by SMS).
-**Import GPX** adds your own files; they stay on the phone. Record is still a placeholder.
+**Start** on a trail or a planned route guides you along it (Phase 1.5): one way or there and back, voice and vibration at junctions and when you leave the path, offline, with the screen off and the app in the background (progress in the notification), with adaptive GPS to save battery. **Import GPX** adds your own files; they stay on the phone. Record is still a placeholder.
 
 Live status: <https://raw.githubusercontent.com/Psy8891/Madeira-Trails-/status/status.json>
 (what the app reads), parsed rows in
