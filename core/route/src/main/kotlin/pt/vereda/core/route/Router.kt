@@ -53,7 +53,7 @@ sealed interface RouteOutcome {
 }
 
 /** A* over the walking network with a hiking profile: trails first, roads where needed. */
-class Router(private val network: WalkingNetwork) {
+class Router(val network: WalkingNetwork) {
 
     /** Cost of one metre of edge [e]; 1.0 is the cheapest, which keeps the A* heuristic exact. */
     fun costFactor(e: Int, options: RouteOptions): Double {

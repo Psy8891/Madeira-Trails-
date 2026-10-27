@@ -44,8 +44,9 @@ fun HeightSummary(profile: ElevationProfile, modifier: Modifier = Modifier) {
     }
 }
 
+/** [markerM]: where you are along the line, drawn as a dot (navigation). */
 @Composable
-fun HeightGraph(profile: ElevationProfile, modifier: Modifier = Modifier) {
+fun HeightGraph(profile: ElevationProfile, modifier: Modifier = Modifier, markerM: Double? = null) {
     val points = profile.graph
     if (points.size < 2) return
     val fill = VeredaColors.LaurelTint
@@ -72,6 +73,16 @@ fun HeightGraph(profile: ElevationProfile, modifier: Modifier = Modifier) {
             drawPath(area, fill)
             drawPath(outline, line, style = Stroke(width = 2.dp.toPx(), join = StrokeJoin.Round))
             drawLine(line.copy(alpha = 0.25f), Offset(0f, size.height), Offset(size.width, size.height), strokeWidth = 1.dp.toPx())
+            if (markerM != null) {
+                val d = markerM.coerceIn(0.0, total)
+                // Height at the marker: between the two graph points around it.
+                val i = points.indexOfFirst { it.first >= d }.let { if (it <= 0) 1 else it }.coerceAtMost(points.size - 1)
+                val (d0, h0) = points[i - 1]
+                val (d1, h1) = points[i]
+                val h = if (d1 == d0) h1 else h0 + (h1 - h0) * (d - d0) / (d1 - d0)
+                drawCircle(VeredaColors.LocationBlue, radius = 5.dp.toPx(), center = Offset(x(d), y(h)))
+                drawCircle(androidx.compose.ui.graphics.Color.White, radius = 2.dp.toPx(), center = Offset(x(d), y(h)))
+            }
         }
         Text(
             formatElevation(profile.maxM.roundToInt()),

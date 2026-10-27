@@ -96,6 +96,9 @@ class RoutePlanner(private val context: Context, private val scope: CoroutineSco
         }
     }
 
+    /** The walking network, for junction cues when navigating (Phase 1.5). */
+    suspend fun network(): pt.vereda.core.route.WalkingNetwork = loadRouter().network
+
     private suspend fun loadRouter(): Router = loadLock.withLock {
         router ?: withContext(Dispatchers.IO) {
             Router(NetworkReader.read(context.assets.open(NETWORK_ASSET).use { it.readBytes() }))

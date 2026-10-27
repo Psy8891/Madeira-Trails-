@@ -13,6 +13,7 @@ import pt.vereda.app.data.Terrain
 import pt.vereda.app.data.Weather
 import pt.vereda.app.data.TrailRepository
 import pt.vereda.app.location.LocationTracker
+import pt.vereda.app.navigation.NavigationSession
 
 class VeredaApplication : Application() {
 
@@ -37,6 +38,9 @@ class VeredaApplication : Application() {
     /** Online or not, to choose the online or the bundled overview map. */
     lateinit var network: NetworkMonitor
         private set
+
+    /** The walk being followed (Phase 1.5). */
+    val navigation = NavigationSession()
 
     /** IPMA weather warnings (Phase 4). */
     lateinit var weather: Weather
