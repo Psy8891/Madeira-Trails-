@@ -33,7 +33,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Run unit tests
-        run: ./gradlew test --stacktrace
+        # Compiler errors ("e: file:line ...") become annotations, readable without the logs.
+        run: |
+          set -o pipefail
+          ./gradlew test --stacktrace 2>&1 | tee "$RUNNER_TEMP/test.log" || {
+            grep -E '^e: |FAILURE: |What went wrong' -A1 "$RUNNER_TEMP/test.log" | head -40 | while IFS= read -r line; do echo "::error title=Build::${line}"; done
+            exit 1
+          }
 
       - name: Test summary
         if: always()
@@ -67,7 +73,12 @@ jobs:
           EOF
 
       - name: Build debug APK
-        run: ./gradlew :app:assembleDebug --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleDebug --stacktrace 2>&1 | tee "$RUNNER_TEMP/apk.log" || {
+            grep -E '^e: |FAILURE: |What went wrong' -A1 "$RUNNER_TEMP/apk.log" | head -40 | while IFS= read -r line; do echo "::error title=Build::${line}"; done
+            exit 1
+          }
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v6
