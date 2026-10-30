@@ -1,0 +1,328 @@
+{
+ "schema": 1,
+ "generatedAt": "2026-10-30T15:32:01Z",
+ "ok": true,
+ "source": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/",
+ "trails": {
+  "pr-1": {
+   "code": "PR 1",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-1-vereda-do-areeiro/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-1.1": {
+   "code": "PR 1.1",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-11-vereda-da-ilha/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-1.2": {
+   "code": "PR 1.2",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-12-vereda-do-pico-ruivo/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-1.3": {
+   "code": "PR 1.3",
+   "state": "partial",
+   "label": "Restricted",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-13-vereda-da-encumeada/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-10": {
+   "code": "PR 10",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-10-levada-do-furado/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-11": {
+   "code": "PR 11",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-11-vereda-dos-balcoes/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-12": {
+   "code": "PR 12",
+   "state": "partial",
+   "label": "Restricted",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-12-caminho-real-da-encumeada/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-13": {
+   "code": "PR 13",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-13-vereda-do-fanal/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-13.1": {
+   "code": "PR 13.1",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-131-vereda-da-palha-carga/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-14": {
+   "code": "PR 14",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-14-levada-dos-cedros/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-15": {
+   "code": "PR 15",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-15-vereda-da-ribeira-da-janela/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-16": {
+   "code": "PR 16",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-16-levada-faja-do-rodrigues/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-17": {
+   "code": "PR 17",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-17-caminho-do-pinaculo-e-folhadal/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-18": {
+   "code": "PR 18",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-18-levada-do-rei/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-19": {
+   "code": "PR 19",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-19-caminho-real-do-paul-do-mar/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-2": {
+   "code": "PR 2",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-2-vereda-do-urzal/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-20": {
+   "code": "PR 20",
+   "state": "closed",
+   "label": "Closed",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-20-vereda-do-jardim-do-mar/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-21": {
+   "code": "PR 21",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-21-caminho-do-norte/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-22": {
+   "code": "PR 22",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-22-vereda-do-chao-dos-louros/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-27": {
+   "code": "PR 27",
+   "state": "closed",
+   "label": "Closed",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-27-glaciar-de-planalto/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-28": {
+   "code": "PR 28",
+   "state": "closed",
+   "label": "Closed",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-28-levada-da-rocha-vermelha/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-3": {
+   "code": "PR 3",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-3-vereda-do-burro/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-3.1": {
+   "code": "PR 3.1",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-31-caminho-real-do-monte/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-4": {
+   "code": "PR 4",
+   "state": "partial",
+   "label": "Restricted",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-4-levada-do-barreiro/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-5": {
+   "code": "PR 5",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-5-vereda-das-funduras/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-6": {
+   "code": "PR 6",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-6-levada-das-25-fontes/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-6.1": {
+   "code": "PR 6.1",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-61-levada-do-risco/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-6.2": {
+   "code": "PR 6.2",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-62-levada-do-alecrim/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-6.3": {
+   "code": "PR 6.3",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-63-vereda-da-lagoa-do-vento/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-6.4": {
+   "code": "PR 6.4",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-64-levada-velha-do-rabacal/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-6.5": {
+   "code": "PR 6.5",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-65-vereda-do-pico-fernandes/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-6.6": {
+   "code": "PR 6.6",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-66-vereda-do-tunel-do-cavalo/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-6.8": {
+   "code": "PR 6.8",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-68-levada-do-paul-ii-um-caminho-para-todos/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-7": {
+   "code": "PR 7",
+   "state": "closed",
+   "label": "Closed",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-7-levada-do-moinho/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-8": {
+   "code": "PR 8",
+   "state": "partial",
+   "label": "Restricted",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-8-vereda-da-ponta-de-sao-lourenco/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-9": {
+   "code": "PR 9",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-9-levada-do-caldeirao-verde/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "pr-9.1": {
+   "code": "PR 9.1",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-91-levada-do-caldeirao-verde-um-caminho-para-todos/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "ps-pr-1": {
+   "code": "PS PR 1",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/ps-pr-1-vereda-do-pico-branco-e-terra-cha/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "ps-pr-2": {
+   "code": "PS PR 2",
+   "state": "open",
+   "label": "Open",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/ps-pr-2-vereda-do-pico-do-castelo/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  },
+  "ps-pr-3": {
+   "code": "PS PR 3",
+   "state": "closed",
+   "label": "Closed",
+   "sourceUrl": "https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/ps-pr-3-levada-do-pico-do-castelo/",
+   "checkedAt": "2026-10-30T15:32:01Z",
+   "stale": false
+  }
+ }
+}

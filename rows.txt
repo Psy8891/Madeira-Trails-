@@ -1,0 +1,40 @@
+PR 1     open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-1-vereda-do-areeiro/
+PR 1.1   open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-11-vereda-da-ilha/
+PR 1.2   open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-12-vereda-do-pico-ruivo/
+PR 1.3   partial  Restricted   https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-13-vereda-da-encumeada/
+PR 10    open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-10-levada-do-furado/
+PR 11    open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-11-vereda-dos-balcoes/
+PR 12    partial  Restricted   https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-12-caminho-real-da-encumeada/
+PR 13    open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-13-vereda-do-fanal/
+PR 13.1  open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-131-vereda-da-palha-carga/
+PR 14    open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-14-levada-dos-cedros/
+PR 15    open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-15-vereda-da-ribeira-da-janela/
+PR 16    open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-16-levada-faja-do-rodrigues/
+PR 17    open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-17-caminho-do-pinaculo-e-folhadal/
+PR 18    open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-18-levada-do-rei/
+PR 19    open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-19-caminho-real-do-paul-do-mar/
+PR 2     open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-2-vereda-do-urzal/
+PR 20    closed   Closed       https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-20-vereda-do-jardim-do-mar/
+PR 21    open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-21-caminho-do-norte/
+PR 22    open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-22-vereda-do-chao-dos-louros/
+PR 27    closed   Closed       https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-27-glaciar-de-planalto/
+PR 28    closed   Closed       https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-28-levada-da-rocha-vermelha/
+PR 3     open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-3-vereda-do-burro/
+PR 3.1   open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-31-caminho-real-do-monte/
+PR 4     partial  Restricted   https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-4-levada-do-barreiro/
+PR 5     open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-5-vereda-das-funduras/
+PR 6     open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-6-levada-das-25-fontes/
+PR 6.1   open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-61-levada-do-risco/
+PR 6.2   open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-62-levada-do-alecrim/
+PR 6.3   open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-63-vereda-da-lagoa-do-vento/
+PR 6.4   open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-64-levada-velha-do-rabacal/
+PR 6.5   open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-65-vereda-do-pico-fernandes/
+PR 6.6   open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-66-vereda-do-tunel-do-cavalo/
+PR 6.8   open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-68-levada-do-paul-ii-um-caminho-para-todos/
+PR 7     closed   Closed       https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-7-levada-do-moinho/
+PR 8     partial  Restricted   https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-8-vereda-da-ponta-de-sao-lourenco/
+PR 9     open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-9-levada-do-caldeirao-verde/
+PR 9.1   open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/pr-91-levada-do-caldeirao-verde-um-caminho-para-todos/
+PS PR 1  open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/ps-pr-1-vereda-do-pico-branco-e-terra-cha/
+PS PR 2  open     Open         https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/ps-pr-2-vereda-do-pico-do-castelo/
+PS PR 3  closed   Closed       https://www.visitmadeira.com/en/what-to-do/nature-seekers/activities/hiking/ps-pr-3-levada-do-pico-do-castelo/
